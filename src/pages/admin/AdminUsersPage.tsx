@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface Profile {
   id: string;
-  email: string;
+  email_initial: string;
   full_name?: string;
   member_code: string;
   role: 'user' | 'admin';
@@ -30,7 +30,7 @@ export default function AdminUsersPage() {
           .from('profiles')
           .select(`
             id,
-            email,
+            email_initial,
             full_name,
             member_code,
             role,
@@ -109,7 +109,7 @@ export default function AdminUsersPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#848E9C]" />
             <Input
-              placeholder="Cari nama, email, atau member code..."
+              placeholder="Cari nama, email_initial, atau member code..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 bg-[#2B3139] border-[#3A3F47] text-white placeholder-[#848E9C]"
