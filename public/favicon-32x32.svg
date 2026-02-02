@@ -13,10 +13,10 @@
   <!-- Background -->
   <rect width="32" height="32" fill="url(#bgGradient32)"/>
   
-  <!-- Logo Circle -->
-  <circle cx="16" cy="16" r="14" fill="none" stroke="url(#goldGradient32)" stroke-width="1.5"/>
-  <circle cx="16" cy="16" r="11" fill="none" stroke="url(#goldGradient32)" stroke-width="1"/>
+  <!-- Logo Circle Background -->
+  <circle cx="16" cy="16" r="14" fill="none" stroke="url(#goldGradient32)" stroke-width="1.5" opacity="0.8"/>
+  <circle cx="16" cy="16" r="11" fill="none" stroke="url(#goldGradient32)" stroke-width="1" opacity="0.6"/>
   
-  <!-- TPC Text -->
+  <!-- TPC Logo Text -->
   <text x="16" y="21" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="url(#goldGradient32)" text-anchor="middle">TPC</text>
 </svg>
