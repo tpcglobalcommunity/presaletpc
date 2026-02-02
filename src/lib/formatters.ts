@@ -4,8 +4,10 @@
 
 // Helper to clamp decimal places
 export function clampDecimals(str: string, maxDecimals: number): string {
-  const parts = str.split('.');
-  if (parts.length <= 1) return str;
+  // Allow only digits and one dot
+  const cleaned = str.replace(/[^\d.]/g, '');
+  const parts = cleaned.split('.');
+  if (parts.length <= 1) return cleaned;
   
   const integer = parts[0];
   const decimal = parts[1].slice(0, maxDecimals);
@@ -14,53 +16,48 @@ export function clampDecimals(str: string, maxDecimals: number): string {
 }
 
 // IDR: Indonesian Rupiah
-export function parseIdr(input: string): number {
-  // Remove all non-digit characters
-  const clean = input.replace(/[^\d]/g, '');
-  return clean ? parseInt(clean, 10) : 0;
+export function parseIdr(raw: string): number {
+  const digits = (raw || "").replace(/[^\d]/g, "");
+  return digits ? Number(digits) : 0;
 }
 
-export function formatIdr(value: number): string {
-  return new Intl.NumberFormat('id-ID', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
+export function formatIdr(n: number): string {
+  return new Intl.NumberFormat("id-ID", { 
+    maximumFractionDigits: 0 
+  }).format(Math.max(0, Math.floor(n || 0)));
 }
 
 // USDC: USD Coin (stablecoin)
-export function parseUsdc(input: string): number {
-  // Remove commas, allow digits and dot
-  const clean = input.replace(/,/g, '');
-  const clamped = clampDecimals(clean, 2);
-  return clamped ? parseFloat(clamped) : 0;
+export function parseUsdc(raw: string): number {
+  const cleaned = raw.replace(/,/g, '');
+  const clamped = clampDecimals(cleaned, 2);
+  return clamped ? Number(clamped) : 0;
 }
 
-export function formatUsdc(value: number): string {
-  return new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(value);
+export function formatUsdc(n: number): string {
+  return new Intl.NumberFormat("en-US", { 
+    minimumFractionDigits: 2, 
+    maximumFractionDigits: 2 
+  }).format(Number(n || 0));
 }
 
 // SOL: Solana
-export function parseSol(input: string): number {
-  // Remove commas, allow digits and dot
-  const clean = input.replace(/,/g, '');
-  const clamped = clampDecimals(clean, 4);
-  return clamped ? parseFloat(clamped) : 0;
+export function parseSol(raw: string): number {
+  const cleaned = raw.replace(/,/g, '');
+  const clamped = clampDecimals(cleaned, 4);
+  return clamped ? Number(clamped) : 0;
 }
 
-export function formatSol(value: number): string {
-  return new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 4,
-    maximumFractionDigits: 4,
-  }).format(value);
+export function formatSol(n: number): string {
+  return new Intl.NumberFormat("en-US", { 
+    minimumFractionDigits: 4, 
+    maximumFractionDigits: 4 
+  }).format(Number(n || 0));
 }
 
 // TPC: Token TPC Global
-export function formatTpc(value: number): string {
-  return new Intl.NumberFormat('id-ID', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(value);
+export function formatTpc(n: number): string {
+  return new Intl.NumberFormat("id-ID", { 
+    maximumFractionDigits: 2 
+  }).format(Number(n || 0));
 }

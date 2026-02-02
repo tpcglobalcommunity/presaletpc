@@ -4,7 +4,9 @@ import { Coins, ArrowRight, Loader2, Shield, CheckCircle, ExternalLink } from 'l
 import { supabase } from '@/integrations/supabase/client';
 import { formatInputNumber, parseNumberID, formatNumberID, formatRupiah } from '@/lib/number';
 import { calculateTPCFromUSD, calculateSponsorBonus, fetchSOLPrice, convertSOLToUSD, convertIDRToUSD, BASE_TPC_PRICE_USD, FIXED_IDR_RATE, LOCKED_SPONSOR_COMMISSION_PERCENTAGE } from '@/config/pricing';
-import { formatIdr, parseIdr, formatUsdc, parseUsdc, formatSol, parseSol, formatTpc } from '@/lib/formatters';
+import { formatIdr, parseIdr, formatUsdc, parseUsdc, formatSol, parseSol, formatTpc, clampDecimals } from '@/lib/formatters';
+import { getSolUsdPrice } from '@/lib/prices';
+import { calcTpc, USD_IDR, TPC_PRICE_USDC } from '@/lib/tpcPricing';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,7 +18,7 @@ import { SEO } from '@/lib/seo';
 import CountdownCard from '@/components/CountdownCard';
 import tpcLogo from '@/assets/tpc.png';
 
-type Currency = 'IDR' | 'USDC' | 'SOL';
+type Currency = "IDR" | "USDC" | "SOL";
 
 interface PresaleConfig {
   stage1_started_at: number;
@@ -47,9 +49,8 @@ export default function BuyTPCPage() {
   const [agreed, setAgreed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [solPriceUSD, setSolPriceUSD] = useState<number | null>(null);
-  const [isSolPriceLoading, setIsSolPriceLoading] = useState(true);
-  const [isSolSynced, setIsSolSynced] = useState(true);
+  const [solUsdPrice, setSolUsdPrice] = useState<number | null>(null);
+  const [solPriceLoading, setSolPriceLoading] = useState(false);
   const [presaleConfig, setPresaleConfig] = useState<PresaleConfig | null>(null);
   const [isPresaleConfigLoading, setIsPresaleConfigLoading] = useState(true);
 
@@ -59,18 +60,19 @@ export default function BuyTPCPage() {
 
   // Currency-specific input handlers
   const handleAmountChange = (value: string) => {
-    setAmountRaw(value);
-    
     if (currency === 'IDR') {
-      const parsed = parseIdr(value);
-      setAmountValue(parsed);
-      setAmountRaw(formatIdr(parsed));
+      const v = parseIdr(value);
+      setAmountValue(v);
+      setAmountRaw(formatIdr(v));  // OK to format live for IDR
     } else if (currency === 'USDC') {
-      const parsed = parseUsdc(value);
-      setAmountValue(parsed);
+      const cleaned = value.replace(/,/g, '');
+      const clamped = clampDecimals(cleaned, 2);
+      setAmountRaw(clamped);       // keep user typing smooth
+      setAmountValue(parseUsdc(clamped));
     } else if (currency === 'SOL') {
-      const parsed = parseSol(value);
-      setAmountValue(parsed);
+      const clamped = clampDecimals(value, 4);
+      setAmountRaw(clamped);
+      setAmountValue(parseSol(clamped));
     }
   };
 
@@ -78,30 +80,26 @@ export default function BuyTPCPage() {
     if (currency === 'USDC') {
       setAmountRaw(formatUsdc(amountValue));
     } else if (currency === 'SOL') {
-      setAmountRaw(formatSol(amountValue));
+      setAmountRaw(formatSol(amountValue)); // always 4 decimals
     }
   };
 
-  // Fetch SOL price
+  // Fetch SOL price when currency is SOL
   useEffect(() => {
-    const fetchPrice = async () => {
-      try {
-        setIsSolPriceLoading(true);
-        const price = await fetchSOLPrice();
-        setSolPriceUSD(price);
-        setIsSolSynced(true);
-      } catch (error) {
-        console.error('Failed to fetch SOL price:', error);
-        setIsSolSynced(false);
-      } finally {
-        setIsSolPriceLoading(false);
-      }
-    };
+    if (currency === 'SOL') {
+      setSolPriceLoading(true);
+      getSolUsdPrice().then(price => {
+        setSolUsdPrice(price);
+        setSolPriceLoading(false);
+      });
+    }
+  }, [currency]);
 
-    fetchPrice();
-    const interval = setInterval(fetchPrice, 60000); // Update every minute
-    return () => clearInterval(interval);
-  }, []);
+  // Placeholder per currency
+  const placeholder =
+    currency === "IDR" ? "10.000" :
+    currency === "USDC" ? "1,000.00" :
+    "0.0010";
 
   // Fetch presale config
   useEffect(() => {
@@ -142,14 +140,7 @@ export default function BuyTPCPage() {
   }, []);
 
   // Calculate derived values
-  // Calculate TPC amount based on currency and amount
-  const usdAmount = currency === 'IDR' 
-    ? convertIDRToUSD(amountValue)
-    : currency === 'SOL' && solPriceUSD
-      ? convertSOLToUSD(amountValue, solPriceUSD)
-      : amountValue;
-
-  const tpcAmount = usdAmount ? calculateTPCFromUSD(usdAmount) : 0;
+  const tpcAmount = calcTpc(currency, amountValue, solUsdPrice);
   const sponsorBonus = amountValue >= 1000000 ? calculateSponsorBonus(amountValue) : 0;
   const totalTPC = tpcAmount + sponsorBonus;
 
@@ -207,18 +198,11 @@ export default function BuyTPCPage() {
     }
   };
 
-  const currencyLabels: Record<Currency, { label: string; hint: string }> = {
-    IDR: { label: 'IDR', hint: 'Rupiah' },
-    USDC: { label: 'USDC', hint: 'Stablecoin' },
-    SOL: { 
-      label: 'SOL', 
-      hint: isSolPriceLoading 
-        ? 'Loading...' 
-        : solPriceUSD 
-          ? `$${solPriceUSD.toFixed(2)}` 
-          : 'Price unavailable' 
-    }
-  };
+  const currencyLabels = {
+    IDR: { label: 'IDR', symbol: 'Rp' },
+    USDC: { label: 'USDC', symbol: '$' },
+    SOL: { label: 'SOL', symbol: 'SOL' }
+  } as const;
 
   return (
     <>
@@ -358,7 +342,7 @@ export default function BuyTPCPage() {
               </label>
               <input
                 type="text"
-                placeholder="0"
+                placeholder={placeholder}
                 value={amountRaw}
                 onChange={(e) => handleAmountChange(e.target.value)}
                 onBlur={handleAmountBlur}
@@ -419,6 +403,23 @@ export default function BuyTPCPage() {
                 )}
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Pricing Information */}
+        <Card className="bg-[#11161C]/50 backdrop-blur-xl border border-[#1F2A33] rounded-2xl overflow-hidden">
+          <CardContent className="p-4 space-y-2">
+            <div className="text-xs text-[#848E9C] space-y-1">
+              <div>Kurs: 1 USDC = Rp {USD_IDR.toLocaleString('id-ID')}</div>
+              <div>Harga TPC: {TPC_PRICE_USDC} USDC</div>
+              {currency === 'SOL' && (
+                <div>
+                  {solPriceLoading ? 'Mengambil harga SOL...' : 
+                   solUsdPrice ? `Harga SOL realtime: $${solUsdPrice.toFixed(2)}` : 
+                   'Harga SOL belum tersedia'}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 
