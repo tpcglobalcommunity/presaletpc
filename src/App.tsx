@@ -18,6 +18,7 @@ const MarketPage = lazy(() => import("@/pages/id/MarketPage"));
 const BuyTPCPage = lazy(() => import("@/pages/id/BuyTPCPage"));
 const InvoiceSuccessPage = lazy(() => import("@/pages/id/InvoiceSuccessPage"));
 const LoginPage = lazy(() => import("@/pages/id/LoginPage"));
+const AuthCallbackPage = lazy(() => import("@/pages/id/AuthCallbackPage"));
 const TransparansiPage = lazy(() => import("@/pages/id/TransparansiPage"));
 const AntiScamPage = lazy(() => import("@/pages/id/AntiScamPage"));
 const EdukasiPage = lazy(() => import("@/pages/id/EdukasiPage"));
@@ -28,6 +29,22 @@ const VerifiedCoordinatorsPage = lazy(() => import("@/pages/chapters/VerifiedCoo
 const ChaptersSopPage = lazy(() => import("@/pages/chapters/ChaptersSopPage"));
 const TermsConditionsPage = lazy(() => import("@/pages/legal/TermsConditionsPage"));
 const PrivacyPolicyPage = lazy(() => import("@/pages/legal/PrivacyPolicyPage"));
+
+// English Public Pages (Lazy Loaded)
+const EnHomePage = lazy(() => import("@/pages/id/HomePage"));
+const EnMarketPage = lazy(() => import("@/pages/id/MarketPage"));
+const EnBuyTPCPage = lazy(() => import("@/pages/id/BuyTPCPage"));
+const EnInvoiceSuccessPage = lazy(() => import("@/pages/id/InvoiceSuccessPage"));
+const EnLoginPage = lazy(() => import("@/pages/id/LoginPage"));
+const EnAuthCallbackPage = lazy(() => import("@/pages/en/AuthCallbackPage"));
+const EnTransparansiPage = lazy(() => import("@/pages/id/TransparansiPage"));
+const EnAntiScamPage = lazy(() => import("@/pages/id/AntiScamPage"));
+const EnEdukasiPage = lazy(() => import("@/pages/id/EdukasiPage"));
+const EnWhitepaperPage = lazy(() => import("@/pages/id/WhitepaperPage"));
+const EnDAOPage = lazy(() => import("@/pages/id/DAOPage"));
+const EnFAQPage = lazy(() => import("@/pages/id/FAQPage"));
+const EnTermsConditionsPage = lazy(() => import("@/pages/legal/TermsConditionsPage"));
+const EnPrivacyPolicyPage = lazy(() => import("@/pages/legal/PrivacyPolicyPage"));
 
 // Preload functions for key routes
 export const preloadBuyTPC = () => import("@/pages/id/BuyTPCPage");
@@ -105,6 +122,11 @@ const App = () => (
               <Route path="login" element={
                 <Suspense fallback={<PageLoader />}>
                   <LoginPage />
+                </Suspense>
+              } />
+              <Route path="auth/callback-page" element={
+                <Suspense fallback={<PageLoader />}>
+                  <AuthCallbackPage />
                 </Suspense>
               } />
               <Route path="transparansi" element={
@@ -260,6 +282,25 @@ const App = () => (
                   </Suspense>
                 } />
               </Route>
+            </Route>
+
+            {/* English Routes with Mobile Layout */}
+            <Route path="/en" element={<MobileLayout />}>
+              <Route index element={
+                <Suspense fallback={<PageLoader />}>
+                  <EnHomePage />
+                </Suspense>
+              } />
+              <Route path="login" element={
+                <Suspense fallback={<PageLoader />}>
+                  <EnLoginPage />
+                </Suspense>
+              } />
+              <Route path="auth/callback-page" element={
+                <Suspense fallback={<PageLoader />}>
+                  <EnAuthCallbackPage />
+                </Suspense>
+              } />
             </Route>
 
             {/* Catch-all */}

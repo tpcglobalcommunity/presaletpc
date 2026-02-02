@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { isAdminUserId } from '@/config/admin';
+import { getAuthCallbackUrl } from '@/lib/auth-urls';
 
 interface Profile {
   id: string;
@@ -146,7 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/id/dashboard`,
+        redirectTo: getAuthCallbackUrl('id'),
       },
     });
     if (error) throw error;
