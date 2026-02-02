@@ -25,7 +25,7 @@ export default function AdminUsersPage() {
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase
           .from('profiles')
           .select(`
             id,
@@ -37,7 +37,7 @@ export default function AdminUsersPage() {
             created_at,
             updated_at
           `)
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: false }) as any);
 
         if (error) {
           console.error('Error fetching profiles:', error);
@@ -60,7 +60,7 @@ export default function AdminUsersPage() {
 
     if (searchTerm) {
       filtered = filtered.filter(profile => 
-        profile.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (profile.email && profile.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
         profile.member_code.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -138,8 +138,8 @@ export default function AdminUsersPage() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-white font-medium truncate">
-                        {profile.email}
+                      <div className="text-white font-medium text-sm truncate select-text">
+                        {profile.email || 'Email tidak tersedia'}
                       </div>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge className="bg-[#F0B90B]/10 text-[#F0B90B] border-[#F0B90B]/20 text-xs">
