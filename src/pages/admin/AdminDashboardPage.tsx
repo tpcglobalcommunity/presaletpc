@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FileText, Clock, CheckCircle, XCircle, TrendingUp, Users, Eye } from 'lucide-react';
+import { FileText, Clock, CheckCircle, XCircle, TrendingUp, Users, Eye, DollarSign, Coins, CreditCard } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,10 @@ interface Invoice {
   tpc_amount: number;
   created_at: string;
   email: string;
+  payment_method?: 'idr' | 'sol' | 'usdc';
+  amount_idr?: number;
+  amount_sol?: number;
+  amount_usdc?: number;
 }
 
 interface DashboardStats {
@@ -25,6 +29,16 @@ interface DashboardStats {
   totalRejected: number;
   totalInvoices: number;
   totalTPC: number;
+}
+
+interface FinancialStats {
+  totalIDR: number;
+  totalSOL: number;
+  totalUSDC: number;
+  grandTotalIDR: number;
+  solToIDR: number;
+  usdToIDR: number;
+  isUsingFallbackRate: boolean;
 }
 
 export default function AdminDashboardPage() {
@@ -39,6 +53,16 @@ export default function AdminDashboardPage() {
     totalTPC: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [isFinancialLoading, setIsFinancialLoading] = useState(true);
+  const [financialStats, setFinancialStats] = useState<FinancialStats>({
+    totalIDR: 0,
+    totalSOL: 0,
+    totalUSDC: 0,
+    grandTotalIDR: 0,
+    solToIDR: 2100000, // Fallback rate
+    usdToIDR: 17000, // Configurable constant
+    isUsingFallbackRate: false,
+  });
 
   // Helper function for admin invoice detail path
   const adminInvoiceDetailPath = (id: string) => `/${lang}/admin/invoices/${id}`;
@@ -85,6 +109,80 @@ export default function AdminDashboardPage() {
     fetchDashboardData();
   }, []);
 
+  // Fetch financial data
+  useEffect(() => {
+    const fetchFinancialData = async () => {
+      try {
+        setIsFinancialLoading(true);
+        
+        // Fetch SOL/IDR rate from CoinGecko API
+        let solToIDR = 2100000; // Fallback rate
+        let isUsingFallbackRate = false;
+        
+        try {
+          const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=idr');
+          if (response.ok) {
+            const data = await response.json();
+            if (data.solana?.idr) {
+              solToIDR = data.solana.idr;
+            }
+          }
+        } catch (error) {
+          console.log('Failed to fetch SOL/IDR rate, using fallback');
+          isUsingFallbackRate = true;
+        }
+
+        // Fetch approved invoices for financial calculations
+        const { data: approvedInvoices, error: approvedError } = await (supabase
+          .from('invoices')
+          .select('payment_method, amount_idr, amount_sol, amount_usdc')
+          .eq('status', 'PAID') as any);
+
+        if (approvedError) {
+          console.error('Error fetching approved invoices:', approvedError);
+          return;
+        }
+
+        const invoices = approvedInvoices || [];
+        
+        // Calculate totals by payment method
+        const totalIDR = invoices
+          .filter(inv => inv.payment_method === 'idr')
+          .reduce((sum, inv) => sum + (inv.amount_idr || 0), 0);
+        
+        const totalSOL = invoices
+          .filter(inv => inv.payment_method === 'sol')
+          .reduce((sum, inv) => sum + (inv.amount_sol || 0), 0);
+        
+        const totalUSDC = invoices
+          .filter(inv => inv.payment_method === 'usdc')
+          .reduce((sum, inv) => sum + (inv.amount_usdc || 0), 0);
+
+        // Convert to IDR
+        const usdToIDR = 17000; // Configurable constant
+        const solToIDRValue = totalSOL * solToIDR;
+        const usdcToIDRValue = totalUSDC * usdToIDR;
+        const grandTotalIDR = totalIDR + solToIDRValue + usdcToIDRValue;
+
+        setFinancialStats({
+          totalIDR,
+          totalSOL,
+          totalUSDC,
+          grandTotalIDR,
+          solToIDR,
+          usdToIDR,
+          isUsingFallbackRate,
+        });
+      } catch (error) {
+        console.error('Error fetching financial data:', error);
+      } finally {
+        setIsFinancialLoading(false);
+      }
+    };
+
+    fetchFinancialData();
+  }, []);
+
   const getStatusConfig = (status: string) => {
     switch (status) {
       case 'PENDING_REVIEW':
@@ -122,11 +220,11 @@ export default function AdminDashboardPage() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isFinancialLoading) {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
+          {[...Array(8)].map((_, i) => (
             <Card key={i} className="bg-[#1E2329] border-[#2B3139]">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <div className="h-4 bg-[#2B3139] rounded w-20"></div>
@@ -195,6 +293,56 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-[#F0B90B]">{formatNumberID(stats.totalTPC)}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Financial Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="bg-[#1E2329] border-[#2B3139]">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-[#848E9C]">Total IDR Diterima</CardTitle>
+            <DollarSign className="h-4 w-4 text-[#F0B90B]" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-[#F0B90B]">{formatRupiah(financialStats.totalIDR)}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-[#1E2329] border-[#2B3139]">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-[#848E9C]">Total SOL Diterima</CardTitle>
+            <Coins className="h-4 w-4 text-purple-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-purple-400">{formatNumberID(financialStats.totalSOL)} SOL</div>
+            <div className="text-sm text-[#848E9C]">{formatRupiah(financialStats.totalSOL * financialStats.solToIDR)}</div>
+            {financialStats.isUsingFallbackRate && (
+              <div className="text-xs text-amber-400 mt-1" title="Using fallback rate">
+                ⚠️ Fallback rate
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="bg-[#1E2329] border-[#2B3139]">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-[#848E9C]">Total USDC Diterima</CardTitle>
+            <CreditCard className="h-4 w-4 text-blue-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-400">{formatNumberID(financialStats.totalUSDC)} USDC</div>
+            <div className="text-sm text-[#848E9C]">{formatRupiah(financialStats.totalUSDC * financialStats.usdToIDR)}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-[#1E2329] border-[#2B3139]">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-[#848E9C]">Total Dana Masuk</CardTitle>
+            <TrendingUp className="h-4 w-4 text-emerald-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-emerald-400">{formatRupiah(financialStats.grandTotalIDR)}</div>
           </CardContent>
         </Card>
       </div>
