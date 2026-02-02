@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: CorelDRAW 2021 (64-Bit) -->
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="0.637795in" height="0.637795in" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 1035.82 1035.82"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+ xmlns:xodm="http://www.corel.com/coreldraw/odm/2003">
+ <defs>
+  <style type="text/css">
+   <![CDATA[
+    .str0 {stroke:#332C2B;stroke-width:12.79;stroke-miterlimit:2.61313}
+    .fil0 {fill:none}
+   ]]>
+  </style>
+   <clipPath id="id0">
+    <path d="M62.87 6.39l910.09 0c31.06,0 56.47,25.41 56.47,56.47l0 910.09c0,31.06 -25.41,56.47 -56.47,56.47l-910.09 0c-31.06,0 -56.47,-25.41 -56.47,-56.47l0 -910.09c0,-31.06 25.41,-56.47 56.47,-56.47z"/>
+   </clipPath>
+    <clipPath id="id1">
+     <path d="M62.87 6.39l910.09 0c31.06,0 56.47,25.41 56.47,56.47l0 910.09c0,31.06 -25.41,56.47 -56.47,56.47l-910.09 0c-31.06,0 -56.47,-25.41 -56.47,-56.47l0 -910.09c0,-31.06 25.41,-56.47 56.47,-56.47z"/>
+    </clipPath>
+    <clipPath id="id2">
+     <path d="M62.87 6.39l910.09 0c31.06,0 56.47,25.41 56.47,56.47l0 910.09c0,31.06 -25.41,56.47 -56.47,56.47l-910.09 0c-31.06,0 -56.47,-25.41 -56.47,-56.47l0 -910.09c0,-31.06 25.41,-56.47 56.47,-56.47z"/>
+    </clipPath>
+ </defs>
+ <g id="Layer_x0020_1">
+  <metadata id="CorelCorpID_0Corel-Layer"/>
+  <g>
+  </g>
+  <g style="clip-path:url(#id0)">
+   <g>
+   </g>
+   <g style="clip-path:url(#id1)">
+    <image id="Screenshot_x0020_2026-01-12_x0020_003614.png" x="-20.18" y="-39.56" width="1084.87" height="1101.53" xlink:href="logo tpc_Images\logo tpc_ImgID1.png"/>
+   </g>
+   <g style="clip-path:url(#id2)">
+   </g>
+  </g>
+  <path class="fil0 str0" d="M62.87 6.39l910.09 0c31.06,0 56.47,25.41 56.47,56.47l0 910.09c0,31.06 -25.41,56.47 -56.47,56.47l-910.09 0c-31.06,0 -56.47,-25.41 -56.47,-56.47l0 -910.09c0,-31.06 25.41,-56.47 56.47,-56.47z"/>
+ </g>
+</svg>

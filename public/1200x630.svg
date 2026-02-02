@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: CorelDRAW 2021 (64-Bit) -->
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="7.58944in" height="3.9882in" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 2857.9 1501.81"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+ xmlns:xodm="http://www.corel.com/coreldraw/odm/2003">
+ <defs>
+  <style type="text/css">
+   <![CDATA[
+    .str0 {stroke:#332C2B;stroke-width:2.97;stroke-miterlimit:2.61313}
+    .fil1 {fill:none}
+    .fil0 {fill:#242526}
+   ]]>
+  </style>
+    <clipPath id="id0">
+     <path d="M886.48 141.11l1084.94 0c37.03,0 67.32,30.29 67.32,67.32l0 1084.94c0,37.03 -30.29,67.32 -67.32,67.32l-1084.94 0c-37.03,0 -67.32,-30.29 -67.32,-67.32l0 -1084.94c0,-37.03 30.29,-67.32 67.32,-67.32z"/>
+    </clipPath>
+     <clipPath id="id1">
+      <path d="M886.48 141.11l1084.94 0c37.03,0 67.32,30.29 67.32,67.32l0 1084.94c0,37.03 -30.29,67.32 -67.32,67.32l-1084.94 0c-37.03,0 -67.32,-30.29 -67.32,-67.32l0 -1084.94c0,-37.03 30.29,-67.32 67.32,-67.32z"/>
+     </clipPath>
+     <clipPath id="id2">
+      <path d="M886.48 141.11l1084.94 0c37.03,0 67.32,30.29 67.32,67.32l0 1084.94c0,37.03 -30.29,67.32 -67.32,67.32l-1084.94 0c-37.03,0 -67.32,-30.29 -67.32,-67.32l0 -1084.94c0,-37.03 30.29,-67.32 67.32,-67.32z"/>
+     </clipPath>
+ </defs>
+ <g id="Layer_x0020_1">
+  <metadata id="CorelCorpID_0Corel-Layer"/>
+  <g id="_1984861378912">
+   <rect class="fil0 str0" transform="matrix(5.78757E-14 2.03958 -12.9206 3.19384E-13 2856.42 1.48117)" width="734.88" height="220.96"/>
+   <g>
+   </g>
+   <g style="clip-path:url(#id0)">
+    <g id="_1984861379920">
+    </g>
+    <g style="clip-path:url(#id1)">
+     <image id="Screenshot_x0020_2026-01-12_x0020_003614.png" x="787.47" y="86.32" width="1293.32" height="1313.18" xlink:href="1200x630_Images\1200x630_ImgID1.png"/>
+    </g>
+    <g style="clip-path:url(#id2)">
+    </g>
+   </g>
+   <path class="fil1 str0" d="M886.48 141.11l1084.94 0c37.03,0 67.32,30.29 67.32,67.32l0 1084.94c0,37.03 -30.29,67.32 -67.32,67.32l-1084.94 0c-37.03,0 -67.32,-30.29 -67.32,-67.32l0 -1084.94c0,-37.03 30.29,-67.32 67.32,-67.32z"/>
+  </g>
+ </g>
+</svg>

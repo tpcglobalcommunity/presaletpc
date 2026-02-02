@@ -1,0 +1,26 @@
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+
+interface RequireAuthProps {
+  children: React.ReactNode;
+}
+
+export function RequireAuth({ children }: RequireAuthProps) {
+  const { user, isLoading } = useAuth();
+  const location = useLocation();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0B0E11] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F0B90B]"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    const returnTo = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/id/login?returnTo=${returnTo}`} replace />;
+  }
+
+  return <>{children}</>;
+}
