@@ -3,6 +3,7 @@
  */
 
 const baseUrl = "https://tpcglobal.io";
+const defaultOgImage = "/og-v2.png";
 
 const defaultTitle = "TPC Global - Ekosistem Edukasi Blockchain";
 const defaultDescription = "TPC Global adalah ekosistem edukasi blockchain yang transparan, aman, dan terverifikasi. Bergabung dengan komunitas kami untuk pembelajaran crypto yang edukasi-only.";
@@ -98,5 +99,5 @@ export function getSEOConfig(path: string): SEOConfig {
   };
 }
 
-export { baseUrl, defaultTitle, defaultDescription };
+export { baseUrl, defaultOgImage, defaultTitle, defaultDescription };
 export type { SEOConfig };
