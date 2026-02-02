@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface Profile {
   id: string;
-  email_initial: string;
+  email: string;
   full_name?: string;
   member_code: string;
   role: 'user' | 'admin';
@@ -30,7 +30,7 @@ export default function AdminUsersPage() {
           .from('profiles')
           .select(`
             id,
-            email_initial,
+            email,
             full_name,
             member_code,
             role,
