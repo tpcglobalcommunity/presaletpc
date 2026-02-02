@@ -13,10 +13,21 @@
 - **Node version:** `20`
 
 ### **Environment Variables**
+**WAJIB:** Konfigurasi di dashboard Cloudflare Pages → Settings → Environment variables
+
 ```
-VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_PROJECT_ID=your_project_id
+VITE_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
+VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_SUPER_ADMIN_UUID=your_admin_uuid
+VITE_APP_URL=https://tpcglobal.io
 ```
+
+**⚠️ PENTING:**
+- JANGAN pernah commit `.env` file ke repository
+- Gunakan `.env.example` sebagai template lokal
+- Set semua variabel di Cloudflare Pages dashboard
 
 ## ✅ **Why These Settings**
 
@@ -43,7 +54,18 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 4. **Serves:** `dist/` directory
 5. **Result:** Production-ready TPC Global
 
-## 📋 **Important Notes**
+## � **Security Headers**
+
+**File:** `public/_headers`
+
+Security headers otomatis diterapkan untuk semua routes:
+- `X-Content-Type-Options: nosniff` - Mencegah MIME type sniffing
+- `X-Frame-Options: DENY` - Mencegah clickjacking
+- `Referrer-Policy: strict-origin-when-cross-origin` - Kontrol referrer info
+- `Permissions-Policy: geolocation=(), microphone=(), camera=()` - Blok akses perangkat
+- `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload` - Force HTTPS
+
+## �📋 **Important Notes**
 
 - ✅ **No Bun artifacts** (bun.lockb removed)
 - ✅ **NPM lockfile present** (package-lock.json)
@@ -52,11 +74,16 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 ## 🔧 **Troubleshooting**
 
-If build fails:
-1. Check Node version is set to 20
-2. Verify `package-lock.json` exists
-3. Ensure no `bun.lockb` in repository
-4. Check environment variables are set
+Jika build gagal:
+1. Pastikan Node version diset ke 20
+2. Verifikasi `package-lock.json` ada
+3. Pastikan tidak ada `bun.lockb` di repository
+4. Cek environment variables di Cloudflare Pages dashboard
+5. Verifikasi semua variabel dari `.env.example` sudah diset
+
+Jika auth tidak berfungsi:
+1. Cek `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` benar
+2. Pastikan Supabase mengizinkan domain `tpcglobal.io`
 
 ---
 
