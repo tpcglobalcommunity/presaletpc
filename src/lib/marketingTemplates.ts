@@ -4,7 +4,7 @@ export interface MarketingTemplate {
   id: string;
   title: string;
   type: 'email' | 'notification' | 'sms';
-  category: 'onboarding' | 'payments' | 'referrals' | 'marketing';
+  category: 'onboarding' | 'payments' | 'referrals' | 'marketing' | 'soft_launch';
   language: 'id' | 'en';
   subject?: string;
   content: string;
@@ -21,7 +21,7 @@ export interface MarketingTemplate {
 export interface TemplateFilters {
   search?: string;
   type?: 'all' | 'email' | 'notification' | 'sms';
-  category?: 'all' | 'onboarding' | 'payments' | 'referrals' | 'marketing';
+  category?: 'all' | 'onboarding' | 'payments' | 'referrals' | 'marketing' | 'soft_launch';
   status?: 'all' | 'active' | 'inactive';
   language?: 'id' | 'en';
 }
@@ -29,7 +29,7 @@ export interface TemplateFilters {
 export interface CreateTemplatePayload {
   title: string;
   type: 'email' | 'notification' | 'sms';
-  category: 'onboarding' | 'payments' | 'referrals' | 'marketing';
+  category: 'onboarding' | 'payments' | 'referrals' | 'marketing' | 'soft_launch';
   language: 'id' | 'en';
   subject?: string;
   content: string;
@@ -51,6 +51,16 @@ export interface CategoryStats {
   inactive_count: number;
 }
 
+// Banned phrases for anti-hype validation
+const BANNED_PHRASES = [
+  'pasti profit',
+  'jamin',
+  'auto cuan',
+  '100%',
+  'profit konsisten',
+  'garansi'
+];
+
 // Extract variables from template content
 export const extractVariables = (content: string): string[] => {
   const regex = /\{\{([^}]+)\}\}/g;
@@ -58,6 +68,38 @@ export const extractVariables = (content: string): string[] => {
   if (!matches) return [];
   
   return [...new Set(matches.map(match => match.slice(2, -2)))];
+};
+
+// Check for banned phrases (anti-hype validation)
+export const containsBannedPhrases = (content: string): string[] => {
+  const found: string[] = [];
+  const lowerContent = content.toLowerCase();
+  
+  BANNED_PHRASES.forEach(phrase => {
+    if (lowerContent.includes(phrase)) {
+      found.push(phrase);
+    }
+  });
+  
+  return found;
+};
+
+// Get admin referral code (mock - replace with actual admin profile query)
+export const getAdminReferralCode = async (): Promise<string> => {
+  try {
+    // This would typically query the admin's profile
+    // For now, return a fallback
+    return 'TPCGLOBAL';
+  } catch (error) {
+    console.error('Error getting admin referral code:', error);
+    return 'TPCGLOBAL';
+  }
+};
+
+// Generate WhatsApp format
+export const generateWhatsAppFormat = (template: MarketingTemplate, referralLink: string, useRendered = false): string => {
+  const content = useRendered ? renderTemplateWithSample(template) : template.content;
+  return `${content}\n\n👉 ${referralLink}`;
 };
 
 // Validate template data
@@ -80,6 +122,14 @@ export const validateTemplate = (payload: CreateTemplatePayload): string[] => {
     if (payload.subject && payload.subject.length > 120) {
       errors.push('Subject must be less than 120 characters');
     }
+    
+    // Check banned phrases in subject
+    if (payload.subject) {
+      const bannedInSubject = containsBannedPhrases(payload.subject);
+      if (bannedInSubject.length > 0) {
+        errors.push(`Subject contains prohibited phrases: ${bannedInSubject.join(', ')}. Please avoid hype language and guarantees.`);
+      }
+    }
   }
   
   // Content validation
@@ -88,6 +138,14 @@ export const validateTemplate = (payload: CreateTemplatePayload): string[] => {
   }
   if (payload.content && payload.content.length > 4000) {
     errors.push('Content must be less than 4000 characters');
+  }
+  
+  // Check banned phrases in content
+  if (payload.content) {
+    const bannedInContent = containsBannedPhrases(payload.content);
+    if (bannedInContent.length > 0) {
+      errors.push(`Content contains prohibited phrases: ${bannedInContent.join(', ')}. Please avoid hype language and guarantees.`);
+    }
   }
   
   // XSS prevention - check for script tags

@@ -25,7 +25,9 @@ import {
   Eye,
   Send,
   X,
-  Check
+  Check,
+  Link,
+  MessageCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -40,7 +42,9 @@ import {
   toggleFeatured,
   trackCopied,
   getCategoryStats,
-  renderTemplateWithSample
+  renderTemplateWithSample,
+  getAdminReferralCode,
+  generateWhatsAppFormat
 } from '@/lib/marketingTemplates';
 
 const MessageTemplatesPage = () => {
@@ -142,6 +146,8 @@ const MessageTemplatesPage = () => {
         return 'bg-pink-100 text-pink-800 border-pink-200';
       case 'marketing':
         return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'soft_launch':
+        return 'bg-purple-100 text-purple-800 border-purple-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -310,6 +316,62 @@ const MessageTemplatesPage = () => {
     setIsEditing(true);
   };
 
+  // Header quick actions
+  const handleCopyDomain = async () => {
+    try {
+      await navigator.clipboard.writeText('https://tpcglobal.io');
+      toast({
+        title: "Domain Disalin",
+        description: "https://tpcglobal.io telah disalin",
+      });
+    } catch (error) {
+      toast({
+        title: "Gagal Menyalin",
+        description: "Terjadi kesalahan saat menyalin domain",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleCopyReferralLink = async () => {
+    try {
+      const referralCode = await getAdminReferralCode();
+      const referralLink = `https://tpcglobal.io/id?ref=${referralCode}`;
+      await navigator.clipboard.writeText(referralLink);
+      toast({
+        title: "Referral Link Disalin",
+        description: `${referralLink} telah disalin`,
+      });
+    } catch (error) {
+      toast({
+        title: "Gagal Menyalin",
+        description: "Terjadi kesalahan saat menyalin referral link",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleCopyWAFormat = async (template: MarketingTemplate) => {
+    try {
+      const referralCode = await getAdminReferralCode();
+      const referralLink = `https://tpcglobal.io/id?ref=${referralCode}`;
+      const waFormat = generateWhatsAppFormat(template, referralLink, false);
+      await navigator.clipboard.writeText(waFormat);
+      await trackCopied(template.id);
+      
+      toast({
+        title: "WA Format Disalin",
+        description: "Template dengan format WhatsApp telah disalin",
+      });
+    } catch (error) {
+      toast({
+        title: "Gagal Menyalin",
+        description: "Terjadi kesalahan saat menyalin format WhatsApp",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -329,141 +391,166 @@ const MessageTemplatesPage = () => {
           </h1>
           <p className="text-gray-400">Klik copy → kirim manual → aman & non-spam</p>
         </div>
-        <Dialog open={isCreating} onOpenChange={setIsCreating}>
-          <DialogTrigger asChild>
-            <Button className="bg-yellow-500 hover:bg-yellow-600 text-black">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Template
+        <div className="flex flex-col sm:flex-row gap-2">
+          {/* Header Quick Actions */}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-gray-600 text-white hover:bg-gray-700"
+              onClick={handleCopyDomain}
+            >
+              <Link className="h-4 w-4 mr-1" />
+              Copy Domain
             </Button>
-          </DialogTrigger>
-          <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Create New Template</DialogTitle>
-              <DialogDescription className="text-gray-400">
-                Buat template pesan baru untuk komunikasi marketing
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-gray-600 text-white hover:bg-gray-700"
+              onClick={handleCopyReferralLink}
+            >
+              <Link className="h-4 w-4 mr-1" />
+              Copy Referral
+            </Button>
+          </div>
+          
+          <Dialog open={isCreating} onOpenChange={setIsCreating}>
+            <DialogTrigger asChild>
+              <Button className="bg-yellow-500 hover:bg-yellow-600 text-black">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Template
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Create New Template</DialogTitle>
+                <DialogDescription className="text-gray-400">
+                  Buat template pesan baru untuk komunikasi marketing
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="title">Title</Label>
+                    <Input
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                      className="bg-gray-700 border-gray-600 text-white"
+                      placeholder="Masukkan judul template"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="type">Type</Label>
+                    <Select value={formData.type} onValueChange={(value: any) => setFormData(prev => ({ ...prev, type: value }))}>
+                      <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-700 border-gray-600">
+                        <SelectItem value="email">Email</SelectItem>
+                        <SelectItem value="notification">Notification</SelectItem>
+                        <SelectItem value="sms">SMS</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="category">Category</Label>
+                    <Select value={formData.category} onValueChange={(value: any) => setFormData(prev => ({ ...prev, category: value }))}>
+                      <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-700 border-gray-600">
+                        <SelectItem value="onboarding">Onboarding</SelectItem>
+                        <SelectItem value="payments">Payments</SelectItem>
+                        <SelectItem value="referrals">Referrals</SelectItem>
+                        <SelectItem value="marketing">Marketing</SelectItem>
+                        <SelectItem value="soft_launch">Soft Launch</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="language">Language</Label>
+                    <Select value={formData.language} onValueChange={(value: any) => setFormData(prev => ({ ...prev, language: value }))}>
+                      <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-700 border-gray-600">
+                        <SelectItem value="id">Indonesia</SelectItem>
+                        <SelectItem value="en">English</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {formData.type === 'email' && (
+                  <div>
+                    <Label htmlFor="subject">Subject</Label>
+                    <Input
+                      id="subject"
+                      value={formData.subject}
+                      onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
+                      className="bg-gray-700 border-gray-600 text-white"
+                      placeholder="Masukkan subject email"
+                    />
+                  </div>
+                )}
+                
                 <div>
-                  <Label htmlFor="title">Title</Label>
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                  <Label htmlFor="content">Content</Label>
+                  <Textarea
+                    id="content"
+                    value={formData.content}
+                    onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
                     className="bg-gray-700 border-gray-600 text-white"
-                    placeholder="Masukkan judul template"
+                    rows={6}
+                    placeholder="Masukkan konten template. Gunakan {{variable}} untuk data dinamis"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="type">Type</Label>
-                  <Select value={formData.type} onValueChange={(value: any) => setFormData(prev => ({ ...prev, type: value }))}>
-                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gray-700 border-gray-600">
-                      <SelectItem value="email">Email</SelectItem>
-                      <SelectItem value="notification">Notification</SelectItem>
-                      <SelectItem value="sms">SMS</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="category">Category</Label>
-                  <Select value={formData.category} onValueChange={(value: any) => setFormData(prev => ({ ...prev, category: value }))}>
-                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gray-700 border-gray-600">
-                      <SelectItem value="onboarding">Onboarding</SelectItem>
-                      <SelectItem value="payments">Payments</SelectItem>
-                      <SelectItem value="referrals">Referrals</SelectItem>
-                      <SelectItem value="marketing">Marketing</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="language">Language</Label>
-                  <Select value={formData.language} onValueChange={(value: any) => setFormData(prev => ({ ...prev, language: value }))}>
-                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gray-700 border-gray-600">
-                      <SelectItem value="id">Indonesia</SelectItem>
-                      <SelectItem value="en">English</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
 
-              {formData.type === 'email' && (
-                <div>
-                  <Label htmlFor="subject">Subject</Label>
-                  <Input
-                    id="subject"
-                    value={formData.subject}
-                    onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
-                    className="bg-gray-700 border-gray-600 text-white"
-                    placeholder="Masukkan subject email"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="status">Status</Label>
+                    <Select value={formData.status} onValueChange={(value: any) => setFormData(prev => ({ ...prev, status: value }))}>
+                      <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-700 border-gray-600">
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="inactive">Inactive</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="featured"
+                      checked={formData.featured}
+                      onChange={(e) => setFormData(prev => ({ ...prev, featured: e.target.checked }))}
+                      className="rounded border-gray-600 bg-gray-700 text-yellow-500"
+                    />
+                    <Label htmlFor="featured">Featured</Label>
+                  </div>
                 </div>
-              )}
-              
-              <div>
-                <Label htmlFor="content">Content</Label>
-                <Textarea
-                  id="content"
-                  value={formData.content}
-                  onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                  className="bg-gray-700 border-gray-600 text-white"
-                  rows={6}
-                  placeholder="Masukkan konten template. Gunakan {{variable}} untuk data dinamis"
-                />
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="status">Status</Label>
-                  <Select value={formData.status} onValueChange={(value: any) => setFormData(prev => ({ ...prev, status: value }))}>
-                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gray-700 border-gray-600">
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="featured"
-                    checked={formData.featured}
-                    onChange={(e) => setFormData(prev => ({ ...prev, featured: e.target.checked }))}
-                    className="rounded border-gray-600 bg-gray-700 text-yellow-500"
-                  />
-                  <Label htmlFor="featured">Featured</Label>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsCreating(false)}
+                    className="border-gray-600 text-white hover:bg-gray-700"
+                  >
+                    Cancel
+                  </Button>
+                  <Button className="bg-yellow-500 hover:bg-yellow-600 text-black" onClick={handleCreateTemplate}>
+                    Create Template
+                  </Button>
                 </div>
               </div>
-
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsCreating(false)}
-                  className="border-gray-600 text-white hover:bg-gray-700"
-                >
-                  Cancel
-                </Button>
-                <Button className="bg-yellow-500 hover:bg-yellow-600 text-black" onClick={handleCreateTemplate}>
-                  Create Template
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Controls */}
@@ -505,6 +592,7 @@ const MessageTemplatesPage = () => {
                   <SelectItem value="payments">Payments</SelectItem>
                   <SelectItem value="referrals">Referrals</SelectItem>
                   <SelectItem value="marketing">Marketing</SelectItem>
+                  <SelectItem value="soft_launch">Soft Launch</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -653,6 +741,16 @@ const MessageTemplatesPage = () => {
                       <Button
                         variant="outline"
                         size="sm"
+                        className="border-green-600 text-green-400 hover:bg-green-900/20"
+                        onClick={() => handleCopyWAFormat(template)}
+                      >
+                        <MessageCircle className="h-4 w-4 mr-1" />
+                        WA Format
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
                         className="border-gray-600 text-white hover:bg-gray-700"
                         onClick={() => startEdit(template)}
                       >
@@ -789,6 +887,7 @@ const MessageTemplatesPage = () => {
                     <SelectItem value="payments">Payments</SelectItem>
                     <SelectItem value="referrals">Referrals</SelectItem>
                     <SelectItem value="marketing">Marketing</SelectItem>
+                    <SelectItem value="soft_launch">Soft Launch</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
