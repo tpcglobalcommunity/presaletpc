@@ -10,39 +10,20 @@ interface CountdownCardProps {
 }
 
 export default function CountdownCard({ label, targetIso, className }: CountdownCardProps) {
-  const { targetDate, isValid } = useMemo(() => {
-    const parsed = new Date(targetIso);
-    const valid = !Number.isNaN(parsed.getTime());
-    return { targetDate: parsed, isValid };
+  const parsed = useMemo(() => {
+    const d = new Date(targetIso);
+    return Number.isNaN(d.getTime()) ? null : d;
   }, [targetIso]);
 
-  const { days, hours, minutes, seconds, isExpired } = useCountdown(targetDate);
-
-  // Invalid date fallback state
-  if (!isValid) {
+  if (!parsed) {
     return (
-      <div className={cn(
-        "bg-[#11161C]/50 backdrop-blur-xl border border-[#1F2A33] rounded-2xl p-6 overflow-hidden",
-        className
-      )}>
-        <div className="flex items-center gap-3 mb-4">
-          <AlertTriangle className="h-5 w-5 text-yellow-500" />
-          <h3 className="text-white text-lg font-semibold">{label}</h3>
-        </div>
-        <div className="text-center py-4">
-          <p className="text-yellow-500 font-medium mb-2">Countdown belum dikonfigurasi</p>
-          <p className="text-xs text-[#848E9C]">
-            Silakan hubungi administrator untuk informasi presale
-          </p>
-        </div>
-        <div className="mt-4 pt-4 border-t border-[#1F2A33]">
-          <p className="text-xs text-[#848E9C] text-center">
-            Waktu dihitung otomatis berdasarkan zona waktu Asia/Makassar (UTC+8)
-          </p>
-        </div>
+      <div className="rounded-xl border border-yellow-500/20 bg-black/30 p-4 text-center text-sm text-muted-foreground">
+        Countdown belum dikonfigurasi
       </div>
     );
   }
+
+  const { days, hours, minutes, seconds, isExpired } = useCountdown(parsed);
 
   return (
     <div className={cn(
