@@ -17,7 +17,6 @@ interface Invoice {
   tpc_amount: number;
   created_at: string;
   email: string;
-  payment_method?: 'idr' | 'sol' | 'usdc';
   amount_idr?: number;
   amount_sol?: number;
   amount_usdc?: number;
@@ -132,31 +131,25 @@ export default function AdminDashboardPage() {
           isUsingFallbackRate = true;
         }
 
-        // Fetch approved invoices for financial calculations
-        const { data: approvedInvoices, error: approvedError } = await (supabase
-          .from('invoices')
-          .select('payment_method, amount_idr, amount_sol, amount_usdc')
-          .eq('status', 'PAID') as any);
+        // Fetch financial totals via RPC
+        const { data: financialData, error: financialError } = await supabase.rpc('admin_get_paid_totals');
 
-        if (approvedError) {
-          console.error('Error fetching approved invoices:', approvedError);
+        if (financialError) {
+          console.error('Error fetching financial totals:', financialError);
           return;
         }
 
-        const invoices = approvedInvoices || [];
-        
-        // Calculate totals by payment method
-        const totalIDR = invoices
-          .filter(inv => inv.payment_method === 'idr')
-          .reduce((sum, inv) => sum + (inv.amount_idr || 0), 0);
-        
-        const totalSOL = invoices
-          .filter(inv => inv.payment_method === 'sol')
-          .reduce((sum, inv) => sum + (inv.amount_sol || 0), 0);
-        
-        const totalUSDC = invoices
-          .filter(inv => inv.payment_method === 'usdc')
-          .reduce((sum, inv) => sum + (inv.amount_usdc || 0), 0);
+        // Extract totals from RPC response
+        const totals = financialData?.[0] || {
+          total_idr: 0,
+          total_sol: 0,
+          total_usdc: 0,
+          count_paid: 0
+        };
+
+        const totalIDR = Number(totals.total_idr) || 0;
+        const totalSOL = Number(totals.total_sol) || 0;
+        const totalUSDC = Number(totals.total_usdc) || 0;
 
         // Convert to IDR
         const usdToIDR = 17000; // Configurable constant
