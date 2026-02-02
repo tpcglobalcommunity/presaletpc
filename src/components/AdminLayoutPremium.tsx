@@ -16,7 +16,11 @@ import {
   Search,
   Bell,
   MessageSquare,
-  ChevronDown
+  ChevronDown,
+  Mail,
+  Megaphone,
+  Target,
+  BarChart3
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -93,6 +97,26 @@ export function AdminLayoutPremium() {
           icon: <MessageSquare className="h-4 w-4" />,
           href: '/id/admin/marketing/templates',
           badge: '⭐'
+        },
+        {
+          title: 'Email Campaigns',
+          icon: <Mail className="h-4 w-4" />,
+          href: '/id/admin/marketing/campaigns'
+        },
+        {
+          title: 'Promotions',
+          icon: <Megaphone className="h-4 w-4" />,
+          href: '/id/admin/marketing/promotions'
+        },
+        {
+          title: 'Target Audience',
+          icon: <Target className="h-4 w-4" />,
+          href: '/id/admin/marketing/audience'
+        },
+        {
+          title: 'Marketing Analytics',
+          icon: <BarChart3 className="h-4 w-4" />,
+          href: '/id/admin/marketing/analytics'
         }
       ]
     },
