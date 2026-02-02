@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 interface Profile {
   id: string;
   email: string;
+  full_name?: string;
   member_code: string;
   role: 'user' | 'admin';
   referral_code?: string;
@@ -30,6 +31,7 @@ export default function AdminUsersPage() {
           .select(`
             id,
             email,
+            full_name,
             member_code,
             role,
             referral_code,
@@ -61,6 +63,7 @@ export default function AdminUsersPage() {
     if (searchTerm) {
       filtered = filtered.filter(profile => 
         (profile.email && profile.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (profile.full_name && profile.full_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
         profile.member_code.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -106,7 +109,7 @@ export default function AdminUsersPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#848E9C]" />
             <Input
-              placeholder="Cari email atau member code..."
+              placeholder="Cari nama, email, atau member code..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 bg-[#2B3139] border-[#3A3F47] text-white placeholder-[#848E9C]"
@@ -138,10 +141,13 @@ export default function AdminUsersPage() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-white font-medium text-sm truncate select-text">
+                      <div className="text-white font-medium text-base truncate select-text">
+                        {profile.full_name || 'User'}
+                      </div>
+                      <div className="text-[#848E9C] text-sm truncate select-text mt-1">
                         {profile.email || 'Email tidak tersedia'}
                       </div>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-2 mt-2">
                         <Badge className="bg-[#F0B90B]/10 text-[#F0B90B] border-[#F0B90B]/20 text-xs">
                           {profile.member_code}
                         </Badge>
