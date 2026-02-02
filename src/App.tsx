@@ -3,58 +3,60 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
+import PageLoader from "@/components/PageLoader";
 
 // Layouts
 import { MobileLayout } from "@/layouts/MobileLayout";
 import { MemberLayout } from "@/layouts/MemberLayout";
 import { AdminLayoutPremium } from "@/components/AdminLayoutPremium";
 
-// Public Pages
-import HomePage from "@/pages/id/HomePage";
-import MarketPage from "@/pages/id/MarketPage";
-import BuyTPCPage from "@/pages/id/BuyTPCPage";
-import InvoiceSuccessPage from "@/pages/id/InvoiceSuccessPage";
-import LoginPage from "@/pages/id/LoginPage";
-import TransparansiPage from "@/pages/id/TransparansiPage";
-import AntiScamPage from "@/pages/id/AntiScamPage";
-import EdukasiPage from "@/pages/id/EdukasiPage";
-import WhitepaperPage from "@/pages/id/WhitepaperPage";
-import DAOPage from "@/pages/id/DAOPage";
-import FAQPage from "@/pages/id/FAQPage";
-import VerifiedCoordinatorsPage from "@/pages/chapters/VerifiedCoordinatorsPage";
-import ChaptersSopPage from "@/pages/chapters/ChaptersSopPage";
-import TermsConditionsPage from "@/pages/legal/TermsConditionsPage";
-import PrivacyPolicyPage from "@/pages/legal/PrivacyPolicyPage";
+// Public Pages (Lazy Loaded)
+const HomePage = lazy(() => import("@/pages/id/HomePage"));
+const MarketPage = lazy(() => import("@/pages/id/MarketPage"));
+const BuyTPCPage = lazy(() => import("@/pages/id/BuyTPCPage"));
+const InvoiceSuccessPage = lazy(() => import("@/pages/id/InvoiceSuccessPage"));
+const LoginPage = lazy(() => import("@/pages/id/LoginPage"));
+const TransparansiPage = lazy(() => import("@/pages/id/TransparansiPage"));
+const AntiScamPage = lazy(() => import("@/pages/id/AntiScamPage"));
+const EdukasiPage = lazy(() => import("@/pages/id/EdukasiPage"));
+const WhitepaperPage = lazy(() => import("@/pages/id/WhitepaperPage"));
+const DAOPage = lazy(() => import("@/pages/id/DAOPage"));
+const FAQPage = lazy(() => import("@/pages/id/FAQPage"));
+const VerifiedCoordinatorsPage = lazy(() => import("@/pages/chapters/VerifiedCoordinatorsPage"));
+const ChaptersSopPage = lazy(() => import("@/pages/chapters/ChaptersSopPage"));
+const TermsConditionsPage = lazy(() => import("@/pages/legal/TermsConditionsPage"));
+const PrivacyPolicyPage = lazy(() => import("@/pages/legal/PrivacyPolicyPage"));
 
-// Member Pages
-import DashboardPage from "@/pages/id/dashboard/DashboardPage";
-import InvoiceDetailPage from "@/pages/id/dashboard/InvoiceDetailPage";
-import HistoryPage from "@/pages/id/dashboard/HistoryPage";
-import ReferralPage from "@/pages/id/dashboard/ReferralPage";
-import SettingsPage from "@/pages/id/dashboard/SettingsPage";
+// Member Pages (Lazy Loaded)
+const DashboardPage = lazy(() => import("@/pages/id/dashboard/DashboardPage"));
+const InvoiceDetailPage = lazy(() => import("@/pages/id/dashboard/InvoiceDetailPage"));
+const HistoryPage = lazy(() => import("@/pages/id/dashboard/HistoryPage"));
+const ReferralPage = lazy(() => import("@/pages/id/dashboard/ReferralPage"));
+const SettingsPage = lazy(() => import("@/pages/id/dashboard/SettingsPage"));
 
-// New Member Pages
-import MemberDashboardPage from "@/pages/member/MemberDashboardPage";
-import MemberInvoicesPage from "@/pages/member/MemberInvoicesPage";
-import MemberInvoiceDetailPage from "@/pages/member/MemberInvoiceDetailPage";
-import MemberReferralPage from "@/pages/member/MemberReferralPage";
-import MemberProfilePage from "@/pages/member/MemberProfilePage";
+// New Member Pages (Lazy Loaded)
+const MemberDashboardPage = lazy(() => import("@/pages/member/MemberDashboardPage"));
+const MemberInvoicesPage = lazy(() => import("@/pages/member/MemberInvoicesPage"));
+const MemberInvoiceDetailPage = lazy(() => import("@/pages/member/MemberInvoiceDetailPage"));
+const MemberReferralPage = lazy(() => import("@/pages/member/MemberReferralPage"));
+const MemberProfilePage = lazy(() => import("@/pages/member/MemberProfilePage"));
 
-// Admin Pages
-import AdminDashboardPageNew from "@/pages/admin/AdminDashboardPage";
-import AdminInvoicesPageNew from "@/pages/admin/AdminInvoicesPage";
-import AdminInvoiceDetailPageNew from "@/pages/admin/AdminInvoiceDetailPage";
-import AdminUsersPageNew from "@/pages/admin/AdminUsersPage";
-import AdminSettingsPageNew from "@/pages/admin/AdminSettingsPage";
-import AdminAuditPageNew from "@/pages/admin/AdminAuditPage";
-import AdminAnalyticsPageNew from "@/pages/admin/AdminAnalyticsPage";
-import AdminNotificationsPageNew from "@/pages/admin/AdminNotificationsPage";
+// Admin Pages (Lazy Loaded)
+const AdminDashboardPageNew = lazy(() => import("@/pages/admin/AdminDashboardPage"));
+const AdminInvoicesPageNew = lazy(() => import("@/pages/admin/AdminInvoicesPage"));
+const AdminInvoiceDetailPageNew = lazy(() => import("@/pages/admin/AdminInvoiceDetailPage"));
+const AdminUsersPageNew = lazy(() => import("@/pages/admin/AdminUsersPage"));
+const AdminSettingsPageNew = lazy(() => import("@/pages/admin/AdminSettingsPage"));
+const AdminAuditPageNew = lazy(() => import("@/pages/admin/AdminAuditPage"));
+const AdminAnalyticsPageNew = lazy(() => import("@/pages/admin/AdminAnalyticsPage"));
+const AdminNotificationsPageNew = lazy(() => import("@/pages/admin/AdminNotificationsPage"));
 
 // Guards
 import { RequireAdmin } from "@/components/guards/RequireAdmin";
 
-import NotFound from "./pages/NotFound";
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
@@ -76,51 +78,183 @@ const App = () => (
 
             {/* Indonesian Routes with Mobile Layout */}
             <Route path="/id" element={<MobileLayout />}>
-              <Route index element={<HomePage />} />
-              <Route path="market" element={<MarketPage />} />
-              <Route path="buytpc" element={<BuyTPCPage />} />
-              <Route path="buytpc/success" element={<InvoiceSuccessPage />} />
-              <Route path="login" element={<LoginPage />} />
-              <Route path="transparansi" element={<TransparansiPage />} />
-              <Route path="anti-scam" element={<AntiScamPage />} />
-              <Route path="edukasi" element={<EdukasiPage />} />
-              <Route path="whitepaper" element={<WhitepaperPage />} />
-              <Route path="dao" element={<DAOPage />} />
-              <Route path="faq" element={<FAQPage />} />
-              <Route path="verified-coordinators" element={<VerifiedCoordinatorsPage />} />
-              <Route path="chapters" element={<ChaptersSopPage />} />
-              <Route path="syarat-ketentuan" element={<TermsConditionsPage />} />
-              <Route path="kebijakan-privasi" element={<PrivacyPolicyPage />} />
+              <Route index element={
+                <Suspense fallback={<PageLoader />}>
+                  <HomePage />
+                </Suspense>
+              } />
+              <Route path="market" element={
+                <Suspense fallback={<PageLoader />}>
+                  <MarketPage />
+                </Suspense>
+              } />
+              <Route path="buytpc" element={
+                <Suspense fallback={<PageLoader />}>
+                  <BuyTPCPage />
+                </Suspense>
+              } />
+              <Route path="buytpc/success" element={
+                <Suspense fallback={<PageLoader />}>
+                  <InvoiceSuccessPage />
+                </Suspense>
+              } />
+              <Route path="login" element={
+                <Suspense fallback={<PageLoader />}>
+                  <LoginPage />
+                </Suspense>
+              } />
+              <Route path="transparansi" element={
+                <Suspense fallback={<PageLoader />}>
+                  <TransparansiPage />
+                </Suspense>
+              } />
+              <Route path="anti-scam" element={
+                <Suspense fallback={<PageLoader />}>
+                  <AntiScamPage />
+                </Suspense>
+              } />
+              <Route path="edukasi" element={
+                <Suspense fallback={<PageLoader />}>
+                  <EdukasiPage />
+                </Suspense>
+              } />
+              <Route path="whitepaper" element={
+                <Suspense fallback={<PageLoader />}>
+                  <WhitepaperPage />
+                </Suspense>
+              } />
+              <Route path="dao" element={
+                <Suspense fallback={<PageLoader />}>
+                  <DAOPage />
+                </Suspense>
+              } />
+              <Route path="faq" element={
+                <Suspense fallback={<PageLoader />}>
+                  <FAQPage />
+                </Suspense>
+              } />
+              <Route path="verified-coordinators" element={
+                <Suspense fallback={<PageLoader />}>
+                  <VerifiedCoordinatorsPage />
+                </Suspense>
+              } />
+              <Route path="chapters" element={
+                <Suspense fallback={<PageLoader />}>
+                  <ChaptersSopPage />
+                </Suspense>
+              } />
+              <Route path="syarat-ketentuan" element={
+                <Suspense fallback={<PageLoader />}>
+                  <TermsConditionsPage />
+                </Suspense>
+              } />
+              <Route path="kebijakan-privasi" element={
+                <Suspense fallback={<PageLoader />}>
+                  <PrivacyPolicyPage />
+                </Suspense>
+              } />
 
               {/* Member Routes (Protected) */}
               <Route path="dashboard" element={<MemberLayout />}>
-                <Route index element={<DashboardPage />} />
-                <Route path="invoices/:invoiceNo" element={<InvoiceDetailPage />} />
-                <Route path="history" element={<HistoryPage />} />
-                <Route path="referral" element={<ReferralPage />} />
-                <Route path="settings" element={<SettingsPage />} />
+                <Route index element={
+                  <Suspense fallback={<PageLoader />}>
+                    <DashboardPage />
+                  </Suspense>
+                } />
+                <Route path="invoices/:invoiceNo" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <InvoiceDetailPage />
+                  </Suspense>
+                } />
+                <Route path="history" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <HistoryPage />
+                  </Suspense>
+                } />
+                <Route path="referral" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <ReferralPage />
+                  </Suspense>
+                } />
+                <Route path="settings" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <SettingsPage />
+                  </Suspense>
+                } />
               </Route>
 
               {/* New Member Area Routes */}
               <Route path="member" element={<MemberLayout />}>
                 <Route index element={<Navigate to="/id/member/dashboard" replace />} />
-                <Route path="dashboard" element={<MemberDashboardPage />} />
-                <Route path="invoices" element={<MemberInvoicesPage />} />
-                <Route path="invoices/:id" element={<MemberInvoiceDetailPage />} />
-                <Route path="referrals" element={<MemberReferralPage />} />
-                <Route path="profile" element={<MemberProfilePage />} />
+                <Route path="dashboard" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <MemberDashboardPage />
+                  </Suspense>
+                } />
+                <Route path="invoices" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <MemberInvoicesPage />
+                  </Suspense>
+                } />
+                <Route path="invoices/:id" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <MemberInvoiceDetailPage />
+                  </Suspense>
+                } />
+                <Route path="referrals" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <MemberReferralPage />
+                  </Suspense>
+                } />
+                <Route path="profile" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <MemberProfilePage />
+                  </Suspense>
+                } />
               </Route>
 
               {/* Admin Routes (Premium with UUID Guard) */}
               <Route path="admin" element={<RequireAdmin><AdminLayoutPremium /></RequireAdmin>}>
-                <Route index element={<AdminDashboardPageNew />} />
-                <Route path="invoices" element={<AdminInvoicesPageNew />} />
-                <Route path="invoices/:invoiceId" element={<AdminInvoiceDetailPageNew />} />
-                <Route path="users" element={<AdminUsersPageNew />} />
-                <Route path="analytics" element={<AdminAnalyticsPageNew />} />
-                <Route path="notifications" element={<AdminNotificationsPageNew />} />
-                <Route path="settings" element={<AdminSettingsPageNew />} />
-                <Route path="audit" element={<AdminAuditPageNew />} />
+                <Route index element={
+                  <Suspense fallback={<PageLoader />}>
+                    <AdminDashboardPageNew />
+                  </Suspense>
+                } />
+                <Route path="invoices" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <AdminInvoicesPageNew />
+                  </Suspense>
+                } />
+                <Route path="invoices/:invoiceId" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <AdminInvoiceDetailPageNew />
+                  </Suspense>
+                } />
+                <Route path="users" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <AdminUsersPageNew />
+                  </Suspense>
+                } />
+                <Route path="analytics" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <AdminAnalyticsPageNew />
+                  </Suspense>
+                } />
+                <Route path="notifications" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <AdminNotificationsPageNew />
+                  </Suspense>
+                } />
+                <Route path="settings" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <AdminSettingsPageNew />
+                  </Suspense>
+                } />
+                <Route path="audit" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <AdminAuditPageNew />
+                  </Suspense>
+                } />
               </Route>
             </Route>
 
