@@ -16,13 +16,20 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { SEO } from '@/lib/seo';
 
 export default function HomePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
   return (
-    <div className="mobile-container pt-6 pb-28">
+    <>
+      <SEO 
+        title="TPC Global - Platform Edukasi Kripto Terpercaya"
+        description="TPC Global adalah platform edukasi kripto dengan transparansi penuh, wallet terverifikasi, dan perlindungan anti-scam. Bergabung dengan ekosistem TPC sekarang."
+        path="/id/"
+      />
+      <div className="mobile-container pt-6 pb-28">
       {/* 1. HERO SECTION */}
       <div className="text-center mb-12">
         <div className="w-24 h-24 mx-auto mb-6">
@@ -195,6 +202,7 @@ export default function HomePage() {
       <div className="mt-10 pt-6 border-t border-border">
         <p className="text-[10px] text-muted-foreground text-center leading-relaxed">TPC (Trader Professional Community) adalah platform edukasi komunitas. Bukan penasihat keuangan dan tidak menjanjikan keuntungan apa pun. Setiap keputusan pengguna sepenuhnya menjadi tanggung jawab masing-masing.</p>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

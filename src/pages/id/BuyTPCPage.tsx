@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useCountdown } from '@/hooks/useCountdown';
 import { cn } from '@/lib/utils';
+import { SEO } from '@/lib/seo';
 import tpcLogo from '@/assets/tpc.png';
 
 type Currency = 'IDR' | 'USDC' | 'SOL';
@@ -204,7 +205,13 @@ export default function BuyTPCPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0B0E11] via-[#0F141A] to-[#11161C]">
+    <>
+      <SEO 
+        title="Beli TPC - Bergabung dengan Ekosistem TPC Global"
+        description="Beli token TPC sekarang dengan harga presale terbaik. Proses aman, transparan, dan edukasi-only. Bergabung dengan komunitas TPC Global hari ini."
+        path="/id/buytpc"
+      />
+      <div className="min-h-screen bg-gradient-to-br from-[#0B0E11] via-[#0F141A] to-[#11161C]">
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         {/* Gradient Strip */}
@@ -530,5 +537,6 @@ export default function BuyTPCPage() {
         </Button>
       </div>
     </div>
+    </>
   );
 }
