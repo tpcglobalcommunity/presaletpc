@@ -132,15 +132,25 @@ export default function AdminDashboardPage() {
         }
 
         // Fetch financial totals via RPC
-        const { data: financialData, error: financialError } = await supabase.rpc('admin_get_paid_totals');
+        const { data: financialData, error: financialError } = await (supabase.rpc('admin_get_paid_totals') as any);
 
         if (financialError) {
           console.error('Error fetching financial totals:', financialError);
+          // Set default values on error
+          setFinancialStats({
+            totalIDR: 0,
+            totalSOL: 0,
+            totalUSDC: 0,
+            grandTotalIDR: 0,
+            solToIDR,
+            usdToIDR: 17000,
+            isUsingFallbackRate,
+          });
           return;
         }
 
         // Extract totals from RPC response
-        const totals = financialData?.[0] || {
+        const totals = (financialData?.[0] as any) || {
           total_idr: 0,
           total_sol: 0,
           total_usdc: 0,
