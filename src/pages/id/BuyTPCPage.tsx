@@ -10,7 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { useCountdown } from '@/hooks/useCountdown';
 import { cn } from '@/lib/utils';
 import { SEO } from '@/lib/seo';
 import CountdownCard from '@/components/CountdownCard';
@@ -33,7 +32,7 @@ export default function BuyTPCPage() {
   const { toast } = useToast();
   
   // Presale configuration from environment variables
-  const endAt = import.meta.env.VITE_PRESALE_END_AT ?? "2026-03-01T00:00:00+08:00";
+  const endAt = import.meta.env.VITE_PRESALE_END_AT ?? "2026-08-02T19:49:30+08:00";
   const label = import.meta.env.VITE_PRESALE_LABEL ?? "Presale Stage 1 Berakhir Dalam";
   
   // Fallback constants for presale config
@@ -67,9 +66,6 @@ export default function BuyTPCPage() {
     // For IDR and USDC, only allow integers
     return value.replace(/[^0-9]/g, '');
   };
-
-  // Countdown timer
-  const countdown = useCountdown(FALLBACK_STAGE1_STARTED_AT, 30);
 
   // Fetch SOL price
   useEffect(() => {
@@ -268,38 +264,13 @@ export default function BuyTPCPage() {
                 <Coins className="h-5 w-5 text-[#F0B90B]" />
                 Informasi Presale
               </CardTitle>
-              <Badge className={cn(
-                "text-xs",
-                countdown.isExpired 
-                  ? "bg-amber-500/20 text-amber-400 border-amber-400/30" 
-                  : "bg-emerald-500/20 text-emerald-400 border-emerald-400/30"
-              )}>
-                {countdown.isExpired ? 'Tahap 2 Aktif' : 'Tahap 1 Aktif'}
+              <Badge className="text-xs bg-emerald-500/20 text-emerald-400 border-emerald-400/30">
+                {presaleConfig?.stage1_started_at ? 'Tahap 1 Aktif' : 'Tahap 2 Aktif'}
               </Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Countdown */}
-            <div className="text-center">
-              <div className="text-xs text-[#848E9C] mb-2">
-                {countdown.isExpired ? 'Tahap 1 Berakhir' : 'Sisa Waktu Tahap 1'}
-              </div>
-              {!countdown.isExpired && (
-                <div className="grid grid-cols-4 gap-2">
-                  {[
-                    { v: countdown.days, l: 'Hari' },
-                    { v: String(countdown.hours).padStart(2, '0'), l: 'Jam' },
-                    { v: String(countdown.minutes).padStart(2, '0'), l: 'Menit' },
-                    { v: String(countdown.seconds).padStart(2, '0'), l: 'Detik' },
-                  ].map((it) => (
-                    <div key={it.l} className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-2 text-center">
-                      <div className="text-lg font-bold text-white">{it.v}</div>
-                      <div className="text-xs text-[#848E9C]">{it.l}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            {/* Countdown handled by CountdownCard component above */}
             
             <Separator className="bg-[#1F2A33]" />
             
