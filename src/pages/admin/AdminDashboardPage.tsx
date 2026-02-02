@@ -17,16 +17,17 @@ interface Invoice {
   tpc_amount: number;
   created_at: string;
   email: string;
+  // Legacy fields for compatibility - not used in current implementation
   amount_idr?: number;
   amount_sol?: number;
   amount_usdc?: number;
 }
 
 interface DashboardStats {
+  totalInvoices: number;
   totalPending: number;
   totalApproved: number;
   totalRejected: number;
-  totalInvoices: number;
   totalTPC: number;
 }
 
@@ -45,10 +46,10 @@ export default function AdminDashboardPage() {
   const { lang = 'id' } = useParams();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [stats, setStats] = useState<DashboardStats>({
+    totalInvoices: 0,
     totalPending: 0,
     totalApproved: 0,
     totalRejected: 0,
-    totalInvoices: 0,
     totalTPC: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
