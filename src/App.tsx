@@ -73,7 +73,7 @@ const AdminSettingsPageNew = lazy(() => import("@/pages/admin/AdminSettingsPage"
 const AdminAuditPageNew = lazy(() => import("@/pages/admin/AdminAuditPage"));
 const AdminAnalyticsPageNew = lazy(() => import("@/pages/admin/AdminAnalyticsPage"));
 const AdminNotificationsPageNew = lazy(() => import("@/pages/admin/AdminNotificationsPage"));
-const MessageTemplatesPage = lazy(() => import("@/pages/admin/MessageTemplatesPage"));
+const MessageTemplatesPage = lazy(() => import("@/pages/admin/MessageTemplatesPageNew"));
 
 // Guards
 import { RequireAdmin } from "@/components/guards/RequireAdmin";
