@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useCountdown } from '@/hooks/useCountdown';
 import { cn } from '@/lib/utils';
 import { SEO } from '@/lib/seo';
+import CountdownCard from '@/components/CountdownCard';
 import tpcLogo from '@/assets/tpc.png';
 
 type Currency = 'IDR' | 'USDC' | 'SOL';
@@ -30,6 +31,10 @@ interface PresaleConfig {
 export default function BuyTPCPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  // Presale configuration from environment variables
+  const endAt = import.meta.env.VITE_PRESALE_END_AT || '2026-03-01T00:00:00+08:00';
+  const label = import.meta.env.VITE_PRESALE_LABEL || 'Presale Stage 1 Berakhir Dalam';
   
   // Fallback constants for presale config
   const FALLBACK_STAGE1_STARTED_AT = new Date('2026-02-02T00:00:00Z').getTime();
@@ -244,6 +249,14 @@ export default function BuyTPCPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Countdown Timer */}
+      <div className="max-w-[430px] mx-auto px-4 pb-6">
+        <CountdownCard 
+          label={label}
+          targetIso={endAt}
+        />
       </div>
 
       <div className="max-w-[430px] mx-auto px-4 py-6 space-y-6">

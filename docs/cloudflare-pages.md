@@ -22,12 +22,15 @@ VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 VITE_SUPER_ADMIN_UUID=your_admin_uuid
 VITE_APP_URL=https://tpcglobal.io
+VITE_PRESALE_END_AT=2026-03-01T00:00:00+08:00
+VITE_PRESALE_LABEL=Presale Stage 1 Berakhir Dalam
 ```
 
 **⚠️ PENTING:**
 - JANGAN pernah commit `.env` file ke repository
 - Gunakan `.env.example` sebagai template lokal
 - Set semua variabel di Cloudflare Pages dashboard
+- `VITE_PRESALE_END_AT` menggunakan format ISO dengan timezone Asia/Makassar (UTC+8)
 
 ## ✅ **Why These Settings**
 
