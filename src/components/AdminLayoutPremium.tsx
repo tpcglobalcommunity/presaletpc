@@ -14,7 +14,9 @@ import {
   TrendingUp,
   Shield,
   Search,
-  Bell
+  Bell,
+  MessageSquare,
+  ChevronDown
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -31,6 +33,7 @@ export function AdminLayoutPremium() {
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [stats, setStats] = useState({
     total_users: 0,
     pending_review: 0
@@ -64,21 +67,34 @@ export function AdminLayoutPremium() {
       href: '/id/admin',
     },
     {
-      title: 'User Management',
-      icon: <Users className="h-5 w-5" />,
-      href: '/id/admin/users',
-      badge: stats.total_users.toString(), // Angka otomatis dari DB
-    },
-    {
-      title: 'Invoice Management',
+      title: 'Invoices',
       icon: <FileText className="h-5 w-5" />,
       href: '/id/admin/invoices',
-      badge: stats.pending_review.toString(), // Menunjukkan jumlah yang perlu diperiksa
+      badge: stats.pending_review.toString(),
     },
     {
-      title: 'Analytics',
+      title: 'Members',
+      icon: <Users className="h-5 w-5" />,
+      href: '/id/admin/users',
+      badge: stats.total_users.toString(),
+    },
+    {
+      title: 'Referrals',
       icon: <TrendingUp className="h-5 w-5" />,
       href: '/id/admin/analytics',
+    },
+    {
+      title: 'Marketing',
+      icon: <MessageSquare className="h-5 w-5" />,
+      href: '/id/admin/marketing',
+      children: [
+        {
+          title: 'Message Templates',
+          icon: <MessageSquare className="h-4 w-4" />,
+          href: '/id/admin/marketing/templates',
+          badge: '⭐'
+        }
+      ]
     },
     {
       title: 'Settings',
@@ -87,6 +103,13 @@ export function AdminLayoutPremium() {
     },
   ];
 
+  const toggleExpanded = (title: string) => {
+    setExpandedItems(prev => 
+      prev.includes(title) 
+        ? prev.filter(item => item !== title)
+        : [...prev, title]
+    );
+  };
 
   const handleLogout = async () => {
     await signOut();
@@ -160,26 +183,77 @@ export function AdminLayoutPremium() {
 
         {/* Navigation */}
         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-          {menuItems.map((item) => (
-            <NavLink
-              key={item.href}
-              to={item.href}
-              className={({ isActive }) => cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-                "hover:bg-white/10 text-gray-300",
-                isActive && "bg-yellow-500/20 text-yellow-400 border-l-4 border-yellow-500"
-              )}
-              onClick={() => setSidebarOpen(false)}
-            >
-              {item.icon}
-              <span className="flex-1">{item.title}</span>
-              {item.badge && (
-                <span className="px-2 py-1 text-xs font-semibold bg-yellow-500 text-black rounded-full">
-                  {item.badge}
-                </span>
-              )}
-            </NavLink>
-          ))}
+          {menuItems.map((item) => {
+            const hasChildren = item.children && item.children.length > 0;
+            const isExpanded = expandedItems.includes(item.title);
+            
+            if (hasChildren) {
+              return (
+                <div key={item.href}>
+                  <button
+                    onClick={() => toggleExpanded(item.title)}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                      "hover:bg-white/10 text-gray-300"
+                    )}
+                  >
+                    {item.icon}
+                    <span className="flex-1 text-left">{item.title}</span>
+                    <ChevronDown className={cn(
+                      "h-4 w-4 transition-transform duration-200",
+                      isExpanded && "rotate-180"
+                    )} />
+                  </button>
+                  
+                  {isExpanded && (
+                    <div className="ml-4 mt-1 space-y-1">
+                      {item.children.map((child) => (
+                        <NavLink
+                          key={child.href}
+                          to={child.href}
+                          className={({ isActive }) => cn(
+                            "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                            "hover:bg-white/10 text-gray-400",
+                            isActive && "bg-yellow-500/20 text-yellow-400 border-l-4 border-yellow-500"
+                          )}
+                          onClick={() => setSidebarOpen(false)}
+                        >
+                          {child.icon}
+                          <span className="flex-1">{child.title}</span>
+                          {child.badge && (
+                            <span className="px-2 py-1 text-xs font-semibold bg-yellow-500 text-black rounded-full">
+                              {child.badge}
+                            </span>
+                          )}
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            
+            return (
+              <NavLink
+                key={item.href}
+                to={item.href}
+                className={({ isActive }) => cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                  "hover:bg-white/10 text-gray-300",
+                  isActive && "bg-yellow-500/20 text-yellow-400 border-l-4 border-yellow-500"
+                )}
+                onClick={() => setSidebarOpen(false)}
+              >
+                {item.icon}
+                <span className="flex-1">{item.title}</span>
+                {item.badge && (
+                  <span className="px-2 py-1 text-xs font-semibold bg-yellow-500 text-black rounded-full">
+                    {item.badge}
+                  </span>
+                )}
+              </NavLink>
+            );
+          })}
         </nav>
 
         {/* User Profile */}

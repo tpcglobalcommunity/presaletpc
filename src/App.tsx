@@ -73,6 +73,7 @@ const AdminSettingsPageNew = lazy(() => import("@/pages/admin/AdminSettingsPage"
 const AdminAuditPageNew = lazy(() => import("@/pages/admin/AdminAuditPage"));
 const AdminAnalyticsPageNew = lazy(() => import("@/pages/admin/AdminAnalyticsPage"));
 const AdminNotificationsPageNew = lazy(() => import("@/pages/admin/AdminNotificationsPage"));
+const MessageTemplatesPage = lazy(() => import("@/pages/admin/MessageTemplatesPage"));
 
 // Guards
 import { RequireAdmin } from "@/components/guards/RequireAdmin";
@@ -279,6 +280,16 @@ const App = () => (
                 <Route path="audit" element={
                   <Suspense fallback={<PageLoader />}>
                     <AdminAuditPageNew />
+                  </Suspense>
+                } />
+                <Route path="marketing" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <MessageTemplatesPage />
+                  </Suspense>
+                } />
+                <Route path="marketing/templates" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <MessageTemplatesPage />
                   </Suspense>
                 } />
               </Route>
