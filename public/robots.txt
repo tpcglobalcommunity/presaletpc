@@ -1,3 +1,11 @@
 User-agent: *
 Allow: /
+Disallow: /id/member
+Disallow: /id/admin
+Disallow: /id/dashboard
+Disallow: /id/invoices
+Disallow: /id/settings
+Disallow: /id/profile
+Disallow: /id/auth
+Disallow: /id/invoice
 Sitemap: https://tpcglobal.io/sitemap.xml
