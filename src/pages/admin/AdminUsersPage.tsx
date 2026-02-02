@@ -1,99 +1,82 @@
 import { useState, useEffect } from 'react';
-import { Users, Mail, Calendar, Search } from 'lucide-react';
+import { Users, Mail, Calendar, Search, Shield } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 
-interface User {
+interface Profile {
   id: string;
   email: string;
+  member_code: string;
+  role: 'user' | 'admin';
+  referral_code?: string;
+  referred_by?: string;
   created_at: string;
-  last_sign_in_at?: string;
-  user_metadata?: any;
+  updated_at: string;
 }
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [filteredProfiles, setFilteredProfiles] = useState<Profile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchProfiles = async () => {
       try {
-        const { data, error } = await supabase.auth.admin.listUsers();
-        
-        if (error) {
-          console.error('Error fetching users:', error);
-          // Fallback to profiles table if admin.listUsers fails
-          const { data: profiles, error: profilesError } = await supabase
-            .from('profiles')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-          if (profilesError) {
-            console.error('Error fetching profiles:', profilesError);
-            return;
-          }
-
-          const mappedUsers = (profiles || []).map(profile => ({
-            id: profile.user_id,
-            email: profile.email_current,
-            created_at: profile.created_at,
-            last_sign_in_at: null,
-            user_metadata: {
-              member_code: profile.member_code,
-              referred_by: profile.referred_by
-            }
-          }));
-
-          setUsers(mappedUsers);
-        } else {
-          setUsers(data.users || []);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        // Fallback to profiles table
-        const { data: profiles, error: profilesError } = await supabase
+        const { data, error } = await supabase
           .from('profiles')
-          .select('*')
+          .select(`
+            id,
+            email,
+            member_code,
+            role,
+            referral_code,
+            referred_by,
+            created_at,
+            updated_at
+          `)
           .order('created_at', { ascending: false });
 
-        if (!profilesError) {
-          const mappedUsers = (profiles || []).map(profile => ({
-            id: profile.user_id,
-            email: profile.email_current,
-            created_at: profile.created_at,
-            last_sign_in_at: null,
-            user_metadata: {
-              member_code: profile.member_code,
-              referred_by: profile.referred_by
-            }
-          }));
-
-          setUsers(mappedUsers);
+        if (error) {
+          console.error('Error fetching profiles:', error);
+          return;
         }
+
+        setProfiles(data || []);
+      } catch (error) {
+        console.error('Error:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchUsers();
+    fetchProfiles();
   }, []);
 
   useEffect(() => {
-    let filtered = users;
+    let filtered = profiles;
 
     if (searchTerm) {
-      filtered = filtered.filter(user => 
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.user_metadata?.member_code?.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(profile => 
+        profile.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        profile.member_code.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    setFilteredUsers(filtered);
-  }, [users, searchTerm]);
+    setFilteredProfiles(filtered);
+  }, [profiles, searchTerm]);
+
+  const getRoleBadge = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return <Badge className="bg-red-100 text-red-800 border-red-200">Admin</Badge>;
+      case 'user':
+      default:
+        return <Badge className="bg-blue-100 text-blue-800 border-blue-200">User</Badge>;
+    }
+  };
 
   if (isLoading) {
     return (
@@ -113,7 +96,7 @@ export default function AdminUsersPage() {
         </div>
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-[#F0B90B]" />
-          <span className="text-[#F0B90B] font-medium">{filteredUsers.length} User</span>
+          <span className="text-[#F0B90B] font-medium">{filteredProfiles.length} User</span>
         </div>
       </div>
 
@@ -134,31 +117,36 @@ export default function AdminUsersPage() {
 
       {/* Users Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredUsers.length === 0 ? (
+        {filteredProfiles.length === 0 ? (
           <div className="col-span-full text-center py-12">
             <Users className="h-12 w-12 text-[#848E9C] mx-auto mb-4" />
             <p className="text-[#848E9C] font-medium">
-              {users.length === 0 ? 'Data users belum tersedia' : 'Tidak ada user yang cocok dengan pencarian'}
+              {profiles.length === 0 ? 'Data users belum tersedia' : 'Tidak ada user yang cocok dengan pencarian'}
             </p>
           </div>
         ) : (
-          filteredUsers.map((user) => (
-            <Card key={user.id} className="bg-[#1E2329] border-[#2B3139] hover:border-[#F0B90B]/50 transition-colors">
+          filteredProfiles.map((profile) => (
+            <Card key={profile.id} className="bg-[#1E2329] border-[#2B3139] hover:border-[#F0B90B]/50 transition-colors">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-[#F0B90B]/20 flex items-center justify-center">
-                      <Users className="h-5 w-5 text-[#F0B90B]" />
+                      {profile.role === 'admin' ? (
+                        <Shield className="h-5 w-5 text-[#F0B90B]" />
+                      ) : (
+                        <Users className="h-5 w-5 text-[#F0B90B]" />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-white font-medium truncate">
-                        {user.email}
+                        {profile.email}
                       </div>
-                      {user.user_metadata?.member_code && (
-                        <Badge className="bg-[#F0B90B]/10 text-[#F0B90B] border-[#F0B90B]/20 text-xs mt-1">
-                          {user.user_metadata.member_code}
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge className="bg-[#F0B90B]/10 text-[#F0B90B] border-[#F0B90B]/20 text-xs">
+                          {profile.member_code}
                         </Badge>
-                      )}
+                        {getRoleBadge(profile.role)}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -168,33 +156,33 @@ export default function AdminUsersPage() {
                   <Calendar className="h-4 w-4 text-[#848E9C]" />
                   <span className="text-[#848E9C]">Bergabung:</span>
                   <span className="text-white">
-                    {new Date(user.created_at).toLocaleDateString('id-ID')}
+                    {new Date(profile.created_at).toLocaleDateString('id-ID')}
                   </span>
                 </div>
-                
-                {user.last_sign_in_at && (
+
+                {profile.referral_code && (
                   <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4 text-[#848E9C]" />
-                    <span className="text-[#848E9C]">Login terakhir:</span>
-                    <span className="text-white">
-                      {new Date(user.last_sign_in_at).toLocaleDateString('id-ID')}
+                    <Mail className="h-4 w-4 text-[#848E9C]" />
+                    <span className="text-[#848E9C]">Referral Code:</span>
+                    <span className="text-[#F0B90B] font-medium">
+                      {profile.referral_code}
                     </span>
                   </div>
                 )}
 
-                {user.user_metadata?.referred_by && (
+                {profile.referred_by && (
                   <div className="flex items-center gap-2 text-sm">
                     <Users className="h-4 w-4 text-[#F0B90B]" />
                     <span className="text-[#848E9C]">Referred by:</span>
                     <span className="text-[#F0B90B] font-medium">
-                      {user.user_metadata.referred_by}
+                      {profile.referred_by}
                     </span>
                   </div>
                 )}
 
                 <div className="pt-2 border-t border-[#2B3139]">
                   <div className="text-[#848E9C] text-xs font-mono truncate">
-                    ID: {user.id}
+                    ID: {profile.id}
                   </div>
                 </div>
               </CardContent>
