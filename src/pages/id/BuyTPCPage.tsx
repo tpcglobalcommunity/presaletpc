@@ -4,6 +4,7 @@ import { Coins, ArrowRight, Loader2, Shield, CheckCircle, ExternalLink } from 'l
 import { supabase } from '@/integrations/supabase/client';
 import { formatInputNumber, parseNumberID, formatNumberID, formatRupiah } from '@/lib/number';
 import { calculateTPCFromUSD, calculateSponsorBonus, fetchSOLPrice, convertSOLToUSD, convertIDRToUSD, BASE_TPC_PRICE_USD, FIXED_IDR_RATE, LOCKED_SPONSOR_COMMISSION_PERCENTAGE } from '@/config/pricing';
+import { formatIdr, parseIdr, formatUsdc, parseUsdc, formatSol, parseSol, formatTpc } from '@/lib/formatters';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,7 +40,8 @@ export default function BuyTPCPage() {
   const FALLBACK_STAGE1_STARTED_AT = new Date('2026-02-02T00:00:00Z').getTime();
   
   const [currency, setCurrency] = useState<Currency>('IDR');
-  const [amountInput, setAmountInput] = useState('');
+  const [amountRaw, setAmountRaw] = useState('');
+  const [amountValue, setAmountValue] = useState(0);
   const [email, setEmail] = useState('');
   const [referralCode, setReferralCode] = useState('');
   const [agreed, setAgreed] = useState(false);
@@ -55,16 +57,29 @@ export default function BuyTPCPage() {
   const goToTerms = () => navigate('/id/syarat-ketentuan');
   const goToPrivacy = () => navigate('/id/kebijakan-privasi');
 
-  // Helper function to sanitize amount input based on currency
-  const sanitizeAmountInput = (value: string, currency: Currency): string => {
-    if (currency === 'SOL') {
-      // Allow decimal for SOL
-      const parts = value.split('.');
-      if (parts.length > 2) return parts[0] + '.' + parts[1];
-      return value.replace(/[^0-9.]/g, '');
+  // Currency-specific input handlers
+  const handleAmountChange = (value: string) => {
+    setAmountRaw(value);
+    
+    if (currency === 'IDR') {
+      const parsed = parseIdr(value);
+      setAmountValue(parsed);
+      setAmountRaw(formatIdr(parsed));
+    } else if (currency === 'USDC') {
+      const parsed = parseUsdc(value);
+      setAmountValue(parsed);
+    } else if (currency === 'SOL') {
+      const parsed = parseSol(value);
+      setAmountValue(parsed);
     }
-    // For IDR and USDC, only allow integers
-    return value.replace(/[^0-9]/g, '');
+  };
+
+  const handleAmountBlur = () => {
+    if (currency === 'USDC') {
+      setAmountRaw(formatUsdc(amountValue));
+    } else if (currency === 'SOL') {
+      setAmountRaw(formatSol(amountValue));
+    }
   };
 
   // Fetch SOL price
@@ -127,18 +142,18 @@ export default function BuyTPCPage() {
   }, []);
 
   // Calculate derived values
-  const numericAmount = parseNumberID(amountInput);
+  // Calculate TPC amount based on currency and amount
   const usdAmount = currency === 'IDR' 
-    ? convertIDRToUSD(numericAmount)
+    ? convertIDRToUSD(amountValue)
     : currency === 'SOL' && solPriceUSD
-      ? convertSOLToUSD(numericAmount, solPriceUSD)
-      : numericAmount;
+      ? convertSOLToUSD(amountValue, solPriceUSD)
+      : amountValue;
 
   const tpcAmount = usdAmount ? calculateTPCFromUSD(usdAmount) : 0;
-  const sponsorBonus = numericAmount >= 1000000 ? calculateSponsorBonus(numericAmount) : 0;
+  const sponsorBonus = amountValue >= 1000000 ? calculateSponsorBonus(amountValue) : 0;
   const totalTPC = tpcAmount + sponsorBonus;
 
-  const isValid = numericAmount > 0 && email.includes('@') && agreed;
+  const isValid = amountValue > 0 && email.includes('@') && agreed;
 
   const handleSubmit = async () => {
     if (!isValid || isLoading) return;
@@ -150,7 +165,7 @@ export default function BuyTPCPage() {
         p_email: email.toLowerCase().trim(),
         p_referral_code: referralCode.toUpperCase().trim(),
         p_base_currency: currency,
-        p_amount_input: numericAmount
+        p_amount_input: amountValue
       });
 
       if (error) {
@@ -344,8 +359,9 @@ export default function BuyTPCPage() {
               <input
                 type="text"
                 placeholder="0"
-                value={amountInput}
-                onChange={(e) => setAmountInput(sanitizeAmountInput(e.target.value, currency))}
+                value={amountRaw}
+                onChange={(e) => handleAmountChange(e.target.value)}
+                onBlur={handleAmountBlur}
                 className="w-full px-4 py-3 bg-[#1E2329] border border-[#2B3139] rounded-xl text-white placeholder-[#848E9C] focus:outline-none focus:ring-2 focus:ring-[#F0B90B]/40 focus:border-[#F0B90B]/50"
               />
             </div>
@@ -379,25 +395,25 @@ export default function BuyTPCPage() {
             </div>
 
             {/* Summary */}
-            {(numericAmount > 0) && (
+            {(amountValue > 0) && (
               <div className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-[#848E9C]">Jumlah {currencyLabels[currency].label}:</span>
                   <span className="text-white font-medium">
-                    {currency === 'IDR' ? formatRupiah(numericAmount) : `${numericAmount} ${currency}`}
+                    {currency === 'IDR' ? formatRupiah(amountValue) : `${amountValue} ${currency}`}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-[#848E9C]">TPC yang akan didapat:</span>
                   <span className="text-[#F0B90B] font-medium">
-                    {formatNumberID(tpcAmount)} TPC
+                    {formatTpc(tpcAmount)} TPC
                   </span>
                 </div>
-                {numericAmount >= 1000000 && (
+                {amountValue >= 1000000 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-[#848E9C]">Bonus Sponsor:</span>
                     <span className="text-emerald-400 font-medium">
-                      +{formatNumberID(sponsorBonus)} TPC
+                      +{formatTpc(sponsorBonus)} TPC
                     </span>
                   </div>
                 )}
