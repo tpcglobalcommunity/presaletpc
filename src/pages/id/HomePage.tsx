@@ -16,11 +16,28 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useEffect } from 'react';
 import { SEO } from '@/lib/seo';
+import { preloadBuyTPC, preloadMarket } from '@/App';
 
 export default function HomePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // Preload key routes on idle
+  useEffect(() => {
+    const preloadRoutes = () => {
+      preloadBuyTPC();
+      preloadMarket();
+    };
+
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(preloadRoutes);
+    } else {
+      // Fallback for browsers that don't support requestIdleCallback
+      setTimeout(preloadRoutes, 2000);
+    }
+  }, []);
 
   return (
     <>
@@ -52,8 +69,20 @@ export default function HomePage() {
           <span className="flex items-center gap-1"><Users className="h-3 w-3" /> Community-driven</span>
         </div>
         <div className="flex gap-3 max-w-xs mx-auto">
-          <button onClick={() => navigate('/id/buytpc')} className="btn-gold flex-1 py-3 text-sm">Beli TPC</button>
-          <button onClick={() => navigate('/id/edukasi')} className="flex-1 py-3 px-4 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">Pelajari TPC</button>
+          <button 
+            onClick={() => navigate('/id/buytpc')} 
+            onMouseEnter={preloadBuyTPC}
+            onTouchStart={preloadBuyTPC}
+            className="btn-gold flex-1 py-3 text-sm"
+          >
+            Beli TPC
+          </button>
+          <button 
+            onClick={() => navigate('/id/edukasi')} 
+            className="flex-1 py-3 px-4 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors"
+          >
+            Pelajari TPC
+          </button>
         </div>
       </div>
 
@@ -193,7 +222,14 @@ export default function HomePage() {
         <h2 className="text-lg font-bold text-white mb-2">Siap Bergabung?</h2>
         <p className="text-sm text-muted-foreground mb-4">Bergabunglah dengan ribuan trader yang telah mempercayai TPC sebagai platform edukasi trading terpercaya.</p>
         <div className="space-y-2">
-          <button onClick={() => navigate('/id/buytpc')} className="btn-gold w-full py-3">Beli TPC<ArrowRight className="h-4 w-4" /></button>
+          <button 
+            onClick={() => navigate('/id/buytpc')} 
+            onMouseEnter={preloadBuyTPC}
+            onTouchStart={preloadBuyTPC}
+            className="btn-gold w-full py-3"
+          >
+            Beli TPC<ArrowRight className="h-4 w-4" />
+          </button>
           <button onClick={() => navigate(user ? '/id/dashboard' : '/id/login')} className="w-full py-3 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">{user ? 'Masuk ke Dashboard' : 'Masuk / Daftar'}</button>
         </div>
       </div>

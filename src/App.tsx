@@ -29,6 +29,10 @@ const ChaptersSopPage = lazy(() => import("@/pages/chapters/ChaptersSopPage"));
 const TermsConditionsPage = lazy(() => import("@/pages/legal/TermsConditionsPage"));
 const PrivacyPolicyPage = lazy(() => import("@/pages/legal/PrivacyPolicyPage"));
 
+// Preload functions for key routes
+export const preloadBuyTPC = () => import("@/pages/id/BuyTPCPage");
+export const preloadMarket = () => import("@/pages/id/MarketPage");
+
 // Member Pages (Lazy Loaded)
 const DashboardPage = lazy(() => import("@/pages/id/dashboard/DashboardPage"));
 const InvoiceDetailPage = lazy(() => import("@/pages/id/dashboard/InvoiceDetailPage"));
