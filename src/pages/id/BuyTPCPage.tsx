@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Coins, ArrowRight, Loader2, Shield, CheckCircle, ExternalLink } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { formatInputNumber, parseNumberID, formatNumberID, formatRupiah } from '@/lib/number';
 import { calculateTPCFromUSD, calculateSponsorBonus, fetchSOLPrice, convertSOLToUSD, convertIDRToUSD, BASE_TPC_PRICE_USD, FIXED_IDR_RATE, LOCKED_SPONSOR_COMMISSION_PERCENTAGE } from '@/config/pricing';
@@ -206,11 +207,18 @@ export default function BuyTPCPage() {
 
   return (
     <>
-      <SEO 
-        title="Beli TPC - Bergabung dengan Ekosistem TPC Global"
-        description="Beli token TPC sekarang dengan harga presale terbaik. Proses aman, transparan, dan edukasi-only. Bergabung dengan komunitas TPC Global hari ini."
-        path="/id/buytpc"
-      />
+      <Helmet>
+        <title>Beli TPC - Bergabung dengan Ekosistem TPC Global</title>
+        <meta name="description" content="Beli token TPC sekarang dengan harga presale terbaik. Proses aman, transparan, dan edukasi-only. Bergabung dengan komunitas TPC Global hari ini." />
+        <meta property="og:title" content="Beli TPC - Bergabung dengan Ekosistem TPC Global" />
+        <meta property="og:description" content="Beli token TPC sekarang dengan harga presale terbaik. Proses aman, transparan, dan edukasi-only. Bergabung dengan komunitas TPC Global hari ini." />
+        <meta property="og:url" content="https://tpcglobal.io/id/buytpc" />
+        <meta property="og:image" content="https://tpcglobal.io/og.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Beli TPC - Bergabung dengan Ekosistem TPC Global" />
+        <meta name="twitter:description" content="Beli token TPC sekarang dengan harga presale terbaik. Proses aman, transparan, dan edukasi-only. Bergabung dengan komunitas TPC Global hari ini." />
+        <meta name="twitter:image" content="https://tpcglobal.io/og.png" />
+      </Helmet>
       <div className="min-h-screen bg-gradient-to-br from-[#0B0E11] via-[#0F141A] to-[#11161C]">
       {/* Hero Section */}
       <div className="relative overflow-hidden">

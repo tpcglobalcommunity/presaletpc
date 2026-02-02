@@ -17,6 +17,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { SEO } from '@/lib/seo';
 import { preloadBuyTPC, preloadMarket } from '@/App';
 
@@ -41,11 +42,18 @@ export default function HomePage() {
 
   return (
     <>
-      <SEO 
-        title="TPC Global - Platform Edukasi Kripto Terpercaya"
-        description="TPC Global adalah platform edukasi kripto dengan transparansi penuh, wallet terverifikasi, dan perlindungan anti-scam. Bergabung dengan ekosistem TPC sekarang."
-        path="/id/"
-      />
+      <Helmet>
+        <title>TPC Global - Ekosistem Edukasi Blockchain</title>
+        <meta name="description" content="TPC Global adalah ekosistem edukasi blockchain yang transparan, aman, dan terverifikasi. Bergabung dengan komunitas kami untuk pembelajaran crypto." />
+        <meta property="og:title" content="TPC Global - Ekosistem Edukasi Blockchain" />
+        <meta property="og:description" content="TPC Global adalah ekosistem edukasi blockchain yang transparan, aman, dan terverifikasi. Bergabung dengan komunitas kami untuk pembelajaran crypto." />
+        <meta property="og:url" content="https://tpcglobal.io/id/" />
+        <meta property="og:image" content="https://tpcglobal.io/og.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="TPC Global - Ekosistem Edukasi Blockchain" />
+        <meta name="twitter:description" content="TPC Global adalah ekosistem edukasi blockchain yang transparan, aman, dan terverifikasi. Bergabung dengan komunitas kami untuk pembelajaran crypto." />
+        <meta name="twitter:image" content="https://tpcglobal.io/og.png" />
+      </Helmet>
       <div className="mobile-container pt-6 pb-28">
       {/* 1. HERO SECTION */}
       <div className="text-center mb-12">
