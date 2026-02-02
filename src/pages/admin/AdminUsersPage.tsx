@@ -141,13 +141,13 @@ export default function AdminUsersPage() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-white font-medium text-base truncate select-text">
+                      <div className="text-white font-semibold text-lg truncate select-text">
                         {profile.full_name || 'User'}
                       </div>
-                      <div className="text-[#848E9C] text-sm truncate select-text mt-1">
+                      <div className="text-[#F0B90B] text-sm truncate select-text mt-1 font-medium">
                         {profile.email || 'Email tidak tersedia'}
                       </div>
-                      <div className="flex items-center gap-2 mt-2">
+                      <div className="flex items-center gap-2 mt-3">
                         <Badge className="bg-[#F0B90B]/10 text-[#F0B90B] border-[#F0B90B]/20 text-xs">
                           {profile.member_code}
                         </Badge>
