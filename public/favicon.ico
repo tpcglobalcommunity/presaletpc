@@ -1,0 +1,22 @@
+<svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient48" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0B0E11"/>
+      <stop offset="100%" style="stop-color:#1A1F2E"/>
+    </linearGradient>
+    <linearGradient id="goldGradient48" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F0B90B"/>
+      <stop offset="100%" style="stop-color:#D4A017"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="48" height="48" fill="url(#bgGradient48)"/>
+  
+  <!-- Logo Circle Background -->
+  <circle cx="24" cy="24" r="21" fill="none" stroke="url(#goldGradient48)" stroke-width="2" opacity="0.8"/>
+  <circle cx="24" cy="24" r="16" fill="none" stroke="url(#goldGradient48)" stroke-width="1.5" opacity="0.6"/>
+  
+  <!-- TPC Logo Text -->
+  <text x="24" y="31" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="url(#goldGradient48)" text-anchor="middle">TPC</text>
+</svg>
