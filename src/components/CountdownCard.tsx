@@ -1,6 +1,7 @@
 import { Clock } from 'lucide-react';
 import { useCountdown } from '@/hooks/useCountdown';
 import { cn } from '@/lib/utils';
+import { useMemo } from 'react';
 
 interface CountdownCardProps {
   label: string;
@@ -9,7 +10,7 @@ interface CountdownCardProps {
 }
 
 export default function CountdownCard({ label, targetIso, className }: CountdownCardProps) {
-  const targetDate = new Date(targetIso);
+  const targetDate = useMemo(() => new Date(targetIso), [targetIso]);
   const { days, hours, minutes, seconds, isExpired } = useCountdown(targetDate);
 
   return (

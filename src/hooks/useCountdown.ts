@@ -19,8 +19,10 @@ export function useCountdown(targetDate: Date): CountdownTime {
     return () => clearInterval(interval);
   }, []);
 
+  const targetTime = useMemo(() => targetDate.getTime(), [targetDate]);
+
   const timeLeft = useMemo(() => {
-    const difference = targetDate.getTime() - now.getTime();
+    const difference = targetTime - now.getTime();
     
     if (difference <= 0) {
       return {
