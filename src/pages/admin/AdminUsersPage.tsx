@@ -13,6 +13,7 @@ interface Profile {
   email_current?: string;
   member_code: string;
   referred_by?: string | null;
+  role: string;
 }
 
 interface Sponsor {
@@ -31,7 +32,7 @@ export default function AdminUsersPage() {
       try {
         setIsLoading(true);
         
-        // Fetch all profiles (no role filter for now)
+        // Fetch profiles with role='member' only
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
           .select(`
@@ -41,8 +42,10 @@ export default function AdminUsersPage() {
             email_initial,
             email_current,
             member_code,
-            referred_by
+            referred_by,
+            role
           `)
+          .eq('role', 'member')
           .order('created_at', { ascending: false });
 
         if (profilesError) {
@@ -173,8 +176,10 @@ export default function AdminUsersPage() {
                 <thead>
                   <tr className="border-b border-[#2B3139]">
                     <th className="text-left p-4 text-[#848E9C] font-medium">Register</th>
-                    <th className="text-left p-4 text-[#848E9C] font-medium">Nama</th>
+                    <th className="text-left p-4 text-[#848E9C] font-medium">UID</th>
+                    <th className="text-left p-4 text-[#848E9C] font-medium">Display Name</th>
                     <th className="text-left p-4 text-[#848E9C] font-medium">Email</th>
+                    <th className="text-left p-4 text-[#848E9C] font-medium">Role</th>
                     <th className="text-left p-4 text-[#848E9C] font-medium">Sponsor</th>
                   </tr>
                 </thead>
@@ -189,6 +194,11 @@ export default function AdminUsersPage() {
                           </div>
                         </td>
                         <td className="p-4">
+                          <div className="text-[#848E9C] text-xs font-mono">
+                            {profile.user_id}
+                          </div>
+                        </td>
+                        <td className="p-4">
                           <div className="text-white font-medium">
                             {getDisplayName(profile)}
                           </div>
@@ -199,6 +209,11 @@ export default function AdminUsersPage() {
                         <td className="p-4">
                           <div className="text-[#F0B90B] text-sm">
                             {getEmail(profile)}
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <div className="text-green-400 text-sm font-medium">
+                            {profile.role}
                           </div>
                         </td>
                         <td className="p-4">
