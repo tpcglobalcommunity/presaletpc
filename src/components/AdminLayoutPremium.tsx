@@ -48,20 +48,8 @@ export function AdminLayoutPremium() {
 
   useEffect(() => {
     const fetchSidebarStats = async () => {
-      // Temporarily disable sidebar stats to prevent 404 errors
-      // TODO: Re-enable when DB function is properly deployed
-      console.warn('[ADMIN] Sidebar stats temporarily disabled');
-      
-      // Set default values
-      setStats({
-        total_users: 0,
-        pending_review: 0
-      });
-
-      // Original code (commented out for now):
-      /*
       try {
-        const { data, error } = await adminRpc.getDashboardStats();
+        const { data, error } = await supabase.rpc('tpc_get_dashboard_stats_admin');
         if (error) {
           console.error('[ADMIN] sidebar stats fetch failed', error);
           return;
@@ -88,7 +76,6 @@ export function AdminLayoutPremium() {
       } catch (e) {
         console.error('[ADMIN] sidebar stats error', e);
       }
-      */
     };
 
     fetchSidebarStats();
