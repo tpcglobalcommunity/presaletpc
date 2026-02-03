@@ -7,14 +7,14 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface Profile {
   id: string;
-  user_id: string;
-  email_initial: string;
-  email_current: string;
+  email: string;
+  full_name: string;
   member_code: string;
-  role: 'user' | 'admin';
-  referral_code?: string;
+  role_name: string;
   created_at: string;
-  updated_at: string;
+  total_invoices: number;
+  paid_invoices: number;
+  total_revenue: number;
 }
 
 export default function AdminUsersPage() {
@@ -26,27 +26,16 @@ export default function AdminUsersPage() {
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
-        const { data, error } = await (supabase
-          .from('profiles')
-          .select(`
-            id,
-            user_id,
-            email_initial,
-            email_current,
-            member_code,
-            role,
-            referral_code,
-            created_at,
-            updated_at
-          `)
-          .order('created_at', { ascending: false }) as any);
+        const { data, error } = await supabase.rpc('get_admin_users_data');
 
         if (error) {
           console.error('[ADMIN USERS] Error fetching profiles:', error);
           return;
         }
 
-        setProfiles(data || []);
+        // Filter only members (role_name = 'member')
+        const memberProfiles = (data || []).filter(profile => profile.role_name === 'member');
+        setProfiles(memberProfiles);
       } catch (error) {
         console.error('[ADMIN USERS] Unexpected error:', error);
       } finally {
@@ -62,8 +51,8 @@ export default function AdminUsersPage() {
 
     if (searchTerm) {
       filtered = filtered.filter(profile => 
-        (profile.email_current && profile.email_current.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (profile.email_initial && profile.email_initial.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (profile.email && profile.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (profile.full_name && profile.full_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
         profile.member_code.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -71,13 +60,13 @@ export default function AdminUsersPage() {
     setFilteredProfiles(filtered);
   }, [profiles, searchTerm]);
 
-  const getRoleBadge = (role: string) => {
-    switch (role) {
+  const getRoleBadge = (roleName: string) => {
+    switch (roleName) {
       case 'admin':
         return <Badge className="bg-red-100 text-red-800 border-red-200">Admin</Badge>;
-      case 'user':
+      case 'member':
       default:
-        return <Badge className="bg-blue-100 text-blue-800 border-blue-200">User</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800 border-blue-200">Member</Badge>;
     }
   };
 
@@ -109,7 +98,7 @@ export default function AdminUsersPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#848E9C]" />
             <Input
-              placeholder="Cari email_initial, email_current, atau member code..."
+              placeholder="Cari nama, email, atau member code..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 bg-[#2B3139] border-[#3A3F47] text-white placeholder-[#848E9C]"
@@ -134,7 +123,7 @@ export default function AdminUsersPage() {
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-[#F0B90B]/20 flex items-center justify-center">
-                      {profile.role === 'admin' ? (
+                      {profile.role_name === 'admin' ? (
                         <Shield className="h-5 w-5 text-[#F0B90B]" />
                       ) : (
                         <Users className="h-5 w-5 text-[#F0B90B]" />
@@ -142,16 +131,16 @@ export default function AdminUsersPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-white font-semibold text-lg truncate select-text">
-                        User
+                        {profile.full_name || 'Nama tidak tersedia'}
                       </div>
                       <div className="text-[#F0B90B] text-sm truncate select-text mt-1 font-medium">
-                        {profile.email_current || profile.email_initial || 'Email tidak tersedia'}
+                        {profile.email || 'Email tidak tersedia'}
                       </div>
                       <div className="flex items-center gap-2 mt-3">
                         <Badge className="bg-[#F0B90B]/10 text-[#F0B90B] border-[#F0B90B]/20 text-xs">
                           {profile.member_code}
                         </Badge>
-                        {getRoleBadge(profile.role)}
+                        {getRoleBadge(profile.role_name)}
                       </div>
                     </div>
                   </div>
@@ -165,16 +154,6 @@ export default function AdminUsersPage() {
                     {new Date(profile.created_at).toLocaleDateString('id-ID')}
                   </span>
                 </div>
-
-                {profile.referral_code && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Mail className="h-4 w-4 text-[#848E9C]" />
-                    <span className="text-[#848E9C]">Referral Code:</span>
-                    <span className="text-[#F0B90B] font-medium">
-                      {profile.referral_code}
-                    </span>
-                  </div>
-                )}
 
                 <div className="pt-2 border-t border-[#2B3139]">
                   <div className="text-[#848E9C] text-xs font-mono truncate">
