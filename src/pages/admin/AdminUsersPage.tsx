@@ -31,8 +31,9 @@ export default function AdminUsersPage() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
+        console.log('[ADMIN USERS] Starting fetch...');
         
-        // Fetch profiles with role='member' only
+        // First try with role filter
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
           .select(`
@@ -48,13 +49,43 @@ export default function AdminUsersPage() {
           .eq('role', 'member')
           .order('created_at', { ascending: false });
 
-        if (profilesError) {
-          console.error('[ADMIN USERS] Error fetching profiles:', profilesError);
-          return;
-        }
+        console.log('[ADMIN USERS] Query with role filter result:', { profilesData, profilesError });
 
-        const profiles = profilesData || [];
-        setProfiles(profiles);
+        if (profilesError) {
+          console.error('[ADMIN USERS] Error with role filter:', profilesError);
+          console.log('[ADMIN USERS] Trying without role filter...');
+          
+          // Fallback: try without role column at all
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .from('profiles')
+            .select(`
+              id,
+              user_id,
+              created_at,
+              email_initial,
+              email_current,
+              member_code,
+              referred_by
+            `)
+            .order('created_at', { ascending: false });
+          
+          console.log('[ADMIN USERS] Fallback result:', { fallbackData, fallbackError });
+          
+          if (fallbackError) {
+            console.error('[ADMIN USERS] Fallback also failed:', fallbackError);
+            return;
+          }
+          
+          const profiles = fallbackData || [];
+          console.log('[ADMIN USERS] Setting profiles from fallback:', profiles);
+          // Add default role for compatibility
+          const profilesWithRole = profiles.map(p => ({ ...p, role: 'member' }));
+          setProfiles(profilesWithRole);
+        } else {
+          const profiles = profilesData || [];
+          console.log('[ADMIN USERS] Setting profiles from main query:', profiles);
+          setProfiles(profiles);
+        }
 
         // Collect sponsor member codes (referred_by contains member_code)
         const sponsorCodes = [...new Set(
