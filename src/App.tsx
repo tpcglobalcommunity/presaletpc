@@ -144,6 +144,17 @@ const App = () => {
             {/* Redirect root to /id */}
             <Route path="/" element={<Navigate to="/id" replace />} />
 
+            {/* Language Shell with Callback Route */}
+            <Route path="/:lang" element={<MobileLayout />}>
+              <Route path="auth/callback" element={
+                <Suspense fallback={<PageLoader />}>
+                  <AuthCallbackPage />
+                </Suspense>
+              } />
+              <Route path="auth/callback-page" element={<Navigate to="auth/callback" replace />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
+
             {/* Indonesian Routes with Mobile Layout */}
             <Route path="/id" element={<MobileLayout />}>
               <Route index element={
