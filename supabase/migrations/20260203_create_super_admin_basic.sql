@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     email TEXT,
     member_code TEXT UNIQUE,
+    nama TEXT,
+    avatar_url TEXT,
     role TEXT DEFAULT 'member',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -102,6 +104,8 @@ INSERT INTO public.profiles (
     user_id,
     email,
     member_code,
+    nama,
+    avatar_url,
     role,
     created_at,
     updated_at
@@ -109,10 +113,12 @@ INSERT INTO public.profiles (
     gen_random_uuid(),
     'tpcglobal.io@gmail.com',
     'TPC-ADMIN',
+    'TPC Global Admin',
+    NULL,
     'super_admin',
     NOW(),
     NOW()
-) ON CONFLICT (email) DO NOTHING;
+) ON CONFLICT (member_code) DO NOTHING;
 
 -- ================================================================
 -- 4. ENABLE RLS AND CREATE POLICIES
@@ -160,7 +166,7 @@ DECLARE
 BEGIN
     SELECT COUNT(*) INTO profile_count
     FROM public.profiles
-    WHERE email = 'tpcglobal.io@gmail.com';
+    WHERE member_code = 'TPC-ADMIN';
     
     IF profile_count > 0 THEN
         RAISE NOTICE '✅ Super admin profile created successfully';
