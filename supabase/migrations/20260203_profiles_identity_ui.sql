@@ -91,7 +91,7 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
 AFTER INSERT ON auth.users
 FOR EACH ROW
-EXECUTE FUNCTION upsert_profile_from_auth(new.id);
+EXECUTE PROCEDURE upsert_profile_from_auth(new.id);
 
 -- 4. Admin helper function (check if user is admin)
 CREATE OR REPLACE FUNCTION is_admin(p_user_id uuid)
