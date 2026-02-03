@@ -181,11 +181,11 @@ export default function AdminInvoicesPage() {
                       <tr 
                         key={invoice.id} 
                         className="border-b border-[#2B3139] hover:bg-[#2B3139]/30 cursor-pointer group"
-                        onClick={() => navigate(`/id/admin/invoices/${invoice.id}`)}
+                        onClick={() => navigate(`invoices/${invoice.id}`)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            navigate(`/id/admin/invoices/${invoice.id}`);
+                            navigate(`invoices/${invoice.id}`);
                           }
                         }}
                         role="button"
@@ -203,7 +203,7 @@ export default function AdminInvoicesPage() {
                                 className="bg-[#F0B90B]/10 text-[#F0B90B] border-[#F0B90B]/20 hover:bg-[#F0B90B]/20"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  navigate(`/id/admin/invoices/${invoice.id}`);
+                                  navigate(`invoices/${invoice.id}`);
                                 }}
                               >
                                 <Eye className="h-3 w-3 mr-1" />

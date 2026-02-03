@@ -50,13 +50,13 @@ export default function AdminInvoiceDetailPage() {
       if (error) {
         console.error('Error fetching invoice by ID:', error);
         toast({ title: 'Invoice tidak ditemukan', variant: 'destructive' });
-        navigate('/id/admin/invoices');
+        navigate('../invoices');
         return;
       }
       
       if (!data) {
         toast({ title: 'Invoice tidak ditemukan', variant: 'destructive' });
-        navigate('/id/admin/invoices');
+        navigate('../invoices');
         return;
       }
       
@@ -86,7 +86,7 @@ export default function AdminInvoiceDetailPage() {
       if (data) {
         setInvoice(data); // Update UI instantly
         toast({ title: 'Invoice berhasil diapprove!' });
-        navigate('/id/admin/invoices');
+        navigate('../invoices');
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -121,7 +121,7 @@ export default function AdminInvoiceDetailPage() {
       if (data) {
         setInvoice(data); // Update UI instantly
         toast({ title: 'Invoice berhasil ditolak' });
-        navigate('/id/admin/invoices');
+        navigate('../invoices');
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -159,7 +159,7 @@ export default function AdminInvoiceDetailPage() {
       <div className="bg-[#1E2329] border-b border-[#2B3139] px-6 py-4">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/id/admin/invoices')} className="flex items-center gap-2 text-[#848E9C] hover:text-white transition-colors">
+            <button onClick={() => navigate('../invoices')} className="flex items-center gap-2 text-[#848E9C] hover:text-white transition-colors">
               <ArrowLeft className="h-5 w-5" />
               <span className="text-sm">Back to Invoices</span>
             </button>

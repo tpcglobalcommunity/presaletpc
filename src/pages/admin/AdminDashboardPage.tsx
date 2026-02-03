@@ -65,7 +65,7 @@ export default function AdminDashboardPage() {
   });
 
   // Helper function for admin invoice detail path
-  const adminInvoiceDetailPath = (id: string) => `/${lang}/admin/invoices/${id}`;
+  const adminInvoiceDetailPath = (id: string) => `invoices/${id}`;
 
   useEffect(() => {
     const fetchDashboardData = async () => {

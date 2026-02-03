@@ -127,7 +127,7 @@ export default function UsersPage() {
             <h2 className="text-xl font-semibold mb-2">Error</h2>
             <p className="text-muted-foreground">{error}</p>
             <Button 
-              onClick={() => navigate("/en/admin")}
+              onClick={() => navigate("..")}
               className="mt-4"
             >
               Back to Dashboard

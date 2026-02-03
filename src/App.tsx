@@ -486,6 +486,10 @@ const App = () => {
                     }
                   />
                   <Route
+                    path="dashboard"
+                    element={<Navigate to=".." replace />}
+                  />
+                  <Route
                     path="invoices"
                     element={
                       <Suspense fallback={<PageLoader />}>

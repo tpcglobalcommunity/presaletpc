@@ -59,7 +59,7 @@ export default function AdminInvoiceDetailPage() {
         if (error) {
           console.error('Error fetching invoice:', error);
           toast({ title: 'Invoice tidak ditemukan', variant: 'destructive' });
-          navigate('/id/admin/invoices');
+          navigate('../invoices');
           return;
         }
         
@@ -171,7 +171,7 @@ export default function AdminInvoiceDetailPage() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate('/id/admin/invoices')}
+          onClick={() => navigate('../invoices')}
           className="text-[#848E9C] hover:text-white"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
