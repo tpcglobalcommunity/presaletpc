@@ -19,6 +19,61 @@ After adding domain, Cloudflare will show nameservers like:
 ### **3. DNS Records Configuration**
 In Cloudflare DNS settings for `tpcglobal.io`:
 
+#### **A Records (Required):**
+```
+Type    Name        Content              TTL    Proxy
+A       tpcglobal.io <your-server-ip>    Auto    Proxied (Orange)
+A       www         <your-server-ip>    Auto    Proxied (Orange)
+```
+
+#### **CNAME Alternative (if using proxy):**
+```
+Type    Name        Content              TTL    Proxy
+A       tpcglobal.io <your-server-ip>    Auto    Proxied (Orange)
+CNAME   www         tpcglobal.io         Auto    Proxied (Orange)
+```
+
+---
+
+## 🌐 **PHASE 2 - WWW TO NON-WWW REDIRECT (CRITICAL FOR AUTH)**
+
+### **🚨 CRITICAL: Non-WWW Canonical Domain**
+- **Primary Domain:** `https://tpcglobal.io` (canonical)
+- **Redirect:** `https://www.tpcglobal.io` → `https://tpcglobal.io` (301)
+- **Purpose:** Ensure Supabase auth cookies work correctly
+
+### **🔧 Method 1: Page Rules (Recommended)**
+1. Navigation: Rules → Page Rules
+2. Create Page Rule:
+
+**If the URL matches:**
+```
+www.tpcglobal.io/*
+```
+
+**Then the settings are:**
+- **Forwarding URL:** 301 - Permanent Redirect
+- **Destination URL:** `https://tpcglobal.io/$1`
+
+### **🔧 Method 2: Redirect Rules (Modern)**
+1. Navigation: Rules → Redirect Rules
+2. Create Rule:
+
+**When incoming requests match:**
+- **Field:** Hostname
+- **Operator:** equals
+- **Value:** `www.tpcglobal.io`
+
+**Then:**
+- **Type:** Dynamic
+- **Expression:** `concat("https://tpcglobal.io", http.request.uri.path)`
+
+**Status Code:** 301
+
+---
+
+## 🔧 **PHASE 3 - SSL CERTIFICATE**
+
 ```
 TYPE    NAME    TARGET                              PROXY   TTL
 CNAME   @       your-project.pages.dev             ON      Auto

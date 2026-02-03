@@ -7,6 +7,12 @@ import { lazy, Suspense } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import PageLoader from "@/components/PageLoader";
 
+// WWW to non-www redirect guard
+if (typeof window !== 'undefined' && window.location.hostname === "www.tpcglobal.io") {
+  const target = `https://tpcglobal.io${window.location.pathname}${window.location.search}${window.location.hash}`;
+  window.location.replace(target);
+}
+
 // Layouts
 import { MobileLayout } from "@/layouts/MobileLayout";
 import { MemberLayout } from "@/layouts/MemberLayout";
