@@ -27,16 +27,19 @@ BEGIN
         AND table_name = 'profiles' 
         AND table_schema = 'public'
     ) THEN
-        DECLARE constraint_name TEXT;
-        SELECT constraint_name INTO constraint_name
-        FROM information_schema.table_constraints 
-        WHERE constraint_name LIKE '%user_id%' 
-        AND table_name = 'profiles' 
-        AND table_schema = 'public'
-        LIMIT 1;
-        
-        EXECUTE format('ALTER TABLE public.profiles DROP CONSTRAINT %I', constraint_name);
-        RAISE NOTICE '✅ Dropped UNIQUE constraint from user_id: %', constraint_name;
+        DECLARE 
+            constraint_name TEXT;
+        BEGIN
+            SELECT constraint_name INTO constraint_name
+            FROM information_schema.table_constraints 
+            WHERE constraint_name LIKE '%user_id%' 
+            AND table_name = 'profiles' 
+            AND table_schema = 'public'
+            LIMIT 1;
+            
+            EXECUTE format('ALTER TABLE public.profiles DROP CONSTRAINT %I', constraint_name);
+            RAISE NOTICE '✅ Dropped UNIQUE constraint from user_id: %', constraint_name;
+        END;
     END IF;
     
     -- Drop role check constraint if it exists
