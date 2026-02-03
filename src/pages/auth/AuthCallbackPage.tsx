@@ -19,39 +19,78 @@ export default function AuthCallbackPage() {
       try {
         console.log("[AUTH CALLBACK RAW]", window.location.href);
         
-        // Parse URL parameters for errors
+        // Parse URL parameters
         const urlParams = new URLSearchParams(window.location.search);
-        const errorCode = urlParams.get('error');
-        const errorDescription = urlParams.get('error_description');
+        const code = urlParams.get('code');
+        const error = urlParams.get('error');
+        const errorCode = urlParams.get('error_code');
+        const errorDesc = urlParams.get('error_description');
         
-        if (errorCode) {
-          console.error("[AUTH CALLBACK] OAuth error:", errorCode, errorDescription);
-          setError(errorDescription || errorCode);
+        // A) Handle OAuth errors
+        if (error) {
+          console.error("[AUTH CALLBACK] OAuth error:", error, errorCode, errorDesc);
+          const errorMessage = errorDesc || error;
+          setError(`${errorMessage}${errorCode ? ` (${errorCode})` : ''}`);
           setLoading(false);
           return;
         }
 
-        console.log("[AUTH CALLBACK] Starting session check...");
-        const { data, error: sessionError } = await supabase.auth.getSession();
-        
-        console.log("[AUTH SESSION]", data);
+        // B) Handle OAuth code exchange
+        if (code) {
+          const exchangeKey = `tpc_oauth_exchanged_${lang}`;
+          const alreadyExchanged = sessionStorage.getItem(exchangeKey);
+          
+          if (!alreadyExchanged) {
+            console.log("[AUTH CALLBACK] Code present, exchanging for session...");
+            setLoading(true);
+            
+            const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(window.location.href);
+            
+            if (exchangeError) {
+              console.error("[AUTH CALLBACK] Exchange error:", exchangeError);
+              setError(`Gagal menukar kode: ${exchangeError.message}`);
+              setLoading(false);
+              return;
+            }
+            
+            console.log("[AUTH CALLBACK] Exchange success, session established");
+            sessionStorage.setItem(exchangeKey, '1');
+            
+            // Clean URL to remove code parameter
+            const cleanUrl = `${window.location.origin}/${lang}/auth/callback`;
+            window.history.replaceState({}, document.title, cleanUrl);
+          } else {
+            console.log("[AUTH CALLBACK] Code present but already exchanged, skipping exchange");
+          }
+        }
+
+        // C) Check session (after potential exchange)
+        console.log("[AUTH CALLBACK] Checking session...");
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
           console.error("[AUTH CALLBACK] Session error:", sessionError);
-          setError(sessionError.message);
+          setError(`Error sesi: ${sessionError.message}`);
           setLoading(false);
           return;
         }
 
-        if (!data.session) {
+        if (sessionData.session) {
+          console.log("[AUTH CALLBACK] Session found, redirecting to dashboard");
+          navigate(`/${lang}/dashboard`, { replace: true });
+          return;
+        }
+
+        // No session found
+        if (code) {
+          console.error("[AUTH CALLBACK] Code exchanged but no session found");
+          setError("Session tidak terbentuk setelah pertukaran kode. Silakan coba login kembali.");
+        } else {
           console.error("[AUTH CALLBACK] No session found");
           setError("Session tidak ditemukan. Silakan coba login kembali.");
-          setLoading(false);
-          return;
         }
-
-        console.log("[AUTH CALLBACK] Session found, redirecting to dashboard");
-        navigate(`/${lang}/dashboard`, { replace: true });
+        
+        setLoading(false);
       } catch (err) {
         console.error("[AUTH CALLBACK] Fatal error:", err);
         setError("Terjadi kesalahan yang tidak terduga. Silakan coba login kembali.");
@@ -75,7 +114,7 @@ export default function AuthCallbackPage() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Memproses autentikasi...</p>
+          <p className="text-muted-foreground">Menyelesaikan login...</p>
         </div>
       </div>
     );
