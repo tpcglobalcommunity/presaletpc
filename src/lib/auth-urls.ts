@@ -1,6 +1,10 @@
+import { joinUrl } from "./url";
+
 // Auth callback URL helper
 export const getAuthCallbackUrl = (lang: 'id' | 'en' = 'id') => {
-  const url = `${window.location.origin}/${lang}/auth/callback`;
+  const appUrl = import.meta.env.VITE_APP_URL;
+  const callbackPath = `${lang}/auth/callback`;
+  const url = joinUrl(appUrl, callbackPath);
   console.log("[AUTH URLS] Generated callback URL:", url);
   return url;
 };

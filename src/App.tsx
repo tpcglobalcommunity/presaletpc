@@ -18,13 +18,15 @@ import { MobileLayout } from "@/layouts/MobileLayout";
 import { MemberLayout } from "@/layouts/MemberLayout";
 import { AdminLayoutPremium } from "@/components/AdminLayoutPremium";
 
+// Auth Callback (Canonical)
+import AuthCallbackPage from "@/pages/auth/AuthCallbackPage";
+
 // Public Pages (Lazy Loaded)
 const HomePage = lazy(() => import("@/pages/id/HomePage"));
 const MarketPage = lazy(() => import("@/pages/id/MarketPage"));
 const BuyTPCPage = lazy(() => import("@/pages/id/BuyTPCPage"));
 const InvoiceSuccessPage = lazy(() => import("@/pages/id/InvoiceSuccessPage"));
 const LoginPage = lazy(() => import("@/pages/id/LoginPage"));
-const AuthCallbackPage = lazy(() => import("@/pages/id/AuthCallbackPage"));
 const TransparansiPage = lazy(() => import("@/pages/id/TransparansiPage"));
 const AntiScamPage = lazy(() => import("@/pages/id/AntiScamPage"));
 const EdukasiPage = lazy(() => import("@/pages/id/EdukasiPage"));
@@ -101,6 +103,18 @@ const App = () => (
       >
         <AuthProvider>
           <Routes>
+            {/* Canonical Auth Callback Routes */}
+            <Route path="/:lang/auth/callback" element={
+              <Suspense fallback={<PageLoader />}>
+                <AuthCallbackPage />
+              </Suspense>
+            } />
+            
+            {/* Legacy Auth Callback Redirects */}
+            <Route path="/auth/callback" element={<Navigate to="/id/auth/callback" replace />} />
+            <Route path="/auth/callback-page" element={<Navigate to="/id/auth/callback" replace />} />
+            <Route path="/:lang/auth/callback-page" element={<Navigate to="/:lang/auth/callback" replace />} />
+
             {/* Redirect root to /id */}
             <Route path="/" element={<Navigate to="/id" replace />} />
 
