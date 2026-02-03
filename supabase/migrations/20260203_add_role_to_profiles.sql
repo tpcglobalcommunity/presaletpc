@@ -19,8 +19,8 @@ WHERE role IS NULL;
 UPDATE public.profiles 
 SET role = 'super_admin' 
 WHERE user_id IN (
-  'cd6d5d3d-e59d-4fd0-8543-93da9e3d87c1'::uuid,
-  '518694f6-bb50-4724-b4a5-77ad30152e0e'::uuid
+  'dfbbf71c-0a7c-43fb-bab0-d21f12b78b47'::uuid,
+  'dfbbf71c-0a7c-43fb-bab0-d21f12b78b47'::uuid
 );
 
 -- =========================

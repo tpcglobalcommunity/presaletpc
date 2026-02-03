@@ -108,6 +108,27 @@ export default function AdminInvoiceDetailPage() {
       if (data) {
         setInvoice(data);
         toast({ title: 'Invoice berhasil diapprove!' });
+        
+        // Send approval email notification
+        try {
+          const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-invoice-approved-email`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            },
+            body: JSON.stringify({ invoice_no: invoice.invoice_no }),
+          });
+          
+          if (!response.ok) {
+            console.error('Failed to send approval email:', await response.text());
+          } else {
+            console.log('Approval email sent successfully');
+          }
+        } catch (emailError) {
+          console.error('Error sending approval email:', emailError);
+          // Don't show error to user as approval was successful
+        }
       }
     } catch (error) {
       console.error('Approve error:', error);

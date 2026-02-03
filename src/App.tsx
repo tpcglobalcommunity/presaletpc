@@ -47,6 +47,7 @@ const ChaptersSopPage = lazy(() => import("@/pages/chapters/ChaptersSopPage"));
 const TermsConditionsPage = lazy(() => import("@/pages/legal/TermsConditionsPage"));
 const PrivacyPolicyPage = lazy(() => import("@/pages/legal/PrivacyPolicyPage"));
 const TutorialPhantomWalletPage = lazy(() => import("@/pages/public/TutorialPhantomWalletPage"));
+const PublicInvoiceDetailPage = lazy(() => import("@/pages/public/PublicInvoiceDetailPage"));
 
 // English Public Pages (Lazy Loaded) — tetap mengikuti struktur kamu sekarang
 const EnHomePage = lazy(() => import("@/pages/id/HomePage"));
@@ -235,6 +236,14 @@ const App = () => {
                         </Suspense>
                       }
                     />
+                  }
+                />
+                <Route
+                  path="invoice/:invoiceNo"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <PublicInvoiceDetailPage />
+                    </Suspense>
                   }
                 />
                 <Route

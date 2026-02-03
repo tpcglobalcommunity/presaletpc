@@ -144,6 +144,44 @@ export type Database = {
         };
         Returns: boolean;
       };
+      get_public_invoice_by_token: {
+        Args: {
+          p_invoice_no: string;
+        };
+        Returns: {
+          invoice_no: string;
+          status: string;
+          amount_input: number;
+          amount_usd: number;
+          tpc_amount: number;
+          base_currency: string;
+          created_at: string;
+          approved_at: string | null;
+          tpc_tx_hash: string | null;
+          tpc_sent: boolean;
+          wallet_tpc: string | null;
+        }[];
+      };
+      admin_approve_invoice: {
+        Args: {
+          p_id: string;
+        };
+        Returns: {
+          id: string;
+          invoice_no: string;
+          email: string;
+          status: string;
+          amount_input: number;
+          amount_usd: number;
+          tpc_amount: number;
+          base_currency: string;
+          created_at: string;
+          approved_at: string;
+          tpc_tx_hash: string | null;
+          tpc_sent: boolean;
+          wallet_tpc: string | null;
+        };
+      };
       generate_invoice_no: { Args: never; Returns: string }
       generate_member_code: { Args: never; Returns: string }
       get_referral_network: { 
