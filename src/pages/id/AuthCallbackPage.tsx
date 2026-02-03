@@ -10,9 +10,20 @@ export default function AuthCallbackPage() {
 
     const handleAuth = async () => {
       try {
+        console.log("[AUTH CALLBACK RAW URL]", window.location.href);
+        
+        // Check for Supabase auth token cookie
+        const cookies = document.cookie.split(';').map(c => c.trim());
+        const authCookie = cookies.find(c => c.startsWith('sb-') && c.includes('auth-token'));
+        console.log("[AUTH CALLBACK] Auth cookie found:", !!authCookie);
+        if (authCookie) {
+          console.log("[AUTH CALLBACK] Auth cookie name:", authCookie.split('=')[0]);
+        }
+        
         console.log("[AUTH CALLBACK] Starting session check...");
         const { data, error } = await supabase.auth.getSession();
         
+        console.log("[AUTH CALLBACK SESSION]", data);
         console.log("[AUTH CALLBACK] Session result:", { 
           hasSession: !!data.session, 
           hasError: !!error,
