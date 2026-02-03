@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import { adminRpc } from '@/lib/adminRpc';
 import { formatNumberID, formatRupiah } from '@/lib/number';
 
 interface Invoice {
@@ -132,12 +133,56 @@ export default function AdminDashboardPage() {
           isUsingFallbackRate = true;
         }
 
-        // Fetch financial totals via RPC
-        const { data: financialData, error: financialError } = await supabase.rpc('admin_get_paid_totals');
+        // Fetch financial totals via RPC with fallback
+        setIsFinancialLoading(true);
+        try {
+          const { data: financialData, error: financialError } = await adminRpc.getPaidTotals();
 
-        if (financialError) {
-          console.error('Error fetching financial totals:', financialError);
-          // Set default values on error
+          if (financialError) {
+            console.error('Error fetching financial totals:', financialError);
+            // Set default values on error
+            setFinancialStats({
+              totalIDR: 0,
+              totalSOL: 0,
+              totalUSDC: 0,
+              grandTotalIDR: 0,
+              solToIDR,
+              usdToIDR: 17000,
+              isUsingFallbackRate,
+            });
+            return;
+          }
+
+          // Parse JSON response from RPC
+          const totals = financialData as unknown as {
+            totalUSD: number;
+            totalTPC: number;
+            totalIDR: number;
+            totalUSDC: number;
+            totalSOL: number;
+          };
+
+          const totalIDR = totals.totalIDR || 0;
+          const totalSOL = totals.totalSOL || 0;
+          const totalUSDC = totals.totalUSDC || 0;
+
+          // Convert to IDR
+          const usdToIDR = 17000; // Configurable constant
+          const solToIDRValue = totalSOL * solToIDR;
+          const usdcToIDRValue = totalUSDC * usdToIDR;
+          const grandTotalIDR = totalIDR + solToIDRValue + usdcToIDRValue;
+
+          setFinancialStats({
+            totalIDR,
+            totalSOL,
+            totalUSDC,
+            grandTotalIDR,
+            solToIDR,
+            usdToIDR: 17000,
+            isUsingFallbackRate,
+          });
+        } catch (error) {
+          console.error('Unexpected error fetching financial totals:', error);
           setFinancialStats({
             totalIDR: 0,
             totalSOL: 0,
@@ -147,37 +192,9 @@ export default function AdminDashboardPage() {
             usdToIDR: 17000,
             isUsingFallbackRate,
           });
-          return;
+        } finally {
+          setIsFinancialLoading(false);
         }
-
-        // Parse JSON response from RPC
-        const totals = financialData as {
-          totalUSD: number;
-          totalTPC: number;
-          totalIDR: number;
-          totalUSDC: number;
-          totalSOL: number;
-        };
-
-        const totalIDR = totals.totalIDR || 0;
-        const totalSOL = totals.totalSOL || 0;
-        const totalUSDC = totals.totalUSDC || 0;
-
-        // Convert to IDR
-        const usdToIDR = 17000; // Configurable constant
-        const solToIDRValue = totalSOL * solToIDR;
-        const usdcToIDRValue = totalUSDC * usdToIDR;
-        const grandTotalIDR = totalIDR + solToIDRValue + usdcToIDRValue;
-
-        setFinancialStats({
-          totalIDR,
-          totalSOL,
-          totalUSDC,
-          grandTotalIDR,
-          solToIDR,
-          usdToIDR,
-          isUsingFallbackRate,
-        });
       } catch (error) {
         console.error('Error fetching financial data:', error);
       } finally {

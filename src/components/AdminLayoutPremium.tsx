@@ -3,6 +3,7 @@ import { Outlet, NavLink, useNavigate, useParams } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { adminRpc } from '@/lib/adminRpc';
 import { 
   LayoutDashboard, 
   Users, 
@@ -49,7 +50,7 @@ export function AdminLayoutPremium() {
   useEffect(() => {
     const fetchSidebarStats = async () => {
       try {
-        const { data, error } = await supabase.rpc('get_dashboard_stats_admin');
+        const { data, error } = await adminRpc.getDashboardStats();
         if (error) {
           console.error('[ADMIN] sidebar stats fetch failed', error);
           return;
@@ -61,7 +62,7 @@ export function AdminLayoutPremium() {
         }
 
         // Parse JSON response from RPC
-        const statsData = data as {
+        const statsData = data as unknown as {
           totalPending: number;
           totalApproved: number;
           totalRejected: number;

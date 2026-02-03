@@ -1,6 +1,6 @@
 import { Users, Clock, CheckCircle, Share2, TrendingUp, TrendingDown } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { adminRpc } from '@/lib/adminRpc';
 import { formatNumberID, formatRupiah } from '@/lib/number';
 
 interface StatCard {
@@ -30,7 +30,7 @@ export function AdminDashboardStats() {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: async (): Promise<DashboardStats> => {
-      const { data, error } = await supabase.rpc('get_dashboard_stats_admin');
+      const { data, error } = await adminRpc.getDashboardStats();
       if (error) {
         console.error('Error fetching dashboard stats:', error);
         return {
@@ -42,12 +42,12 @@ export function AdminDashboardStats() {
           new_users_this_month: 0,
           new_invoices_this_month: 0,
           total_revenue: 0,
-          active_users: 0
+          active_users: 0,
         };
       }
 
       // Parse JSON response from RPC
-      const statsData = data as {
+      const statsData = data as unknown as {
         totalPending: number;
         totalApproved: number;
         totalRejected: number;
