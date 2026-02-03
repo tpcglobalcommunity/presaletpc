@@ -75,8 +75,12 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-background">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary/20 mb-4">
-            <span className="text-3xl font-bold text-primary">TPC</span>
+          <div className="mb-4 flex justify-center">
+            <img
+              src="/tpc-logo.png"
+              alt="TPC Logo"
+              className="h-20 w-20 rounded-2xl object-contain drop-shadow-lg"
+            />
           </div>
           <h1 className="text-title mb-2">Masuk ke Akun</h1>
           <p className="text-muted-foreground text-sm">
