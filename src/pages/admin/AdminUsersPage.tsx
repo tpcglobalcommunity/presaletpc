@@ -13,7 +13,6 @@ interface Profile {
   member_code: string;
   role: 'user' | 'admin';
   referral_code?: string;
-  referred_by?: string;
   created_at: string;
   updated_at: string;
 }
@@ -37,20 +36,19 @@ export default function AdminUsersPage() {
             member_code,
             role,
             referral_code,
-            referred_by,
             created_at,
             updated_at
           `)
           .order('created_at', { ascending: false }) as any);
 
         if (error) {
-          console.error('Error fetching profiles:', error);
+          console.error('[ADMIN USERS] Error fetching profiles:', error);
           return;
         }
 
         setProfiles(data || []);
       } catch (error) {
-        console.error('Error:', error);
+        console.error('[ADMIN USERS] Unexpected error:', error);
       } finally {
         setIsLoading(false);
       }
@@ -174,16 +172,6 @@ export default function AdminUsersPage() {
                     <span className="text-[#848E9C]">Referral Code:</span>
                     <span className="text-[#F0B90B] font-medium">
                       {profile.referral_code}
-                    </span>
-                  </div>
-                )}
-
-                {profile.referred_by && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Users className="h-4 w-4 text-[#F0B90B]" />
-                    <span className="text-[#848E9C]">Referred by:</span>
-                    <span className="text-[#F0B90B] font-medium">
-                      {profile.referred_by}
                     </span>
                   </div>
                 )}
