@@ -72,7 +72,7 @@ export function BottomNav() {
             <SheetHeader className="shrink-0">
               <SheetTitle>Menu Navigasi</SheetTitle>
               <SheetDescription>
-                Akses cepat ke fitur dan layanan TPC Gateway.
+                Akses cepat ke fitur dan layanan TPC GLOBAL.
               </SheetDescription>
             </SheetHeader>
             <div className="mt-4 flex-1 overflow-y-auto pb-safe">
