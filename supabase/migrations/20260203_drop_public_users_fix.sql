@@ -9,18 +9,36 @@
 SELECT to_regclass('public.users') as table_exists;
 
 -- Show table structure if exists
-SELECT 
-    column_name, 
-    data_type, 
-    is_nullable, 
-    column_default
-FROM information_schema.columns 
-WHERE table_name = 'users' 
-    AND table_schema = 'public'
-ORDER BY ordinal_position;
+DO $$
+BEGIN
+    IF to_regclass('public.users') IS NOT NULL THEN
+        RAISE NOTICE 'public.users table structure:';
+        FOR column_record IN 
+            SELECT column_name, data_type, is_nullable, column_default
+            FROM information_schema.columns 
+            WHERE table_name = 'users' AND table_schema = 'public'
+            ORDER BY ordinal_position
+        LOOP
+            RAISE NOTICE 'Column: %, Type: %, Nullable: %, Default: %', 
+                column_record.column_name, 
+                column_record.data_type, 
+                column_record.is_nullable, 
+                column_record.column_default;
+        END LOOP;
+    ELSE
+        RAISE NOTICE 'public.users table does not exist - no structure to show';
+    END IF;
+END $$;
 
--- Show row count
-SELECT COUNT(*) as row_count FROM public.users;
+-- Show row count (only if table exists)
+DO $$
+BEGIN
+    IF to_regclass('public.users') IS NOT NULL THEN
+        RAISE NOTICE 'Row count in public.users: %', (SELECT COUNT(*) FROM public.users);
+    ELSE
+        RAISE NOTICE 'public.users table does not exist - already cleaned up!';
+    END IF;
+END $$;
 
 -- ================================================================
 -- 2. DROP TABLE CASCADE (SOLUTION UTAMA)
