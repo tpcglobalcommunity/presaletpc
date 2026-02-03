@@ -4,6 +4,7 @@
 -- PHASE 1: PATCH ALL ADMIN RPC FUNCTIONS TO USE public.is_admin()
 
 -- 1. Fix admin_get_paid_totals (already fixed in previous migration, but ensuring consistency)
+DROP FUNCTION IF EXISTS public.admin_get_paid_totals();
 CREATE OR REPLACE FUNCTION public.admin_get_paid_totals()
 RETURNS TABLE (
   total_invoices bigint,
@@ -31,6 +32,7 @@ END;
 $$;
 
 -- 2. Fix get_dashboard_stats_admin
+DROP FUNCTION IF EXISTS public.get_dashboard_stats_admin();
 CREATE OR REPLACE FUNCTION public.get_dashboard_stats_admin()
 RETURNS TABLE (
   total_users BIGINT,
@@ -67,6 +69,7 @@ END;
 $$;
 
 -- 3. Fix get_all_users_admin
+DROP FUNCTION IF EXISTS public.get_all_users_admin(integer, integer);
 CREATE OR REPLACE FUNCTION public.get_all_users_admin(p_limit int DEFAULT 200, p_offset int DEFAULT 0)
 RETURNS TABLE (
   id UUID,
@@ -118,6 +121,7 @@ END;
 $$;
 
 -- 4. Fix admin_approve_invoice
+DROP FUNCTION IF EXISTS public.admin_approve_invoice(uuid);
 CREATE OR REPLACE FUNCTION public.admin_approve_invoice(p_id uuid)
 RETURNS public.invoices
 LANGUAGE plpgsql
@@ -147,6 +151,7 @@ END;
 $$;
 
 -- 5. Fix admin_reject_invoice
+DROP FUNCTION IF EXISTS public.admin_reject_invoice(uuid, text);
 CREATE OR REPLACE FUNCTION public.admin_reject_invoice(p_id uuid, p_note text)
 RETURNS public.invoices
 LANGUAGE plpgsql
@@ -177,6 +182,7 @@ END;
 $$;
 
 -- 6. Fix get_admin_users_data (alias for get_all_users_admin)
+DROP FUNCTION IF EXISTS public.get_admin_users_data(integer, integer);
 CREATE OR REPLACE FUNCTION public.get_admin_users_data(p_limit int DEFAULT 200, p_offset int DEFAULT 0)
 RETURNS TABLE (
   id UUID,
