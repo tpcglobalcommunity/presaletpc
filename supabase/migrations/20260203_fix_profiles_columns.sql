@@ -11,9 +11,18 @@ ADD COLUMN IF NOT EXISTS last_sign_in_at timestamptz NULL;
 CREATE INDEX IF NOT EXISTS idx_profiles_user_id ON public.profiles(user_id);
 CREATE INDEX IF NOT EXISTS idx_profiles_created_at ON public.profiles(created_at DESC);
 
--- 3. Ensure unique constraint
-ALTER TABLE public.profiles 
-ADD CONSTRAINT IF NOT EXISTS profiles_user_id_unique UNIQUE (user_id);
+-- 3. Ensure unique constraint (PostgreSQL tidak support IF NOT EXISTS untuk constraint)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint 
+        WHERE conname = 'profiles_user_id_unique' 
+        AND conrelid = 'public.profiles'::regclass
+    ) THEN
+        ALTER TABLE public.profiles 
+        ADD CONSTRAINT profiles_user_id_unique UNIQUE (user_id);
+    END IF;
+END $$;
 
 -- 4. Drop and recreate RLS policies to ensure they work correctly
 DROP POLICY IF EXISTS "Users can read own profile" ON profiles;
