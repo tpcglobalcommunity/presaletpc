@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Coins, FileText, Users, User, ArrowRight, TrendingUp } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Coins, FileText, Users, User, ArrowRight, TrendingUp, Shield } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatNumberID } from '@/lib/number';
@@ -15,8 +15,10 @@ interface Invoice {
 }
 
 export default function MemberDashboardPage() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const { lang } = useParams();
+  const safeLang = lang === 'en' ? 'en' : 'id';
   const { toast } = useToast();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -154,6 +156,18 @@ export default function MemberDashboardPage() {
             Lihat Invoice
             <ArrowRight className="h-4 w-4" />
           </button>
+
+          {isAdmin && (
+            <button
+              onClick={() => navigate(`/${safeLang}/admin`)}
+              className="w-full mt-4 flex items-center justify-center gap-2 rounded-xl
+                         bg-gradient-to-r from-yellow-400 to-yellow-500
+                         text-black font-semibold py-3 shadow-lg"
+            >
+              <Shield className="w-5 h-5" />
+              Admin Panel
+            </button>
+          )}
         </div>
       </div>
     </div>

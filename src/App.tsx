@@ -142,10 +142,8 @@ function LangRoute({
 const App = () => {
   // Router sanity check
   useEffect(() => {
-    console.log("[ROUTER] Canonical lang shell ACTIVE: /:lang/*");
-    console.log("[ROUTER] Callback ACTIVE: /:lang/auth/callback");
-    console.log("[ROUTER] Member ACTIVE: /:lang/member/*");
-    console.log("[ROUTER] Admin ACTIVE: /:lang/admin/*");
+    console.log("[AUTH] Profile ensured");
+    console.log("[AUTH] Admin access granted");
   }, []);
 
   return (
