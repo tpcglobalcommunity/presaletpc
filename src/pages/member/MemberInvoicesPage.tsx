@@ -67,7 +67,7 @@ export default function MemberInvoicesPage() {
       try {
         const { data, error } = await supabase
           .from('invoices')
-          .select('id, invoice_no, status, amount_input, base_currency, amount_usd, tpc_amount, created_at, expires_at')
+          .select('*')
           .eq('email', user.email)
           .order('created_at', { ascending: false });
         
@@ -199,8 +199,8 @@ export default function MemberInvoicesPage() {
             
             return (
               <div
-                key={invoice.id}
-                onClick={() => navigate(`/id/member/invoices/${invoice.id}`)}
+                key={invoice.invoice_no}
+                onClick={() => navigate(`/id/member/invoices/${invoice.invoice_no}`)}
                 className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4 cursor-pointer hover:border-[#F0B90B]/50 transition-colors"
               >
                 <div className="flex items-start justify-between mb-3">

@@ -265,6 +265,22 @@ export type Database = {
           };
         };
       };
+      member_submit_payment_proof: {
+        Args: {
+          p_id: string;
+          p_transfer_method: string;
+          p_wallet_tpc: string;
+          p_proof_url: string;
+        };
+        Returns: {
+          id: string;
+          invoice_no: string;
+          status: string;
+          transfer_method: string;
+          wallet_tpc: string;
+          proof_url: string;
+        };
+      };
       get_all_referrals_admin: {
         Args: never;
         Returns: Array<{

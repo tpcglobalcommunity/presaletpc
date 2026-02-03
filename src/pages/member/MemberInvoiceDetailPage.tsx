@@ -65,7 +65,7 @@ export default function MemberInvoiceDetailPage() {
         const { data, error } = await supabase
           .from('invoices')
           .select('*')
-          .eq('id', id)
+          .eq('invoice_no', id)
           .single();
         
         if (error) {
@@ -155,7 +155,7 @@ export default function MemberInvoiceDetailPage() {
       }
 
       if (data) {
-        setInvoice(data);
+        setInvoice(prev => ({ ...prev, ...data }));
         toast({ title: 'Bukti pembayaran berhasil dikirim!' });
       }
     } catch (error) {
