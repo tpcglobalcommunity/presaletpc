@@ -164,6 +164,10 @@ CREATE POLICY "Users can update own profile" ON profiles
     FOR UPDATE USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
+-- Users can insert their own profile (for new user registration)
+CREATE POLICY "Users can insert own profile" ON profiles
+    FOR INSERT WITH CHECK (user_id = auth.uid());
+
 -- Only service roles can insert (via trigger/function)
 -- No INSERT policy needed as it's handled by SECURITY DEFINER functions
 
