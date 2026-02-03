@@ -108,9 +108,9 @@ BEGIN
         AND ccu.table_schema = 'public';
     
     IF reference_count > 0 THEN
-        RAISE NOTICE '⚠️ Still found % references to public.users', reference_count;
+        RAISE NOTICE 'WARNING: Still found % references to public.users', reference_count;
     ELSE
-        RAISE NOTICE '✅ No references to public.users found';
+        RAISE NOTICE 'SUCCESS: No references to public.users found';
     END IF;
 END $$;
 
@@ -118,9 +118,12 @@ END $$;
 -- SUMMARY
 -- ================================================================
 
-RAISE NOTICE '=== PUBLIC.USERS CLEANUP COMPLETE ===';
-RAISE NOTICE '1. public.users table dropped';
-RAISE NOTICE '2. All dependencies removed with CASCADE';
-RAISE NOTICE '3. Profiles FK verified to auth.users';
-RAISE NOTICE '4. Ready for OAuth testing';
-RAISE NOTICE '==================================';
+DO $$
+BEGIN
+    RAISE NOTICE '=== PUBLIC.USERS CLEANUP COMPLETE ===';
+    RAISE NOTICE '1. public.users table dropped';
+    RAISE NOTICE '2. All dependencies removed with CASCADE';
+    RAISE NOTICE '3. Profiles FK verified to auth.users';
+    RAISE NOTICE '4. Ready for OAuth testing';
+    RAISE NOTICE '==================================';
+END $$;
