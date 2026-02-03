@@ -353,6 +353,11 @@ const App = () => {
                   <EnLoginPage />
                 </Suspense>
               } />
+              <Route path="auth/callback" element={
+                <Suspense fallback={<PageLoader />}>
+                  <AuthCallbackPage />
+                </Suspense>
+              } />
               <Route path="dashboard" element={<MemberLayout />}>
                 <Route index element={<Navigate to="/en/member/dashboard" replace />} />
                 <Route path="profile" element={
