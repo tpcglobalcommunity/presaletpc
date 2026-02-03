@@ -204,6 +204,21 @@ export default function BuyTPCPage() {
         throw new Error('Invalid invoice data returned');
       }
 
+      // Check referral validation feedback
+      if (invoice.referral_valid === false && referralCode) {
+        toast({
+          title: "Peringatan Referral",
+          description: `Kode referral "${referralCode}" tidak ditemukan. Invoice dibuat tanpa bonus sponsor.`,
+          variant: "default",
+        });
+      } else if (invoice.referral_valid === true && referralCode) {
+        toast({
+          title: "Referral Valid",
+          description: `Kode referral "${referralCode}" valid! Bonus sponsor ditambahkan.`,
+          variant: "default",
+        });
+      }
+
       toast({
         title: "Invoice Berhasil Dibuat",
         description: `Invoice #${invoice.invoice_no} telah dibuat.`,
