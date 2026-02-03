@@ -188,6 +188,35 @@ export type Database = {
           total_invoices: number;
         }>
       }
+      register_referral: {
+        Args: {
+          new_user_id: string;
+          referral_code: string;
+        };
+        Returns: void;
+      }
+      get_referral_tree_stats: {
+        Args: {
+          user_uuid?: string;
+        };
+        Returns: Array<{
+          level: number;
+          count: number;
+          created_at: string;
+        }>;
+      }
+      get_all_referrals_admin: {
+        Args: never;
+        Returns: Array<{
+          referral_id: string;
+          user_email: string;
+          user_referral_code: string;
+          parent_email: string | null;
+          parent_referral_code: string | null;
+          level: number;
+          created_at: string;
+        }>;
+      }
       update_invoice_status_admin: {
         Args: {
           invoice_id: string;
@@ -381,3 +410,28 @@ export const Constants = {
     },
   },
 } as const
+
+// Referral system types
+export interface Referral {
+  id: string
+  user_id: string
+  parent_user_id: string | null
+  level: number
+  created_at: string
+}
+
+export interface ReferralStats {
+  level: number
+  count: number
+  created_at: string
+}
+
+export interface AdminReferral {
+  referral_id: string
+  user_email: string
+  user_referral_code: string
+  parent_email: string | null
+  parent_referral_code: string | null
+  level: number
+  created_at: string
+}

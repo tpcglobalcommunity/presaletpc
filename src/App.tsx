@@ -75,6 +75,7 @@ const AdminDashboardPageNew = lazy(() => import("@/pages/admin/AdminDashboardPag
 const AdminInvoicesPageNew = lazy(() => import("@/pages/admin/AdminInvoicesPage"));
 const AdminInvoiceDetailPageNew = lazy(() => import("@/pages/admin/AdminInvoiceDetailPage"));
 const AdminUsersPageNew = lazy(() => import("@/pages/admin/AdminUsersPage"));
+const AdminReferralsPage = lazy(() => import("@/pages/admin/AdminReferralsPage"));
 const AdminSettingsPageNew = lazy(() => import("@/pages/admin/AdminSettingsPage"));
 const AdminAuditPageNew = lazy(() => import("@/pages/admin/AdminAuditPage"));
 const AdminAnalyticsPageNew = lazy(() => import("@/pages/admin/AdminAnalyticsPage"));
@@ -531,6 +532,14 @@ const App = () => {
                     element={
                       <Suspense fallback={<PageLoader />}>
                         <AdminNotificationsPageNew />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="referrals"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <AdminReferralsPage />
                       </Suspense>
                     }
                   />
