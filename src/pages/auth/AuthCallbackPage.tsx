@@ -65,7 +65,12 @@ export default function AuthCallbackPage({ forcedLang }: AuthCallbackPageProps =
             sessionStorage.setItem(exchangeKey, '1');
             
             // Clean URL to remove code parameter
-            const cleanUrl = `${window.location.origin}/${finalLang}/auth/callback`;
+            const url = new URL(window.location.href);
+            url.searchParams.delete('code');
+            url.searchParams.delete('error');
+            url.searchParams.delete('error_code');
+            url.searchParams.delete('error_description');
+            const cleanUrl = url.toString();
             window.history.replaceState({}, document.title, cleanUrl);
           } else {
             console.log("[AUTH CALLBACK] Code present but already exchanged, skipping exchange");
