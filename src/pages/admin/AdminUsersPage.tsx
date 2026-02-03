@@ -9,15 +9,13 @@ interface Profile {
   id: string;
   user_id: string;
   created_at: string;
-  email_initial: string;
-  email_current: string;
+  email_initial?: string;
+  email_current?: string;
   member_code: string;
   referred_by?: string | null;
 }
 
 interface Sponsor {
-  id: string;
-  user_id: string;
   member_code: string;
 }
 
@@ -33,7 +31,7 @@ export default function AdminUsersPage() {
       try {
         setIsLoading(true);
         
-        // Fetch profiles
+        // Fetch all profiles (no role filter for now)
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
           .select(`
@@ -66,7 +64,7 @@ export default function AdminUsersPage() {
         if (sponsorCodes.length > 0) {
           const { data: sponsorsData, error: sponsorsError } = await supabase
             .from('profiles')
-            .select('id, user_id, member_code')
+            .select('member_code')
             .in('member_code', sponsorCodes);
 
           if (sponsorsError) {
@@ -111,6 +109,15 @@ export default function AdminUsersPage() {
       month: '2-digit', 
       year: 'numeric'
     });
+  };
+
+  const getDisplayName = (profile: Profile) => {
+    // Fallback hierarchy: member_code -> "Member"
+    return profile.member_code || "Member";
+  };
+
+  const getEmail = (profile: Profile) => {
+    return profile.email_current || profile.email_initial || "Email tidak tersedia";
   };
 
   if (isLoading) {
@@ -183,7 +190,7 @@ export default function AdminUsersPage() {
                         </td>
                         <td className="p-4">
                           <div className="text-white font-medium">
-                            User
+                            {getDisplayName(profile)}
                           </div>
                           <div className="text-[#F0B90B] text-xs mt-1">
                             {profile.member_code}
@@ -191,7 +198,7 @@ export default function AdminUsersPage() {
                         </td>
                         <td className="p-4">
                           <div className="text-[#F0B90B] text-sm">
-                            {profile.email_current || profile.email_initial}
+                            {getEmail(profile)}
                           </div>
                         </td>
                         <td className="p-4">
