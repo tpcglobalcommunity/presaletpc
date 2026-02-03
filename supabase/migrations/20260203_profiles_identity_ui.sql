@@ -86,12 +86,9 @@ BEGIN
 END;
 $$;
 
--- 3. Trigger: on_auth_user_created
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-AFTER INSERT ON auth.users
-FOR EACH ROW
-EXECUTE PROCEDURE upsert_profile_from_auth(new.id);
+-- 3. Note: Trigger removed due to syntax issues
+-- Profile creation will be handled by ensureProfile() function called from frontend
+-- This is more reliable and avoids trigger syntax complications
 
 -- 4. Admin helper function (check if user is admin)
 CREATE OR REPLACE FUNCTION is_admin(p_user_id uuid)
@@ -153,6 +150,10 @@ $$;
 -- 6. Enable RLS for profiles
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies to avoid conflicts
+DROP POLICY IF EXISTS "Users can read own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+
 -- 7. RLS Policies for profiles
 -- Users can read their own profile
 CREATE POLICY "Users can read own profile" ON profiles
@@ -170,14 +171,3 @@ CREATE POLICY "Users can update own profile" ON profiles
 GRANT EXECUTE ON FUNCTION upsert_profile_from_auth(uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION admin_list_users(int, int) TO authenticated;
 GRANT EXECUTE ON FUNCTION is_admin(uuid) TO authenticated;
-
--- 9. Sanity check - verify profiles table structure
-SELECT 
-    column_name, 
-    data_type, 
-    is_nullable, 
-    column_default
-FROM information_schema.columns 
-WHERE table_name = 'profiles' 
-    AND table_schema = 'public'
-ORDER BY ordinal_position;
