@@ -167,47 +167,36 @@ export default function BuyTPCPage() {
   // Referral validation with debounce
   useEffect(() => {
     const validateReferral = async () => {
-      if (!referralCode.trim()) {
-        setReferralValid(null);
-        setReferralError('');
-        setSponsorInfo(null);
-        return;
-      }
-
       // Get current user to check self-referral
       const { data: { user } } = await supabase.auth.getUser();
       const currentUserId = user?.id;
 
       try {
-        // Normalize input code
-        const normalized = referralCode.trim().toUpperCase();
+        const result = await validateSponsor(referralCode);
         
-        // Use RPC to validate member code safely (bypasses RLS)
-        const { data, error } = await supabase.rpc('public_validate_member_code', { 
-          p_code: normalized 
+        // Debug: log validation result
+        console.log('[REFERRAL] check', result.code, { 
+          found: result.found, 
+          sponsorId: result.sponsorId, 
+          hasError: !!result.error 
         });
 
-        // Debug: log validation result
-        console.log('[REFERRAL] check', normalized, { found: !!data && Array.isArray(data) && data.length > 0, error });
-
-        if (error) {
-          setReferralValid(false);
-          setReferralError('Kode referral tidak terdaftar');
-          setSponsorInfo(null);
+        if (!result.found) {
+          // If sponsor is empty, it's optional - no error
+          if (result.code === '') {
+            setReferralValid(null);
+            setReferralError('');
+            setSponsorInfo(null);
+          } else {
+            setReferralValid(false);
+            setReferralError('Kode referral tidak terdaftar');
+            setSponsorInfo(null);
+          }
           return;
         }
-
-        if (!data || !Array.isArray(data) || data.length === 0) {
-          setReferralValid(false);
-          setReferralError('Kode referral tidak terdaftar');
-          setSponsorInfo(null);
-          return;
-        }
-
-        const sponsor = data[0];
 
         // Check self-referral
-        if (sponsor.id === currentUserId) {
+        if (result.sponsorId === currentUserId) {
           setReferralValid(false);
           setReferralError('Tidak boleh pakai kode sendiri');
           setSponsorInfo(null);
@@ -216,7 +205,7 @@ export default function BuyTPCPage() {
 
         setReferralValid(true);
         setReferralError('');
-        setSponsorInfo({ member_code: sponsor.member_code, id: sponsor.id });
+        setSponsorInfo({ member_code: result.code, id: result.sponsorId });
       } catch (error) {
         setReferralValid(false);
         setReferralError('Gagal memvalidasi referral');
@@ -228,13 +217,39 @@ export default function BuyTPCPage() {
     return () => clearTimeout(timeoutId);
   }, [referralCode]);
 
-  // Calculate derived values
+  // Helper function to normalize sponsor code
+const normalizeSponsor = (v: string) => v.trim().toUpperCase();
+
+// Helper function to validate sponsor via RPC (RLS-safe)
+async function validateSponsor(codeRaw: string) {
+  const code = normalizeSponsor(codeRaw || "");
+  if (!code) {
+    return { found: true, sponsorId: null, code: "" }; // sponsor optional
+  }
+
+  const { data, error } = await supabase
+    .rpc('public_validate_member_code', { p_code: code })
+    .maybeSingle();
+
+  // RLS-safe: error biasanya null, data null jika tidak ada
+  if (error) {
+    return { found: false, sponsorId: null, code, error };
+  }
+
+  if (!data?.id) {
+    return { found: false, sponsorId: null, code, error: null };
+  }
+
+  return { found: true, sponsorId: data.id, code, error: null };
+}
+
+// Calculate derived values
   const tpcAmount = calcTpc(currency, amountValue, solUsdPrice);
   const sponsorBonus = amountValue >= 1000000 ? calculateSponsorBonus(amountValue) : 0;
   const sponsorBonusAmount = typeof sponsorBonus === 'number' ? sponsorBonus : sponsorBonus?.bonus_amount || 0;
   const totalTPC = tpcAmount + sponsorBonusAmount;
 
-  const isValid = amountValue > 0 && walletTpc.trim().length >= 20 && referralValid === true && agreed && userEmail !== null;
+  const isValid = amountValue > 0 && walletTpc.trim().length >= 20 && (referralValid === true || referralValid === null) && agreed && userEmail !== null;
 
   const handleSubmit = async () => {
     if (!isValid || isLoading) return;
