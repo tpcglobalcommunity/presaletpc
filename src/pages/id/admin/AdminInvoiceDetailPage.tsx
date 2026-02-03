@@ -41,28 +41,49 @@ export default function AdminInvoiceDetailPage() {
   const [showApproveDialog, setShowApproveDialog] = useState(false);
   const [currentTime] = useState(new Date().toLocaleString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }));
 
+  // Guard: if no id provided, redirect to invoices list
+  useEffect(() => {
+    if (!id) {
+      toast({ title: 'ID invoice tidak valid', variant: 'destructive' });
+      navigate('../invoices');
+      return;
+    }
+  }, [id, navigate, toast]);
+
   useEffect(() => {
     if (!id) return;
     const fetchInvoice = async () => {
-      // Fetch ONLY by UUID using RPC
-      const { data, error } = await supabase.rpc('admin_get_invoice_by_id', { p_id: id });
-      
-      if (error) {
-        console.error('Error fetching invoice by ID:', error);
-        toast({ title: 'Invoice tidak ditemukan', variant: 'destructive' });
+      try {
+        // Fetch ONLY by UUID using RPC
+        const { data, error } = await supabase
+          .from('invoices')
+          .select('*')
+          .eq('id', id)
+          .single();
+        
+        if (error) {
+          console.error('Error fetching invoice by ID:', error);
+          toast({ title: 'Invoice tidak ditemukan', variant: 'destructive' });
+          navigate('../invoices');
+          return;
+        }
+        
+        if (!data) {
+          toast({ title: 'Invoice tidak ditemukan', variant: 'destructive' });
+          navigate('../invoices');
+          return;
+        }
+        
+        setInvoice(data);
+      } catch (error) {
+        console.error('Unexpected error:', error);
+        toast({ title: 'Terjadi kesalahan', variant: 'destructive' });
         navigate('../invoices');
-        return;
+      } finally {
+        setIsLoading(false);
       }
-      
-      if (!data) {
-        toast({ title: 'Invoice tidak ditemukan', variant: 'destructive' });
-        navigate('../invoices');
-        return;
-      }
-      
-      setInvoice(data);
-      setIsLoading(false);
     };
+
     fetchInvoice();
   }, [id, navigate, toast]);
 

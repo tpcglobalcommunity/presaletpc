@@ -133,7 +133,7 @@ export default function AdminDashboardPage() {
         }
 
         // Fetch financial totals via RPC
-        const { data: financialData, error: financialError } = await (supabase.rpc('admin_get_paid_totals') as any);
+        const { data: financialData, error: financialError } = await supabase.rpc('admin_get_paid_totals');
 
         if (financialError) {
           console.error('Error fetching financial totals:', financialError);
@@ -150,17 +150,18 @@ export default function AdminDashboardPage() {
           return;
         }
 
-        // Extract totals from RPC response
-        const totals = (financialData?.[0] as any) || {
-          total_idr: 0,
-          total_sol: 0,
-          total_usdc: 0,
-          count_paid: 0
+        // Parse JSON response from RPC
+        const totals = financialData as {
+          totalUSD: number;
+          totalTPC: number;
+          totalIDR: number;
+          totalUSDC: number;
+          totalSOL: number;
         };
 
-        const totalIDR = Number(totals.total_idr) || 0;
-        const totalSOL = Number(totals.total_sol) || 0;
-        const totalUSDC = Number(totals.total_usdc) || 0;
+        const totalIDR = totals.totalIDR || 0;
+        const totalSOL = totals.totalSOL || 0;
+        const totalUSDC = totals.totalUSDC || 0;
 
         // Convert to IDR
         const usdToIDR = 17000; // Configurable constant

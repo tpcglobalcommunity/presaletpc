@@ -45,16 +45,26 @@ export function AdminDashboardStats() {
           active_users: 0
         };
       }
-      return data?.[0] as DashboardStats || {
-        total_users: 0,
-        total_invoices: 0,
-        unpaid_invoices: 0,
-        paid_invoices: 0,
-        total_referrals: 0,
-        new_users_this_month: 0,
-        new_invoices_this_month: 0,
-        total_revenue: 0,
-        active_users: 0
+
+      // Parse JSON response from RPC
+      const statsData = data as {
+        totalPending: number;
+        totalApproved: number;
+        totalRejected: number;
+        totalInvoices: number;
+        totalTPC: number;
+      };
+
+      return {
+        total_users: 0, // Will be fetched separately if needed
+        total_invoices: statsData.totalInvoices || 0,
+        unpaid_invoices: statsData.totalPending || 0,
+        paid_invoices: statsData.totalApproved || 0,
+        total_referrals: 0, // Will be fetched separately if needed
+        new_users_this_month: 0, // Will be fetched separately if needed
+        new_invoices_this_month: 0, // Will be fetched separately if needed
+        total_revenue: statsData.totalTPC || 0,
+        active_users: 0, // Will be fetched separately if needed
       };
     },
   });
