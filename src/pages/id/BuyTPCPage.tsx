@@ -180,17 +180,15 @@ export default function BuyTPCPage() {
 
       try {
         // Normalize input code
-        const normalizedCode = referralCode.trim().toUpperCase();
-        console.log('[REFERRAL] check', normalizedCode);
+        const normalized = referralCode.trim().toUpperCase();
         
-        // Query profiles table directly using member_code
-        const { data: sponsor, error } = await supabase
-          .from('profiles')
-          .select('id, member_code')
-          .eq('member_code', normalizedCode)
-          .maybeSingle();
+        // Use RPC to validate member code safely (bypasses RLS)
+        const { data, error } = await supabase.rpc('public_validate_member_code', { 
+          p_code: normalized 
+        });
 
-        console.log('[REFERRAL] result', { found: !!sponsor, error, sponsor });
+        // Debug: log validation result
+        console.log('[REFERRAL] check', normalized, { found: !!data && Array.isArray(data) && data.length > 0, error });
 
         if (error) {
           setReferralValid(false);
@@ -199,12 +197,14 @@ export default function BuyTPCPage() {
           return;
         }
 
-        if (!sponsor) {
+        if (!data || !Array.isArray(data) || data.length === 0) {
           setReferralValid(false);
           setReferralError('Kode referral tidak terdaftar');
           setSponsorInfo(null);
           return;
         }
+
+        const sponsor = data[0];
 
         // Check self-referral
         if (sponsor.id === currentUserId) {

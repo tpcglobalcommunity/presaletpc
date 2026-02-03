@@ -182,6 +182,15 @@ export type Database = {
           wallet_tpc: string | null;
         };
       };
+      public_validate_member_code: {
+        Args: {
+          p_code: string;
+        };
+        Returns: {
+          id: string;
+          member_code: string;
+        }[];
+      };
       generate_invoice_no: { Args: never; Returns: string }
       generate_member_code: { Args: never; Returns: string }
       get_referral_network: { 
