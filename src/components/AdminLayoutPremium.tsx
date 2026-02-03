@@ -48,19 +48,33 @@ export function AdminLayoutPremium() {
 
   useEffect(() => {
     const fetchSidebarStats = async () => {
-      const { data, error } = await supabase.rpc('get_dashboard_stats_admin');
-      if (!error && data && data.length > 0) {
-        const dashboardData = data[0] as {
-          total_users: number;
-          total_invoices: number;
-          unpaid_invoices: number;
-          paid_invoices: number;
-          total_referrals: number;
+      try {
+        const { data, error } = await supabase.rpc('get_dashboard_stats_admin');
+        if (error) {
+          console.error('[ADMIN] sidebar stats fetch failed', error);
+          return;
+        }
+
+        if (!data) {
+          console.log('[ADMIN] no sidebar stats data received');
+          return;
+        }
+
+        // Parse JSON response from RPC
+        const statsData = data as {
+          totalPending: number;
+          totalApproved: number;
+          totalRejected: number;
+          totalInvoices: number;
+          totalTPC: number;
         };
+
         setStats({
-          total_users: dashboardData.total_users,
-          pending_review: dashboardData.total_invoices - dashboardData.paid_invoices // Calculate pending
+          total_users: 0, // Will be fetched separately if needed
+          pending_review: statsData.totalPending || 0
         });
+      } catch (e) {
+        console.error('[ADMIN] sidebar stats error', e);
       }
     };
 

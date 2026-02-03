@@ -198,13 +198,23 @@ export type Database = {
       }
       get_dashboard_stats_admin: {
         Args: never;
-        Returns: Array<{
-          total_users: number;
-          total_invoices: number;
-          unpaid_invoices: number;
-          paid_invoices: number;
-          total_referrals: number;
-        }>
+        Returns: {
+          totalPending: number;
+          totalApproved: number;
+          totalRejected: number;
+          totalInvoices: number;
+          totalTPC: number;
+        }
+      }
+      admin_get_paid_totals: {
+        Args: never;
+        Returns: {
+          totalUSD: number;
+          totalTPC: number;
+          totalIDR: number;
+          totalUSDC: number;
+          totalSOL: number;
+        }
       }
       get_admin_users_data: {
         Args: never;
