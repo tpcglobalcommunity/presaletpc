@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { formatIdr, formatUsdc } from '@/lib/formatters';
+import TokenMintInfoCard from '@/components/trust/TokenMintInfoCard';
 
 interface PublicInvoice {
   invoice_no: string;
@@ -245,14 +246,23 @@ export default function PublicInvoiceDetailPage() {
 
               {/* Status-specific content */}
               {displayStatus === 'APPROVED' && invoice.tpc_sent && (
-                <Alert className="bg-green-500/10 border-green-500/50">
-                  <CheckCircle className="h-4 w-4 text-green-400" />
-                  <AlertDescription className="text-green-400">
-                    <strong>TPC sudah dikirim ke wallet Anda</strong>
-                    <br />
-                    Token TPC telah berhasil dikirim ke alamat wallet yang tertera.
-                  </AlertDescription>
-                </Alert>
+                <>
+                  <Alert className="bg-green-500/10 border-green-500/50">
+                    <CheckCircle className="h-4 w-4 text-green-400" />
+                    <AlertDescription className="text-green-400">
+                      <strong>TPC sudah dikirim ke wallet Anda</strong>
+                      <br />
+                      Token TPC telah berhasil dikirim ke alamat wallet yang tertera.
+                    </AlertDescription>
+                  </Alert>
+                  
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <p className="text-[#848E9C] text-sm mb-3">TPC dikirim menggunakan token resmi berikut:</p>
+                      <TokenMintInfoCard compact={true} showDisclaimer={false} />
+                    </div>
+                  </div>
+                </>
               )}
 
               {displayStatus === 'PENDING' && !isExpired() && (

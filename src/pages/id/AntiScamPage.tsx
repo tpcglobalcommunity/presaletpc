@@ -25,6 +25,7 @@ import {
   Star,
   ExternalLink,
 } from "lucide-react";
+import TokenMintInfoCard from '@/components/trust/TokenMintInfoCard';
 
 type IconType = any;
 
@@ -560,6 +561,22 @@ export default function AntiScamPage() {
             {verificationSteps.map((s, idx) => (
               <StepCardView key={idx} step={s} />
             ))}
+          </div>
+        </div>
+
+        {/* Official Token Verification */}
+        <div className="mt-10">
+          <SectionTitle
+            icon={Shield}
+            title="VERIFIKASI TOKEN RESMI"
+            subtitle="Hanya token dengan mint address berikut yang dianggap resmi."
+            tone="safe"
+          />
+          <TokenMintInfoCard />
+          <div className="mt-4 bg-[#1E2329]/50 border border-[#2B3139] rounded-xl p-4">
+            <p className="text-[#848E9C] text-sm">
+              <strong>Peringatan:</strong> Setiap token TPC yang tidak menggunakan mint address di atas adalah palsu dan tidak terafiliasi dengan TPC Global.
+            </p>
           </div>
         </div>
 

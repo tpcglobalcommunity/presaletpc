@@ -23,6 +23,7 @@ import {
   Search,
   Filter
 } from 'lucide-react';
+import TokenMintInfoCard from '@/components/trust/TokenMintInfoCard';
 
 interface WalletData {
   id: string;
@@ -433,6 +434,15 @@ export default function TransparansiPage() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* Official On-Chain Data */}
+      <section className="mb-12">
+        <div className="flex items-center gap-3 mb-6">
+          <Shield className="h-6 w-6 text-[#F0B90B]" />
+          <h2 className="text-white text-xl font-semibold">Official On-Chain Data</h2>
+        </div>
+        <TokenMintInfoCard />
       </section>
 
       {/* Disclaimer & Public Notes */}
