@@ -16,7 +16,7 @@ import {
   Star,
   Wallet
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Separator } from '@/components/ui/separator';
 
@@ -27,41 +27,47 @@ interface MenuDrawerProps {
 export function MenuDrawer({ onClose }: MenuDrawerProps) {
   const navigate = useNavigate();
   const { user, isAdmin, signOut } = useAuth();
+  const { lang = 'id' } = useParams();
+
+  const withLang = (path: string) => {
+    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+    return `/${lang}/${cleanPath}`;
+  };
 
   const handleNav = (path: string) => {
-    navigate(path);
+    navigate(withLang(path));
     onClose();
   };
 
   const handleLogout = async () => {
     await signOut();
     onClose();
-    navigate('/id');
+    navigate(`/${lang}`);
   };
 
   const publicItems = [
-    { icon: Shield, label: 'Transparansi', path: '/id/transparansi' },
-    { icon: AlertTriangle, label: 'Anti-Scam', path: '/id/anti-scam' },
-    { icon: Wallet, label: 'Tutorial Wallet', path: '/id/tutorial/phantom-wallet' },
-    { icon: Crown, label: 'Koordinator Resmi', path: '/id/verified-coordinators' },
-    { icon: Star, label: 'TPC Chapters', path: '/id/chapters' },
-    { icon: BookOpen, label: 'Edukasi', path: '/id/edukasi' },
-    { icon: FileTextIcon, label: 'Whitepaper', path: '/id/whitepaper' },
-    { icon: Users, label: 'DAO Lite', path: '/id/dao' },
-    { icon: HelpCircle, label: 'FAQ', path: '/id/faq' },
-    { icon: FileText, label: 'Syarat dan Ketentuan', path: '/id/syarat-ketentuan' },
+    { icon: Shield, label: lang === 'en' ? 'Transparency' : 'Transparansi', path: 'transparansi' },
+    { icon: AlertTriangle, label: lang === 'en' ? 'Anti-Scam' : 'Anti-Scam', path: 'anti-scam' },
+    { icon: Wallet, label: lang === 'en' ? 'Phantom Wallet Tutorial' : 'Tutorial Phantom Wallet', path: 'tutorial/phantom-wallet' },
+    { icon: Crown, label: lang === 'en' ? 'Verified Coordinators' : 'Koordinator Resmi', path: 'verified-coordinators' },
+    { icon: Star, label: lang === 'en' ? 'TPC Chapters' : 'TPC Chapters', path: 'chapters' },
+    { icon: BookOpen, label: lang === 'en' ? 'Education' : 'Edukasi', path: 'edukasi' },
+    { icon: FileTextIcon, label: lang === 'en' ? 'Whitepaper' : 'Whitepaper', path: 'whitepaper' },
+    { icon: Users, label: lang === 'en' ? 'DAO Lite' : 'DAO Lite', path: 'dao' },
+    { icon: HelpCircle, label: lang === 'en' ? 'FAQ' : 'FAQ', path: 'faq' },
+    { icon: FileText, label: lang === 'en' ? 'Terms & Conditions' : 'Syarat dan Ketentuan', path: 'syarat-ketentuan' },
   ];
 
   const memberItems = [
-    { icon: FileText, label: 'Invoice', path: '/id/member/invoices', subtext: 'Riwayat pembelian TPC' },
-    { icon: History, label: 'Riwayat Invoice', path: '/id/dashboard/history' },
-    { icon: Share2, label: 'Referral Saya', path: '/id/member/referrals' },
-    { icon: Settings, label: 'Pengaturan', path: '/id/dashboard/settings' },
+    { icon: FileText, label: lang === 'en' ? 'Invoice' : 'Invoice', path: 'member/invoices', subtext: lang === 'en' ? 'TPC purchase history' : 'Riwayat pembelian TPC' },
+    { icon: History, label: lang === 'en' ? 'Invoice History' : 'Riwayat Invoice', path: 'dashboard/history' },
+    { icon: Share2, label: lang === 'en' ? 'My Referrals' : 'Referral Saya', path: 'member/referrals' },
+    { icon: Settings, label: lang === 'en' ? 'Settings' : 'Pengaturan', path: 'dashboard/settings' },
   ];
 
   const adminItems = [
-    { icon: LayoutDashboard, label: 'Admin Dashboard', path: '/id/admin' },
-    { icon: Cog, label: 'Admin Settings', path: '/id/admin/settings' },
+    { icon: LayoutDashboard, label: lang === 'en' ? 'Admin Dashboard' : 'Admin Dashboard', path: 'admin' },
+    { icon: Cog, label: lang === 'en' ? 'Admin Settings' : 'Admin Settings', path: 'admin/settings' },
   ];
 
   return (
