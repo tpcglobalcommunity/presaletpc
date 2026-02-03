@@ -94,7 +94,7 @@ export default function AuthCallbackPage({ forcedLang }: AuthCallbackPageProps =
           }
           
           console.log("[AUTH CALLBACK] Session found, redirecting to dashboard");
-          navigate(`/${finalLang}/dashboard`, { replace: true });
+          navigate(`/${finalLang}/member/dashboard`, { replace: true });
           return;
         }
 
