@@ -85,12 +85,19 @@ const MessageTemplatesPage = lazy(() => import("@/pages/admin/MessageTemplatesPa
 
 // Guards
 import { RequireAdmin } from "@/components/guards/RequireAdmin";
+import { useEffect } from "react";
 
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const App = () => {
+  // Router sanity check
+  useEffect(() => {
+    console.log("[ROUTER] Auth callback route registered");
+  }, []);
+
+  return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -327,11 +334,6 @@ const App = () => (
                   <EnLoginPage />
                 </Suspense>
               } />
-              <Route path="auth/callback" element={
-                <Suspense fallback={<PageLoader />}>
-                  <EnAuthCallbackPage />
-                </Suspense>
-              } />
             </Route>
 
             {/* Catch-all */}
@@ -341,6 +343,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;
