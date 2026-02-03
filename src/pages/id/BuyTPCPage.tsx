@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Coins, ArrowRight, Loader2, Shield, CheckCircle, ExternalLink } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
@@ -31,8 +31,18 @@ interface PresaleConfig {
   listing_price_usd: number;
 }
 
+function sanitizeReferral(raw: string) {
+  // Aman: hanya huruf, angka, dash, underscore. max 32 char
+  return raw
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9_-]/g, "")
+    .slice(0, 32);
+}
+
 export default function BuyTPCPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   
   // Presale configuration from environment variables
@@ -47,11 +57,35 @@ export default function BuyTPCPage() {
   const [amountValue, setAmountValue] = useState(0);
   const [email, setEmail] = useState('');
   const [referralCode, setReferralCode] = useState('');
+  const [refFromUrl, setRefFromUrl] = useState<string>('');
   const [agreed, setAgreed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [solUsdPrice, setSolUsdPrice] = useState<number | null>(null);
   const [solPriceLoading, setSolPriceLoading] = useState(false);
+
+  const getReferralFromUrl = () => {
+    const sp = new URLSearchParams(location.search);
+    const ref = sp.get("ref") || sp.get("referral") || sp.get("code");
+    return ref ? sanitizeReferral(ref) : "";
+  };
+
+  useEffect(() => {
+    const ref = getReferralFromUrl();
+    if (ref) {
+      setRefFromUrl(ref);
+      setReferralCode(ref);
+      sessionStorage.setItem("referralCode", ref); // opsional: biar kebawa kalau pindah/login
+    } else {
+      // opsional: fallback dari sessionStorage
+      const saved = sessionStorage.getItem("referralCode");
+      if (saved) {
+        const cleaned = sanitizeReferral(saved);
+        setReferralCode(cleaned);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search]);
   const [presaleConfig, setPresaleConfig] = useState<PresaleConfig | null>(null);
   const [isPresaleConfigLoading, setIsPresaleConfigLoading] = useState(true);
 
@@ -153,9 +187,11 @@ export default function BuyTPCPage() {
     setIsLoading(true);
     try {
       // Call locked RPC function instead of direct insert
+      const referralClean = referralCode ? sanitizeReferral(referralCode) : null;
+
       const { data, error } = await supabase.rpc('create_invoice_locked', {
         p_email: email.toLowerCase().trim(),
-        p_referral_code: referralCode.toUpperCase().trim(),
+        p_referral_code: referralClean,          // ✅ null kalau kosong
         p_base_currency: currency,
         p_amount_input: amountValue
       });
@@ -327,7 +363,7 @@ export default function BuyTPCPage() {
                   )}
                 >
                   <div className="font-semibold">{info.label}</div>
-                  <div className="text-xs mt-1">{info.hint}</div>
+                  <div className="text-xs mt-1">{info.symbol}</div>
                 </button>
               ))}
             </div>
@@ -377,13 +413,24 @@ export default function BuyTPCPage() {
               <label className="text-sm font-medium text-white mb-2 block">
                 Kode Referral (Opsional)
               </label>
+
               <input
                 type="text"
                 placeholder="Masukkan kode referral"
                 value={referralCode}
-                onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                className="w-full px-4 py-3 bg-[#1E2329] border border-[#2B3139] rounded-xl text-white placeholder-[#848E9C] uppercase focus:outline-none focus:ring-2 focus:ring-[#F0B90B]/40 focus:border-[#F0B90B]/50"
+                onChange={(e) => setReferralCode(sanitizeReferral(e.target.value))}
+                readOnly={!!refFromUrl}  // ✅ kalau dari URL, user tidak perlu isi lagi
+                className={cn(
+                  "w-full px-4 py-3 bg-[#1E2329] border border-[#2B3139] rounded-xl text-white placeholder-[#848E9C] uppercase focus:outline-none focus:ring-2 focus:ring-[#F0B90B]/40 focus:border-[#F0B90B]/50",
+                  refFromUrl && "opacity-90 cursor-not-allowed"
+                )}
               />
+
+              {refFromUrl && (
+                <p className="mt-2 text-xs text-[#F0B90B]">
+                  Referral terisi otomatis dari link.
+                </p>
+              )}
             </div>
 
             {/* Summary */}

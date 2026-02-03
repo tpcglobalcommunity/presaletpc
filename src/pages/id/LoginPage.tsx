@@ -1,27 +1,56 @@
 import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
+function sanitizeReturnTo(raw: string | null) {
+  if (!raw) return null;
+
+  // 1) pastikan string
+  let path = String(raw).trim();
+
+  // 2) kalau full URL, ambil pathname+search+hash saja
+  try {
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      const u = new URL(path);
+      path = `${u.pathname}${u.search}${u.hash}`;
+    }
+  } catch {
+    // ignore
+  }
+
+  // 3) normalisasi leading slash: "///id/..." -> "/id/..."
+  path = `/${path.replace(/^\/+/, '')}`;
+
+  // 4) whitelist route yang boleh (anti open-redirect & anti route aneh)
+  if (path.startsWith('/id/') || path === '/id') return path;
+  if (path.startsWith('/en/') || path === '/en') return path;
+
+  return null;
+}
+
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { signInWithGoogle, isLoading, user } = useAuth();
 
   // Redirect if already logged in
   useEffect(() => {
     if (!isLoading && user) {
-      const returnTo = sessionStorage.getItem('returnTo');
+      const returnToRaw = sessionStorage.getItem('returnTo');
+      const returnTo = sanitizeReturnTo(returnToRaw);
+
+      // kita hapus supaya tidak nyangkut/loop
+      sessionStorage.removeItem('returnTo');
+
       if (returnTo) {
         navigate(returnTo, { replace: true });
-        sessionStorage.removeItem('returnTo');
       } else {
-        navigate('/id/dashboard', { replace: true });
+        // ✅ FINAL member landing
+        navigate('/id/member/dashboard', { replace: true });
       }
     }
   }, [user, isLoading, navigate]);
 
-  // Show loading while checking auth state
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -32,6 +61,10 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     try {
+      // OPTIONAL: kalau kita mau pastikan returnTo selalu benar sebelum login
+      // contoh: kalau user datang dari buytpc, set returnTo dulu
+      // sessionStorage.setItem('returnTo', '/id/member/dashboard');
+
       await signInWithGoogle();
     } catch (error) {
       console.error('Login error:', error);
@@ -41,18 +74,16 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-background">
       <div className="w-full max-w-sm">
-        {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary/20 mb-4">
             <span className="text-3xl font-bold text-primary">TPC</span>
           </div>
           <h1 className="text-title mb-2">Masuk ke Akun</h1>
           <p className="text-muted-foreground text-sm">
-            Login untuk melihat dan mengelola invoice Anda
+            Login untuk melihat dan mengelola invoice kita
           </p>
         </div>
 
-        {/* Google Login Button */}
         <button
           onClick={handleLogin}
           disabled={isLoading}
@@ -86,7 +117,7 @@ export default function LoginPage() {
         </button>
 
         <p className="text-center text-xs text-muted-foreground">
-          Dengan masuk, Anda menyetujui{' '}
+          Dengan masuk, kita menyetujui{' '}
           <span className="text-primary">Syarat & Ketentuan</span> kami
         </p>
       </div>
