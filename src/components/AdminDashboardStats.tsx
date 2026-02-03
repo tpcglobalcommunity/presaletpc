@@ -1,6 +1,5 @@
 import { Users, Clock, CheckCircle, Share2, TrendingUp, TrendingDown } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { adminRpc } from '@/lib/adminRpc';
 import { formatNumberID, formatRupiah } from '@/lib/number';
 
 interface StatCard {
@@ -30,9 +29,63 @@ export function AdminDashboardStats() {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: async (): Promise<DashboardStats> => {
-      const { data, error } = await adminRpc.getDashboardStats();
-      if (error) {
-        console.error('Error fetching dashboard stats:', error);
+      // Temporarily disable stats call to prevent 404 errors
+      // TODO: Re-enable when DB function is properly deployed
+      console.warn('[ADMIN] Dashboard stats temporarily disabled');
+      
+      return {
+        total_users: 0,
+        total_invoices: 0,
+        unpaid_invoices: 0,
+        paid_invoices: 0,
+        total_referrals: 0,
+        new_users_this_month: 0,
+        new_invoices_this_month: 0,
+        total_revenue: 0,
+        active_users: 0,
+      };
+
+      // Original code (commented out for now):
+      /*
+      try {
+        const { data, error } = await adminRpc.getDashboardStats();
+        if (error) {
+          console.error('Error fetching dashboard stats:', error);
+          return {
+            total_users: 0,
+            total_invoices: 0,
+            unpaid_invoices: 0,
+            paid_invoices: 0,
+            total_referrals: 0,
+            new_users_this_month: 0,
+            new_invoices_this_month: 0,
+            total_revenue: 0,
+            active_users: 0,
+          };
+        }
+
+        // Parse JSON response from RPC
+        const statsData = data as unknown as {
+          totalPending: number;
+          totalApproved: number;
+          totalRejected: number;
+          totalInvoices: number;
+          totalTPC: number;
+        };
+
+        return {
+          total_users: 0, // Will be fetched separately if needed
+          total_invoices: statsData.totalInvoices || 0,
+          unpaid_invoices: statsData.totalPending || 0,
+          paid_invoices: statsData.totalApproved || 0,
+          total_referrals: 0, // Will be fetched separately if needed
+          new_users_this_month: 0, // Will be fetched separately if needed
+          new_invoices_this_month: 0, // Will be fetched separately if needed
+          total_revenue: statsData.totalTPC || 0,
+          active_users: 0, // Will be fetched separately if needed
+        };
+      } catch (error) {
+        console.error('Unexpected error fetching dashboard stats:', error);
         return {
           total_users: 0,
           total_invoices: 0,
@@ -45,27 +98,7 @@ export function AdminDashboardStats() {
           active_users: 0,
         };
       }
-
-      // Parse JSON response from RPC
-      const statsData = data as unknown as {
-        totalPending: number;
-        totalApproved: number;
-        totalRejected: number;
-        totalInvoices: number;
-        totalTPC: number;
-      };
-
-      return {
-        total_users: 0, // Will be fetched separately if needed
-        total_invoices: statsData.totalInvoices || 0,
-        unpaid_invoices: statsData.totalPending || 0,
-        paid_invoices: statsData.totalApproved || 0,
-        total_referrals: 0, // Will be fetched separately if needed
-        new_users_this_month: 0, // Will be fetched separately if needed
-        new_invoices_this_month: 0, // Will be fetched separately if needed
-        total_revenue: statsData.totalTPC || 0,
-        active_users: 0, // Will be fetched separately if needed
-      };
+      */
     },
   });
 

@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { adminRpc } from '@/lib/adminRpc';
 import { formatNumberID, formatRupiah } from '@/lib/number';
 
 interface Invoice {
@@ -133,10 +132,10 @@ export default function AdminDashboardPage() {
           isUsingFallbackRate = true;
         }
 
-        // Fetch financial totals via RPC with fallback
+        // Fetch financial totals via RPC
         setIsFinancialLoading(true);
         try {
-          const { data: financialData, error: financialError } = await adminRpc.getPaidTotals();
+          const { data: financialData, error: financialError } = await supabase.rpc('admin_get_paid_totals');
 
           if (financialError) {
             console.error('Error fetching financial totals:', financialError);
