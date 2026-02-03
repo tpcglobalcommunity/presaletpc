@@ -1,16 +1,23 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { signInWithGoogle, isLoading, user } = useAuth();
 
   // Redirect if already logged in
   useEffect(() => {
     if (!isLoading && user) {
-      navigate('/id/dashboard', { replace: true });
+      const returnTo = sessionStorage.getItem('returnTo');
+      if (returnTo) {
+        navigate(returnTo, { replace: true });
+        sessionStorage.removeItem('returnTo');
+      } else {
+        navigate('/id/dashboard', { replace: true });
+      }
     }
   }, [user, isLoading, navigate]);
 
@@ -25,6 +32,14 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     try {
+      // Save returnTo before login
+      const returnTo = searchParams.get('returnTo');
+      if (returnTo && returnTo.startsWith('/id/')) {
+        sessionStorage.setItem('returnTo', returnTo);
+      } else {
+        sessionStorage.setItem('returnTo', '/id/dashboard');
+      }
+      
       await signInWithGoogle();
     } catch (error) {
       console.error('Login error:', error);

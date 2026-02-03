@@ -1,44 +1,49 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import PageLoader from '@/components/PageLoader';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
-const AuthCallbackPage = () => {
+export default function EnAuthCallbackPage() {
   const navigate = useNavigate();
-  const { refreshProfile } = useAuth();
 
   useEffect(() => {
-    const handleAuthCallback = async () => {
+    let isMounted = true;
+
+    const handleAuth = async () => {
       try {
-        // Handle the OAuth callback
         const { data, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Auth callback error:', error);
-          navigate('/en/login');
+
+        if (error || !data.session) {
+          console.warn("[AUTH] No session, back to login");
+          navigate("/en/login", { replace: true });
           return;
         }
 
-        if (data.session) {
-          // Refresh profile data
-          await refreshProfile();
-          // Redirect to dashboard
-          navigate('/en/dashboard');
-        } else {
-          // No session, redirect to login
-          navigate('/en/login');
-        }
-      } catch (error) {
-        console.error('Auth callback error:', error);
-        navigate('/en/login');
+        const returnTo =
+          sessionStorage.getItem("returnTo") || "/en/dashboard";
+
+        sessionStorage.removeItem("returnTo");
+
+        console.log("[AUTH] Login success, redirect to:", returnTo);
+
+        navigate(returnTo, { replace: true });
+      } catch (err) {
+        console.error("[AUTH] Fatal error:", err);
+        navigate("/en/login", { replace: true });
       }
     };
 
-    handleAuthCallback();
-  }, [navigate, refreshProfile]);
+    if (isMounted) handleAuth();
 
-  return <PageLoader />;
-};
+    return () => {
+      isMounted = false;
+    };
+  }, [navigate]);
 
-export default AuthCallbackPage;
+  return (
+    <div className="min-h-screen flex items-center justify-center text-white">
+      <div className="animate-pulse text-sm opacity-70">
+        Completing login...
+      </div>
+    </div>
+  );
+}

@@ -125,7 +125,7 @@ const App = () => (
                   <LoginPage />
                 </Suspense>
               } />
-              <Route path="auth/callback-page" element={
+              <Route path="auth/callback" element={
                 <Suspense fallback={<PageLoader />}>
                   <AuthCallbackPage />
                 </Suspense>
@@ -307,7 +307,7 @@ const App = () => (
                   <EnLoginPage />
                 </Suspense>
               } />
-              <Route path="auth/callback-page" element={
+              <Route path="auth/callback" element={
                 <Suspense fallback={<PageLoader />}>
                   <EnAuthCallbackPage />
                 </Suspense>
