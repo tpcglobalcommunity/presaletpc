@@ -13,7 +13,8 @@ import {
   Cog,
   FileText as FileTextIcon,
   Crown,
-  Star
+  Star,
+  Wallet
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -41,6 +42,7 @@ export function MenuDrawer({ onClose }: MenuDrawerProps) {
   const publicItems = [
     { icon: Shield, label: 'Transparansi', path: '/id/transparansi' },
     { icon: AlertTriangle, label: 'Anti-Scam', path: '/id/anti-scam' },
+    { icon: Wallet, label: 'Tutorial Wallet', path: '/id/tutorial/phantom-wallet' },
     { icon: Crown, label: 'Koordinator Resmi', path: '/id/verified-coordinators' },
     { icon: Star, label: 'TPC Chapters', path: '/id/chapters' },
     { icon: BookOpen, label: 'Edukasi', path: '/id/edukasi' },
