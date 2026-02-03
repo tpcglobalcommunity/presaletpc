@@ -63,7 +63,7 @@ export default function BuyTPCPage() {
   const [solPriceLoading, setSolPriceLoading] = useState(false);
   const [referralValid, setReferralValid] = useState<boolean | null>(null);
   const [referralError, setReferralError] = useState('');
-  const [sponsorInfo, setSponsorInfo] = useState<{ member_code: string } | null>(null);
+  const [sponsorInfo, setSponsorInfo] = useState<{ member_code: string; id: string } | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
@@ -179,12 +179,18 @@ export default function BuyTPCPage() {
       const currentUserId = user?.id;
 
       try {
+        // Normalize input code
+        const normalizedCode = referralCode.trim().toUpperCase();
+        console.log('[REFERRAL] check', normalizedCode);
+        
         // Query profiles table directly using member_code
         const { data: sponsor, error } = await supabase
           .from('profiles')
-          .select('user_id, member_code')
-          .eq('member_code', referralCode.trim().toUpperCase())
+          .select('id, member_code')
+          .eq('member_code', normalizedCode)
           .maybeSingle();
+
+        console.log('[REFERRAL] result', { found: !!sponsor, error, sponsor });
 
         if (error) {
           setReferralValid(false);
@@ -201,7 +207,7 @@ export default function BuyTPCPage() {
         }
 
         // Check self-referral
-        if (sponsor.user_id === currentUserId) {
+        if (sponsor.id === currentUserId) {
           setReferralValid(false);
           setReferralError('Tidak boleh pakai kode sendiri');
           setSponsorInfo(null);
@@ -210,7 +216,7 @@ export default function BuyTPCPage() {
 
         setReferralValid(true);
         setReferralError('');
-        setSponsorInfo({ member_code: sponsor.member_code });
+        setSponsorInfo({ member_code: sponsor.member_code, id: sponsor.id });
       } catch (error) {
         setReferralValid(false);
         setReferralError('Gagal memvalidasi referral');
