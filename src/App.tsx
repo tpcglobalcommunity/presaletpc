@@ -67,6 +67,8 @@ const SettingsPage = lazy(() => import("@/pages/id/dashboard/SettingsPage"));
 
 // New Member Pages (Lazy Loaded)
 const MemberDashboardPage = lazy(() => import("@/pages/member/MemberDashboardPage"));
+const ProfilePage = lazy(() => import("@/pages/id/member/ProfilePage"));
+const AdminUsersPage = lazy(() => import("@/pages/id/admin/UsersPage"));
 const MemberInvoicesPage = lazy(() => import("@/pages/member/MemberInvoicesPage"));
 const MemberInvoiceDetailPage = lazy(() => import("@/pages/member/MemberInvoiceDetailPage"));
 const MemberReferralPage = lazy(() => import("@/pages/member/MemberReferralPage"));
@@ -255,14 +257,14 @@ const App = () => {
                     <MemberInvoiceDetailPage />
                   </Suspense>
                 } />
+                <Route path="profile" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <ProfilePage />
+                  </Suspense>
+                } />
                 <Route path="referrals" element={
                   <Suspense fallback={<PageLoader />}>
                     <MemberReferralPage />
-                  </Suspense>
-                } />
-                <Route path="profile" element={
-                  <Suspense fallback={<PageLoader />}>
-                    <MemberProfilePage />
                   </Suspense>
                 } />
               </Route>
@@ -286,7 +288,7 @@ const App = () => {
                 } />
                 <Route path="users" element={
                   <Suspense fallback={<PageLoader />}>
-                    <AdminUsersPageNew />
+                    <AdminUsersPage />
                   </Suspense>
                 } />
                 <Route path="analytics" element={

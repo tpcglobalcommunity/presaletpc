@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { AlertCircle, ArrowLeft } from "lucide-react";
+import { AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2 } from "lucide-react";
+import { ensureProfile } from "@/lib/ensureProfile";
 
 export default function AuthCallbackPage() {
   const navigate = useNavigate();
@@ -76,6 +76,15 @@ export default function AuthCallbackPage() {
         }
 
         if (sessionData.session) {
+          console.log("[AUTH CALLBACK] Session found, ensuring profile exists");
+          
+          // Ensure profile exists after successful session
+          try {
+            await ensureProfile(sessionData.session.user.id);
+          } catch (profileError) {
+            console.warn("[AUTH CALLBACK] Profile sync failed:", profileError);
+          }
+          
           console.log("[AUTH CALLBACK] Session found, redirecting to dashboard");
           navigate(`/${lang}/dashboard`, { replace: true });
           return;

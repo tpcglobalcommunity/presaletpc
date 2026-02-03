@@ -3,6 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { isAdminUserId } from '@/config/admin';
 import { getAuthCallbackUrl } from '@/lib/auth-urls';
+import { ensureProfile } from "@/lib/ensureProfile";
 
 interface Profile {
   id: string;
@@ -106,9 +107,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(currentSession?.user ?? null);
 
         if (currentSession?.user) {
-          // Defer profile operations to avoid blocking
+          // Ensure profile exists from auth data
           setTimeout(async () => {
             try {
+              // Call ensureProfile to sync auth data to profiles table
+              await ensureProfile(currentSession.user.id);
+              
               let userProfile = await fetchProfile(currentSession.user.id);
               
               if (!userProfile && currentSession.user.email) {
