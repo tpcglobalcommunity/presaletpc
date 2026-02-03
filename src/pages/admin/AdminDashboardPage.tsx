@@ -368,7 +368,8 @@ export default function AdminDashboardPage() {
         </Card>
       </div>
 
-      {/* Recent Invoices */}
+      {/* Recent Invoices - REMOVED */}
+      {/*
       <Card className="bg-[#1E2329] border-[#2B3139]">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
@@ -447,6 +448,7 @@ export default function AdminDashboardPage() {
           )}
         </CardContent>
       </Card>
+      */}
     </div>
   );
 }
