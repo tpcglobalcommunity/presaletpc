@@ -54,13 +54,16 @@ export default function BuyTPCPage() {
   const [currency, setCurrency] = useState<Currency>('IDR');
   const [amountRaw, setAmountRaw] = useState('');
   const [amountValue, setAmountValue] = useState(0);
-  const [email, setEmail] = useState('');
+  const [walletTpc, setWalletTpc] = useState('');
   const [referralCode, setReferralCode] = useState('');
   const [refFromUrl, setRefFromUrl] = useState<string>('');
   const [agreed, setAgreed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [solUsdPrice, setSolUsdPrice] = useState<number | null>(null);
   const [solPriceLoading, setSolPriceLoading] = useState(false);
+  const [referralValid, setReferralValid] = useState<boolean | null>(null);
+  const [referralError, setReferralError] = useState('');
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
     const sp = new URLSearchParams(location.search);
@@ -154,11 +157,50 @@ export default function BuyTPCPage() {
     const getCurrentUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        setEmail(user.email || '');
+        setUserEmail(user.email || null);
       }
     };
     getCurrentUser();
   }, []);
+
+  // Referral validation with debounce
+  useEffect(() => {
+    const validateReferral = async () => {
+      if (!referralCode.trim()) {
+        setReferralValid(null);
+        setReferralError('');
+        return;
+      }
+
+      try {
+        // Use RPC to validate referral
+        const { data, error } = await supabase.rpc('is_referral_code_valid', {
+          p_referral_code: referralCode.trim()
+        });
+
+        if (error) {
+          setReferralValid(false);
+          setReferralError('Kode referral tidak valid');
+          return;
+        }
+
+        if (!data) {
+          setReferralValid(false);
+          setReferralError('Kode referral tidak ditemukan');
+          return;
+        }
+
+        setReferralValid(true);
+        setReferralError('');
+      } catch (error) {
+        setReferralValid(false);
+        setReferralError('Gagal memvalidasi referral');
+      }
+    };
+
+    const timeoutId = setTimeout(validateReferral, 500);
+    return () => clearTimeout(timeoutId);
+  }, [referralCode]);
 
   // Calculate derived values
   const tpcAmount = calcTpc(currency, amountValue, solUsdPrice);
@@ -166,10 +208,19 @@ export default function BuyTPCPage() {
   const sponsorBonusAmount = typeof sponsorBonus === 'number' ? sponsorBonus : sponsorBonus?.bonus_amount || 0;
   const totalTPC = tpcAmount + sponsorBonusAmount;
 
-  const isValid = amountValue > 0 && email.includes('@') && agreed;
+  const isValid = amountValue > 0 && walletTpc.trim().length >= 20 && referralValid === true && agreed && userEmail !== null;
 
   const handleSubmit = async () => {
     if (!isValid || isLoading) return;
+
+    if (!userEmail) {
+      toast({
+        title: "Error",
+        description: "Harus login untuk membeli TPC",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -177,8 +228,8 @@ export default function BuyTPCPage() {
       const referralClean = referralCode ? sanitizeReferral(referralCode) : null;
 
       const { data, error } = await supabase.rpc('create_invoice_locked', {
-        p_email: email.toLowerCase().trim(),
-        p_referral_code: referralClean,          // ✅ null kalau kosong
+        p_email: userEmail.toLowerCase().trim(),
+        p_referral_code: referralClean,          // ✅ WAJIB, tidak null
         p_base_currency: currency,
         p_amount_input: amountValue
       });
@@ -217,6 +268,19 @@ export default function BuyTPCPage() {
           description: `Kode referral "${referralCode}" valid! Bonus sponsor ditambahkan.`,
           variant: "default",
         });
+      }
+
+      // Update wallet_tpc after invoice is created
+      if (invoice && 'invoice_no' in invoice) {
+        const { error: updateError } = await supabase
+          .from('invoices')
+          .update({ wallet_tpc: walletTpc.trim() })
+          .eq('invoice_no', invoice.invoice_no);
+
+        if (updateError) {
+          console.error('Error updating wallet_tpc:', updateError);
+          // Continue anyway, invoice is created
+        }
       }
 
       toast({
@@ -401,24 +465,29 @@ export default function BuyTPCPage() {
               />
             </div>
 
-            {/* Email Input */}
+            {/* Wallet TPC Input */}
             <div>
               <label className="text-sm font-medium text-white mb-2 block">
-                Email
+                Alamat Wallet TPC
               </label>
               <input
-                type="email"
-                placeholder="email@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                placeholder="Masukkan alamat wallet TPC"
+                value={walletTpc}
+                onChange={(e) => setWalletTpc(e.target.value)}
                 className="w-full px-4 py-3 bg-[#1E2329] border border-[#2B3139] rounded-xl text-white placeholder-[#848E9C] focus:outline-none focus:ring-2 focus:ring-[#F0B90B]/40 focus:border-[#F0B90B]/50"
               />
+              {walletTpc && walletTpc.trim().length < 20 && (
+                <p className="mt-1 text-xs text-red-400">
+                  Alamat wallet TPC wajib diisi (minimal 20 karakter)
+                </p>
+              )}
             </div>
 
             {/* Referral Code */}
             <div>
               <label className="text-sm font-medium text-white mb-2 block">
-                Kode Referral (Opsional)
+                Kode Referral (Sponsor)
               </label>
 
               <input
@@ -429,9 +498,27 @@ export default function BuyTPCPage() {
                 readOnly={!!refFromUrl}  // ✅ kalau dari URL, user tidak perlu isi lagi
                 className={cn(
                   "w-full px-4 py-3 bg-[#1E2329] border border-[#2B3139] rounded-xl text-white placeholder-[#848E9C] uppercase focus:outline-none focus:ring-2 focus:ring-[#F0B90B]/40 focus:border-[#F0B90B]/50",
-                  refFromUrl && "opacity-90 cursor-not-allowed"
+                  refFromUrl && "opacity-90 cursor-not-allowed",
+                  referralValid === false && "border-red-500/50",
+                  referralValid === true && "border-emerald-500/50"
                 )}
               />
+
+              {/* Referral Validation Status */}
+              {referralCode.trim() && (
+                <div className="mt-2">
+                  {referralValid === true && (
+                    <p className="text-xs text-emerald-400">
+                      ✅ Referral valid
+                    </p>
+                  )}
+                  {referralValid === false && referralError && (
+                    <p className="text-xs text-red-400">
+                      ❌ {referralError}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {refFromUrl && (
                 <p className="mt-2 text-xs text-[#F0B90B]">

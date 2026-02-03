@@ -138,6 +138,12 @@ export type Database = {
           expires_at: string;
         };
       };
+      is_referral_code_valid: {
+        Args: {
+          p_referral_code: string;
+        };
+        Returns: boolean;
+      };
       generate_invoice_no: { Args: never; Returns: string }
       generate_member_code: { Args: never; Returns: string }
       get_referral_network: { 
