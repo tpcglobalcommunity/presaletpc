@@ -168,7 +168,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signInWithGoogle = async () => {
-    const callbackUrl = `${import.meta.env.VITE_APP_URL}/id/auth/callback`;
+    // Handle trailing slash in VITE_APP_URL
+    const baseUrl = import.meta.env.VITE_APP_URL?.replace(/\/$/, '') || '';
+    const callbackUrl = `${baseUrl}/id/auth/callback`;
     console.log("[AUTH LOGIN] Redirecting to OAuth with callback:", callbackUrl);
     
     const { error } = await supabase.auth.signInWithOAuth({
