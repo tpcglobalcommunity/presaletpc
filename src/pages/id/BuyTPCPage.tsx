@@ -59,7 +59,6 @@ export default function BuyTPCPage() {
   const [refFromUrl, setRefFromUrl] = useState<string>('');
   const [agreed, setAgreed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [solUsdPrice, setSolUsdPrice] = useState<number | null>(null);
   const [solPriceLoading, setSolPriceLoading] = useState(false);
 
@@ -79,7 +78,6 @@ export default function BuyTPCPage() {
     }
   }, [location.search]);
   const [presaleConfig, setPresaleConfig] = useState<PresaleConfig | null>(null);
-  const [isPresaleConfigLoading, setIsPresaleConfigLoading] = useState(true);
 
   // Navigation helpers
   const goToTerms = () => navigate('/id/syarat-ketentuan');
@@ -132,22 +130,19 @@ export default function BuyTPCPage() {
   useEffect(() => {
     const fetchPresaleConfig = async () => {
       try {
-        setIsPresaleConfigLoading(true);
         // For now, use fallback config
         const config: PresaleConfig = {
           stage1_started_at: FALLBACK_STAGE1_STARTED_AT,
           stage1_duration_days: 30,
           stage1_supply: 100000000,
           stage1_price_usd: 0.001,
-          stage2_supply: 100000000,
+          stage2_supply: 200000000,
           stage2_price_usd: 0.002,
           listing_price_usd: 0.005
         };
         setPresaleConfig(config);
       } catch (error) {
         console.error('Failed to fetch presale config:', error);
-      } finally {
-        setIsPresaleConfigLoading(false);
       }
     };
 
@@ -159,7 +154,6 @@ export default function BuyTPCPage() {
     const getCurrentUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        setCurrentUserId(user.id);
         setEmail(user.email || '');
       }
     };
@@ -320,13 +314,13 @@ export default function BuyTPCPage() {
               <div className="flex justify-between items-center">
                 <span className="text-sm text-[#848E9C]">Tahap 1:</span>
                 <span className="text-sm font-medium text-white">
-                  {presaleConfig ? formatRupiah(presaleConfig.stage1_supply) : '100.000.000'} TPC — ${presaleConfig?.stage1_price_usd || '0.001'}
+                  {presaleConfig ? presaleConfig.stage1_supply.toLocaleString('id-ID') : '100.000.000'} TPC — ${presaleConfig?.stage1_price_usd || '0.001'}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-[#848E9C]">Tahap 2:</span>
                 <span className="text-sm font-medium text-white">
-                  {presaleConfig ? formatRupiah(presaleConfig.stage2_supply) : '100.000.000'} TPC — ${presaleConfig?.stage2_price_usd || '0.002'}
+                  {presaleConfig ? presaleConfig.stage2_supply.toLocaleString('id-ID') : '100.000.000'} TPC — ${presaleConfig?.stage2_price_usd || '0.002'}
                 </span>
               </div>
               <div className="flex justify-between items-center">
