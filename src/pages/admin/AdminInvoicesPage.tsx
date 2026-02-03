@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { FileText, Clock, CheckCircle, XCircle, Search, Filter, Eye } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,9 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { formatNumberID, formatRupiah } from '@/lib/number';
+import { useToast } from '@/hooks/use-toast';
 
 interface Invoice {
-  id: string;
+  id?: string;
+  invoice_id?: string;
+  uuid?: string;
+  invoice_uuid?: string;
   invoice_no: string;
   status: string;
   amount_input: number;
@@ -28,11 +32,18 @@ type FilterStatus = 'all' | 'UNPAID' | 'PENDING_REVIEW' | 'PAID' | 'CANCELLED';
 
 export default function AdminInvoicesPage() {
   const navigate = useNavigate();
+  const { lang } = useParams();
+  const { toast } = useToast();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all');
+
+  // Helper function to get primary key with priority order
+  const getInvoicePK = (invoice: Invoice): string | null => {
+    return invoice.invoice_id ?? invoice.uuid ?? invoice.invoice_uuid ?? invoice.id ?? null;
+  };
 
   useEffect(() => {
     const fetchInvoices = async () => {
@@ -179,25 +190,35 @@ export default function AdminInvoicesPage() {
                     
                     return (
                       <tr 
-                        key={invoice.id} 
+                        key={invoice.invoice_no} 
                         className="border-b border-[#2B3139] hover:bg-[#2B3139]/30 cursor-pointer group"
                         onClick={() => {
-                          const pk = invoice.id;
+                          const pk = getInvoicePK(invoice);
                           if (!pk) {
-                            console.error('Invoice ID tidak valid');
+                            toast({
+                              title: 'Error',
+                              description: 'Invoice ID tidak valid',
+                              variant: 'destructive'
+                            });
                             return;
                           }
-                          navigate(`${pk}`);
+                          const safeLang = lang === 'en' ? 'en' : 'id';
+                          navigate(`/${safeLang}/admin/invoices/${pk}`);
                         }}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            const pk = invoice.id;
+                            const pk = getInvoicePK(invoice);
                             if (!pk) {
-                              console.error('Invoice ID tidak valid');
+                              toast({
+                                title: 'Error',
+                                description: 'Invoice ID tidak valid',
+                                variant: 'destructive'
+                              });
                               return;
                             }
-                            navigate(`${pk}`);
+                            const safeLang = lang === 'en' ? 'en' : 'id';
+                            navigate(`/${safeLang}/admin/invoices/${pk}`);
                           }
                         }}
                         role="button"
@@ -215,12 +236,17 @@ export default function AdminInvoicesPage() {
                                 className="bg-[#F0B90B]/10 text-[#F0B90B] border-[#F0B90B]/20 hover:bg-[#F0B90B]/20"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  const pk = invoice.id;
+                                  const pk = getInvoicePK(invoice);
                                   if (!pk) {
-                                    console.error('Invoice ID tidak valid');
+                                    toast({
+                                      title: 'Error',
+                                      description: 'Invoice ID tidak valid',
+                                      variant: 'destructive'
+                                    });
                                     return;
                                   }
-                                  navigate(`${pk}`);
+                                  const safeLang = lang === 'en' ? 'en' : 'id';
+                                  navigate(`/${safeLang}/admin/invoices/${pk}`);
                                 }}
                               >
                                 <Eye className="h-3 w-3 mr-1" />

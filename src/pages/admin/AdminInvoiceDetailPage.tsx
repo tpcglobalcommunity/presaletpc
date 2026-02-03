@@ -35,7 +35,7 @@ interface Invoice {
 }
 
 export default function AdminInvoiceDetailPage() {
-  const { invoiceId } = useParams();
+  const { invoiceId } = useParams<{ invoiceId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
@@ -44,29 +44,60 @@ export default function AdminInvoiceDetailPage() {
   const [isRejecting, setIsRejecting] = useState(false);
   const [rejectNote, setRejectNote] = useState('');
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
     const fetchInvoice = async () => {
-      if (!invoiceId) return;
+      if (!invoiceId) {
+        setNotFound(true);
+        setIsLoading(false);
+        return;
+      }
       
       try {
-        const { data, error } = await supabase
+        let data, error;
+        
+        ({ data, error } = await supabase
           .from('invoices')
           .select('*')
-          .eq('id', invoiceId)
-          .single();
+          .eq('invoice_id', invoiceId)
+          .single());
+        
+        if (error && !data) {
+          ({ data, error } = await supabase
+            .from('invoices')
+            .select('*')
+            .eq('uuid', invoiceId)
+            .single());
+        }
+        
+        if (error && !data) {
+          ({ data, error } = await supabase
+            .from('invoices')
+            .select('*')
+            .eq('invoice_uuid', invoiceId)
+            .single());
+        }
+        
+        if (error && !data) {
+          ({ data, error } = await supabase
+            .from('invoices')
+            .select('*')
+            .eq('id', invoiceId)
+            .single());
+        }
 
-        if (error) {
+        if (error || !data) {
           console.error('Error fetching invoice:', error);
-          toast({ title: 'Invoice tidak ditemukan', variant: 'destructive' });
-          navigate('../invoices');
+          setNotFound(true);
+          setIsLoading(false);
           return;
         }
         
         setInvoice(data);
       } catch (error) {
-        console.error('Error:', error);
-        toast({ title: 'Terjadi kesalahan', variant: 'destructive' });
+        console.error('Unexpected error:', error);
+        setNotFound(true);
       } finally {
         setIsLoading(false);
       }
@@ -155,6 +186,24 @@ export default function AdminInvoiceDetailPage() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F0B90B]"></div>
+      </div>
+    );
+  }
+
+  if (notFound) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <div className="text-center">
+          <div className="text-6xl mb-4">📄</div>
+          <h2 className="text-xl font-semibold text-white mb-2">Invoice Tidak Ditemukan</h2>
+          <p className="text-[#848E9C] mb-4">Invoice yang Anda cari tidak tersedia atau telah dihapus.</p>
+          <Button
+            onClick={() => navigate('../invoices')}
+            className="bg-[#F0B90B] hover:bg-[#F8D56B] text-white"
+          >
+            Kembali ke Daftar Invoice
+          </Button>
+        </div>
       </div>
     );
   }
