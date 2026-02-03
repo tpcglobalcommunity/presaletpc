@@ -1,7 +1,7 @@
--- PHASE 2: FIX RPC tpc_admin_get_paid_totals
+-- PHASE 2: FIX RPC admin_get_paid_totals
 -- Use canonical admin check function for security
 
-create or replace function public.tpc_admin_get_paid_totals()
+create or replace function public.admin_get_paid_totals()
 returns table (
   total_invoices bigint,
   pending_review bigint,
@@ -27,4 +27,4 @@ end;
 $$;
 
 -- PHASE 3: GRANT EXECUTION (WAJIB)
-grant execute on function public.tpc_admin_get_paid_totals() to authenticated;
+grant execute on function public.admin_get_paid_totals() to authenticated;
