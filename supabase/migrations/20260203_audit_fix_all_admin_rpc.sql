@@ -13,6 +13,7 @@ RETURNS TABLE (
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 BEGIN
   IF NOT public.is_admin() THEN
@@ -44,6 +45,7 @@ RETURNS TABLE (
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 BEGIN
   IF NOT public.is_admin() THEN
@@ -80,6 +82,7 @@ RETURNS TABLE (
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 BEGIN
   IF NOT public.is_admin() THEN
@@ -119,6 +122,7 @@ CREATE OR REPLACE FUNCTION public.admin_approve_invoice(p_id uuid)
 RETURNS public.invoices
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
   updated_invoice public.invoices;
@@ -147,6 +151,7 @@ CREATE OR REPLACE FUNCTION public.admin_reject_invoice(p_id uuid, p_note text)
 RETURNS public.invoices
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
   updated_invoice public.invoices;
@@ -187,6 +192,7 @@ RETURNS TABLE (
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 BEGIN
   IF NOT public.is_admin() THEN
@@ -198,13 +204,15 @@ BEGIN
 END;
 $$;
 
--- PHASE 2: GRANT EXECUTION PERMISSIONS
+-- PHASE 2: GRANT EXECUTION PERMISSIONS WITH CORRECT SIGNATURES
 GRANT EXECUTE ON FUNCTION public.admin_get_paid_totals() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.get_dashboard_stats_admin() TO authenticated;
-GRANT EXECUTE ON FUNCTION public.get_all_users_admin() TO authenticated;
+
+-- Fix: functions with parameters need correct signature
+GRANT EXECUTE ON FUNCTION public.get_all_users_admin(integer, integer) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.admin_approve_invoice(uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.admin_reject_invoice(uuid, text) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.get_admin_users_data(int, int) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_admin_users_data(integer, integer) TO authenticated;
 
 -- PHASE 3: CLEANUP LEGACY FUNCTIONS (DEPRECATED)
 -- Comment out or remove old admin check functions that are no longer needed
@@ -213,12 +221,24 @@ GRANT EXECUTE ON FUNCTION public.get_admin_users_data(int, int) TO authenticated
 
 -- PHASE 4: VERIFICATION
 SELECT '=== ADMIN RPC FUNCTIONS UPDATED ===' as status;
-SELECT 'admin_get_paid_totals' as function_name, 'UPDATED with public.is_admin()' as status;
-SELECT 'get_dashboard_stats_admin' as function_name, 'UPDATED with public.is_admin()' as status;
-SELECT 'get_all_users_admin' as function_name, 'UPDATED with public.is_admin()' as status;
-SELECT 'admin_approve_invoice' as function_name, 'UPDATED with public.is_admin()' as status;
-SELECT 'admin_reject_invoice' as function_name, 'UPDATED with public.is_admin()' as status;
-SELECT 'get_admin_users_data' as function_name, 'UPDATED with public.is_admin()' as status;
+SELECT 'admin_get_paid_totals' as function_name, 'UPDATED with public.is_admin() + security hardening' as status;
+SELECT 'get_dashboard_stats_admin' as function_name, 'UPDATED with public.is_admin() + security hardening' as status;
+SELECT 'get_all_users_admin' as function_name, 'UPDATED with public.is_admin() + security hardening' as status;
+SELECT 'admin_approve_invoice' as function_name, 'UPDATED with public.is_admin() + security hardening' as status;
+SELECT 'admin_reject_invoice' as function_name, 'UPDATED with public.is_admin() + security hardening' as status;
+SELECT 'get_admin_users_data' as function_name, 'UPDATED with public.is_admin() + security hardening' as status;
 
--- Test admin check function
-SELECT 'public.is_admin() function test:' as info, public.is_admin() as is_admin_result;
+-- Test admin check function (will be false without proper JWT context)
+SELECT 'public.is_admin() function test (no auth context):' as info, public.is_admin() as is_admin_result;
+
+-- Simulation test for verification (uncomment to test with admin UUID)
+/*
+-- Simulate admin authentication
+select set_config('request.jwt.claim.sub', 'dfbbf71c-0a7c-43fb-bab0-d21f12b78b47', true);
+select set_config('request.jwt.claim.role', 'authenticated', true);
+
+-- Test admin functions with simulated auth
+SELECT '=== SIMULATED ADMIN TEST ===' as test_info;
+SELECT 'is_admin() with simulated auth:' as info, public.is_admin() as is_admin_result;
+SELECT 'admin_get_paid_totals test:' as info, * FROM public.admin_get_paid_totals() LIMIT 1;
+*/
