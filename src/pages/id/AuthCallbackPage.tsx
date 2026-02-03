@@ -10,28 +10,12 @@ export default function AuthCallbackPage() {
 
     const handleAuth = async () => {
       try {
-        console.log("[AUTH CALLBACK RAW URL]", window.location.href);
-        
-        // Cookie policy diagnostic (DEV only)
-        if (import.meta.env.DEV) {
-          console.log("[AUTH COOKIE] document.cookie:", document.cookie);
-          console.log("[AUTH COOKIE] navigator.cookieEnabled:", navigator.cookieEnabled);
-          console.log("[AUTH COOKIE] cookie count:", document.cookie.split(';').length);
-        }
-        
-        // Check for Supabase auth token cookie
-        const cookies = document.cookie.split(';').map(c => c.trim());
-        const authCookie = cookies.find(c => c.startsWith('sb-') && c.includes('auth-token'));
-        console.log("[AUTH CALLBACK] Auth cookie found:", !!authCookie);
-        if (authCookie) {
-          console.log("[AUTH CALLBACK] Auth cookie name:", authCookie.split('=')[0]);
-          console.log("[AUTH CALLBACK] Auth cookie length:", authCookie.length);
-        }
+        console.log("[AUTH CALLBACK RAW]", window.location.href);
         
         console.log("[AUTH CALLBACK] Starting session check...");
         const { data, error } = await supabase.auth.getSession();
         
-        console.log("[AUTH CALLBACK SESSION]", data);
+        console.log("[AUTH SESSION]", data);
         console.log("[AUTH CALLBACK] Session result:", { 
           hasSession: !!data.session, 
           hasError: !!error,
@@ -40,21 +24,15 @@ export default function AuthCallbackPage() {
         });
 
         if (error || !data.session) {
-          console.warn("[AUTH] No session, back to login");
+          console.error("[AUTH CALLBACK] No session found, redirecting to login");
           navigate("/id/login", { replace: true });
           return;
         }
 
-        const returnTo =
-          sessionStorage.getItem("returnTo") || "/id/dashboard";
-
-        sessionStorage.removeItem("returnTo");
-
-        console.log("[AUTH] Login success, redirect to:", returnTo);
-
-        navigate(returnTo, { replace: true });
+        console.log("[AUTH CALLBACK] Session found, redirecting to dashboard");
+        navigate("/id/dashboard", { replace: true });
       } catch (err) {
-        console.error("[AUTH] Fatal error:", err);
+        console.error("[AUTH CALLBACK] Fatal error:", err);
         navigate("/id/login", { replace: true });
       }
     };
@@ -69,7 +47,7 @@ export default function AuthCallbackPage() {
   return (
     <div className="min-h-screen flex items-center justify-center text-white">
       <div className="animate-pulse text-sm opacity-70">
-        Menyelesaikan login...
+        Processing authentication...
       </div>
     </div>
   );

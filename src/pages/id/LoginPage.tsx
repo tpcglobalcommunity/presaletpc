@@ -32,14 +32,6 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     try {
-      // Save returnTo before login
-      const returnTo = searchParams.get('returnTo');
-      if (returnTo && returnTo.startsWith('/id/')) {
-        sessionStorage.setItem('returnTo', returnTo);
-      } else {
-        sessionStorage.setItem('returnTo', '/id/dashboard');
-      }
-      
       await signInWithGoogle();
     } catch (error) {
       console.error('Login error:', error);
