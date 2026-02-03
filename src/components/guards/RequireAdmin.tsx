@@ -14,10 +14,8 @@ export function RequireAdmin({ children }: RequireAdminProps) {
 
   const safe = lang === "en" ? "en" : "id";
 
-  // Tunggu auth selesai init
   if (isLoading) return null;
 
-  // Belum login → wajib lewat RequireAuth
   if (!user) {
     return (
       <RequireAuth>
@@ -26,7 +24,6 @@ export function RequireAdmin({ children }: RequireAdminProps) {
     );
   }
 
-  // Sudah login tapi bukan admin
   if (!isAdminUserId(user.id)) {
     return (
       <Navigate
@@ -37,6 +34,5 @@ export function RequireAdmin({ children }: RequireAdminProps) {
     );
   }
 
-  // Admin valid
   return <>{children}</>;
 }

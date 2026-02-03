@@ -1,5 +1,5 @@
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { Navigate, useLocation, useParams } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface RequireAuthProps {
   children: React.ReactNode;
@@ -8,6 +8,9 @@ interface RequireAuthProps {
 export function RequireAuth({ children }: RequireAuthProps) {
   const { user, isLoading } = useAuth();
   const location = useLocation();
+  const { lang } = useParams();
+
+  const safe = lang === "en" ? "en" : "id";
 
   if (isLoading) {
     return (
@@ -19,7 +22,7 @@ export function RequireAuth({ children }: RequireAuthProps) {
 
   if (!user) {
     const returnTo = encodeURIComponent(location.pathname + location.search);
-    return <Navigate to={`/id/login?returnTo=${returnTo}`} replace />;
+    return <Navigate to={`/${safe}/login?returnTo=${returnTo}`} replace />;
   }
 
   return <>{children}</>;
