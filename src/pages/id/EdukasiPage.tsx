@@ -15,9 +15,10 @@ import {
   AlertTriangle,
   ArrowRight,
   BookMarked,
-  Zap
+  Zap,
+  Wallet
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 interface CourseContent {
   id: string;
@@ -56,15 +57,131 @@ interface ResourceContent {
 
 export default function EdukasiPage() {
   const navigate = useNavigate();
+  const { lang = 'id' } = useParams();
   const [activeTab, setActiveTab] = useState('pemula');
   const materiRef = useRef<HTMLDivElement>(null);
   const disclaimerRef = useRef<HTMLDivElement>(null);
 
+  const isEN = lang === 'en';
+
+  const t = {
+    id: {
+      title: 'Edukasi TPC',
+      subtitle: 'Belajar trading secara terstruktur: dasar, manajemen risiko, mental, dan konsistensi proses.',
+      tutorialPhantomWallet: {
+        title: 'Tutorial Phantom Wallet',
+        description: 'Panduan lengkap membuat wallet TPC via Phantom dengan aman'
+      },
+      tabs: {
+        pemula: 'Pemula',
+        menengah: 'Menengah',
+        lanjutan: 'Lanjutan',
+        resource: 'Resource'
+      },
+      hero: {
+        educationFirst: 'Education-first',
+        noProfitPromise: 'Tanpa janji profit',
+        riskManagement: 'Fokus manajemen risiko',
+        supportiveCommunity: 'Komunitas suportif',
+        level: 'Level',
+        materials: 'Materi',
+        format: 'Format',
+        seeMaterials: 'Lihat Materi',
+        readDisclaimer: 'Baca Disclaimer'
+      },
+      card: {
+        learn: 'Pelajari',
+        loginToAccess: 'Masuk untuk akses',
+        progress: 'Progress',
+        whatWeLearn: 'Yang akan kita pelajari:'
+      },
+      howToLearn: {
+        title: 'Cara Belajar di TPC',
+        conceptExample: 'Konsep → Contoh → Latihan',
+        conceptExampleDesc: 'Pembelajaran terstruktur dari teori hingga praktik',
+        journalRisk: 'Jurnal & Evaluasi Risiko',
+        journalRiskDesc: 'Dokumentasi proses dan analisis risiko',
+        community: 'Komunitas & Sesi Tanya Jawab',
+        communityDesc: 'Diskusi dan sharing pengalaman sesama trader'
+      },
+      disclaimer: {
+        title: 'Disclaimer',
+        points: [
+          'TPC menyediakan edukasi, bukan nasihat keuangan.',
+          'Trading & aset digital memiliki risiko tinggi.',
+          'Tidak ada jaminan hasil; setiap orang berbeda.',
+          'Gunakan manajemen risiko dan belajar bertahap.'
+        ]
+      },
+      cta: {
+        title: 'Siap belajar lebih terstruktur?',
+        subtitle: 'Masuk untuk mengakses materi lanjutan, resource, dan fitur member.',
+        loginToMember: 'Masuk ke Member Area',
+        seeTransparency: 'Lihat Transparansi'
+      }
+    },
+    en: {
+      title: 'TPC Education',
+      subtitle: 'Learn trading systematically: basics, risk management, mindset, and process consistency.',
+      tutorialPhantomWallet: {
+        title: 'Phantom Wallet Tutorial',
+        description: 'Complete guide to creating a TPC wallet using Phantom securely'
+      },
+      tabs: {
+        pemula: 'Beginner',
+        menengah: 'Intermediate',
+        lanjutan: 'Advanced',
+        resource: 'Resource'
+      },
+      hero: {
+        educationFirst: 'Education-first',
+        noProfitPromise: 'No profit promises',
+        riskManagement: 'Focus on risk management',
+        supportiveCommunity: 'Supportive community',
+        level: 'Level',
+        materials: 'Materials',
+        format: 'Format',
+        seeMaterials: 'See Materials',
+        readDisclaimer: 'Read Disclaimer'
+      },
+      card: {
+        learn: 'Learn',
+        loginToAccess: 'Login to access',
+        progress: 'Progress',
+        whatWeLearn: 'What we will learn:'
+      },
+      howToLearn: {
+        title: 'How to Learn at TPC',
+        conceptExample: 'Concept → Example → Practice',
+        conceptExampleDesc: 'Structured learning from theory to practice',
+        journalRisk: 'Journal & Risk Evaluation',
+        journalRiskDesc: 'Process documentation and risk analysis',
+        community: 'Community & Q&A Sessions',
+        communityDesc: 'Discussion and experience sharing with fellow traders'
+      },
+      disclaimer: {
+        title: 'Disclaimer',
+        points: [
+          'TPC provides education, not financial advice.',
+          'Trading & digital assets have high risk.',
+          'No guaranteed results; everyone is different.',
+          'Use risk management and learn gradually.'
+        ]
+      },
+      cta: {
+        title: 'Ready to learn more systematically?',
+        subtitle: 'Login to access advanced materials, resources, and member features.',
+        loginToMember: 'Login to Member Area',
+        seeTransparency: 'See Transparency'
+      }
+    }
+  };
+
   const tabs = [
-    { id: 'pemula', label: 'Pemula', icon: BookOpen },
-    { id: 'menengah', label: 'Menengah', icon: Target },
-    { id: 'lanjutan', label: 'Lanjutan', icon: Brain },
-    { id: 'resource', label: 'Resource', icon: FileText }
+    { id: 'pemula', label: t[lang].tabs.pemula, icon: BookOpen },
+    { id: 'menengah', label: t[lang].tabs.menengah, icon: Target },
+    { id: 'lanjutan', label: t[lang].tabs.lanjutan, icon: Brain },
+    { id: 'resource', label: t[lang].tabs.resource, icon: FileText }
   ];
 
   const courseContent: CourseContent[] = [
@@ -173,6 +290,22 @@ export default function EdukasiPage() {
   ];
 
   const resourceContent: ResourceContent[] = [
+    {
+      id: 'tutorial-phantom-wallet',
+      title: t[lang].tutorialPhantomWallet.title,
+      icon: Wallet,
+      color: 'text-[#F0B90B]',
+      bgColor: 'bg-[#F0B90B]/10',
+      borderColor: 'border-[#F0B90B]/20',
+      badge: 'WALLET',
+      badgeColor: 'bg-[#F0B90B]',
+      description: t[lang].tutorialPhantomWallet.description,
+      action: t[lang].card.learn,
+      locked: false,
+      items: 8,
+      type: 'Tutorial',
+      format: 'Resource'
+    },
     {
       id: 'glossary',
       title: 'Trading Glossary',
@@ -422,16 +555,22 @@ export default function EdukasiPage() {
                     ? 'bg-[#2B3139] text-[#848E9C] border border-[#3A3F47]' 
                     : 'bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] text-black'
                 }`}
-                onClick={() => content.locked && navigate('/id/login')}
+                onClick={() => {
+                  if (content.locked) {
+                    navigate(`/${lang}/login`);
+                  } else if (content.id === 'tutorial-phantom-wallet') {
+                    navigate(`/${lang}/tutorial/phantom-wallet`);
+                  }
+                }}
               >
                 {content.locked ? (
                   <>
                     <Lock className="h-4 w-4" />
-                    <span>Masuk untuk akses</span>
+                    <span>{t[lang].card.loginToAccess}</span>
                   </>
                 ) : (
                   <>
-                    <span>Pelajari</span>
+                    <span>{t[lang].card.learn}</span>
                     <ChevronRight className="h-4 w-4" />
                   </>
                 )}
