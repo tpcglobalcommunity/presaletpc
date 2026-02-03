@@ -12,12 +12,13 @@ interface Profile {
   email_initial?: string;
   email_current?: string;
   member_code: string;
-  referred_by?: string | null;
+  referred_by_code?: string | null;
   role: string;
 }
 
 interface Sponsor {
   member_code: string;
+  referral_code?: string;
 }
 
 export default function AdminUsersPage() {
@@ -31,9 +32,8 @@ export default function AdminUsersPage() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        console.log('[ADMIN USERS] Starting fetch...');
         
-        // First try with role filter
+        // Fetch profiles with role='member' only
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
           .select(`
@@ -43,54 +43,24 @@ export default function AdminUsersPage() {
             email_initial,
             email_current,
             member_code,
-            referred_by,
+            referred_by_code,
             role
           `)
           .eq('role', 'member')
           .order('created_at', { ascending: false });
 
-        console.log('[ADMIN USERS] Query with role filter result:', { profilesData, profilesError });
-
         if (profilesError) {
-          console.error('[ADMIN USERS] Error with role filter:', profilesError);
-          console.log('[ADMIN USERS] Trying without role filter...');
-          
-          // Fallback: try without role column at all
-          const { data: fallbackData, error: fallbackError } = await supabase
-            .from('profiles')
-            .select(`
-              id,
-              user_id,
-              created_at,
-              email_initial,
-              email_current,
-              member_code,
-              referred_by
-            `)
-            .order('created_at', { ascending: false });
-          
-          console.log('[ADMIN USERS] Fallback result:', { fallbackData, fallbackError });
-          
-          if (fallbackError) {
-            console.error('[ADMIN USERS] Fallback also failed:', fallbackError);
-            return;
-          }
-          
-          const profiles = fallbackData || [];
-          console.log('[ADMIN USERS] Setting profiles from fallback:', profiles);
-          // Add default role for compatibility
-          const profilesWithRole = profiles.map(p => ({ ...p, role: 'member' }));
-          setProfiles(profilesWithRole);
-        } else {
-          const profiles = profilesData || [];
-          console.log('[ADMIN USERS] Setting profiles from main query:', profiles);
-          setProfiles(profiles);
+          console.error('[ADMIN USERS] Error fetching profiles:', profilesError);
+          return;
         }
 
-        // Collect sponsor member codes (referred_by contains member_code)
+        const profiles = profilesData || [];
+        setProfiles(profiles);
+
+        // Collect sponsor referral codes (referred_by_code contains referral_code)
         const sponsorCodes = [...new Set(
           profiles
-            .map(p => p.referred_by)
+            .map(p => p.referred_by_code)
             .filter(Boolean)
         )] as string[];
 
@@ -98,8 +68,8 @@ export default function AdminUsersPage() {
         if (sponsorCodes.length > 0) {
           const { data: sponsorsData, error: sponsorsError } = await supabase
             .from('profiles')
-            .select('member_code')
-            .in('member_code', sponsorCodes);
+            .select('member_code, referral_code')
+            .in('referral_code', sponsorCodes);
 
           if (sponsorsError) {
             console.error('[ADMIN USERS] Error fetching sponsors:', sponsorsError);
@@ -134,7 +104,7 @@ export default function AdminUsersPage() {
 
   const getSponsor = (referredByCode: string | null) => {
     if (!referredByCode) return null;
-    return sponsors.find(s => s.member_code === referredByCode);
+    return sponsors.find(s => s.referral_code === referredByCode);
   };
 
   const formatDate = (dateString: string) => {
