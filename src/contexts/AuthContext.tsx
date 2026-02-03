@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { isAdminUserId } from '@/config/admin';
@@ -21,6 +21,7 @@ interface AuthContextType {
   isAdmin: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  safeSignOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
 
@@ -31,6 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const isInitializingRef = useRef(false);
 
   const isAdmin = isAdminUserId(user?.id);
 
@@ -91,6 +93,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    // Prevent multiple initializations
+    if (isInitializingRef.current) {
+      return;
+    }
+    isInitializingRef.current = true;
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
@@ -100,31 +108,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (currentSession?.user) {
           // Defer profile operations to avoid blocking
           setTimeout(async () => {
-            let userProfile = await fetchProfile(currentSession.user.id);
-            
-            if (!userProfile && currentSession.user.email) {
-              // Get referral from first invoice if exists
-              const { data: firstInvoice } = await supabase
-                .from('invoices')
-                .select('referral_code')
-                .eq('email', currentSession.user.email)
-                .order('created_at', { ascending: true })
-                .limit(1)
-                .maybeSingle();
+            try {
+              let userProfile = await fetchProfile(currentSession.user.id);
+              
+              if (!userProfile && currentSession.user.email) {
+                // Get referral from first invoice if exists
+                const { data: firstInvoice } = await supabase
+                  .from('invoices')
+                  .select('referral_code')
+                  .eq('email', currentSession.user.email)
+                  .order('created_at', { ascending: true })
+                  .limit(1)
+                  .maybeSingle();
 
-              userProfile = await createProfile(
-                currentSession.user,
-                firstInvoice?.referral_code
-              );
+                userProfile = await createProfile(
+                  currentSession.user,
+                  firstInvoice?.referral_code
+                );
+              }
+
+              // Link invoices to user
+              if (currentSession.user.email) {
+                await linkInvoicesToUser(currentSession.user.id, currentSession.user.email);
+              }
+
+              setProfile(userProfile);
+            } catch (error) {
+              console.warn('[AUTH] Profile operations failed:', error);
+              // Continue without profile - don't block auth flow
+            } finally {
+              setIsLoading(false);
             }
-
-            // Link invoices to user
-            if (currentSession.user.email) {
-              await linkInvoicesToUser(currentSession.user.id, currentSession.user.email);
-            }
-
-            setProfile(userProfile);
-            setIsLoading(false);
           }, 0);
         } else {
           setProfile(null);
@@ -138,9 +152,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!initialSession) {
         setIsLoading(false);
       }
+    }).catch((error) => {
+      console.warn('[AUTH] getSession failed:', error);
+      setIsLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      isInitializingRef.current = false;
+    };
   }, []);
 
   const signInWithGoogle = async () => {
@@ -154,8 +174,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
+    // Avoid global logout on client to prevent 403 loops when refresh token missing
+    const { error } = await supabase.auth.signOut({ scope: 'local' });
     if (error) throw error;
+  };
+
+  const safeSignOut = async () => {
+    try {
+      // Avoid global logout on client to prevent 403 loops when refresh token missing
+      await supabase.auth.signOut({ scope: 'local' });
+    } catch (error) {
+      console.warn('[AUTH] Safe signOut failed:', error);
+      // Continue with local state cleanup even if signOut fails
+    } finally {
+      // Always clear local state
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -168,6 +205,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAdmin,
         signInWithGoogle,
         signOut,
+        safeSignOut,
         refreshProfile,
       }}
     >

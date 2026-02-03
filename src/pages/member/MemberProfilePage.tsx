@@ -2,11 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, LogOut, Mail, Wallet } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 export default function MemberProfilePage() {
-  const { user } = useAuth();
+  const { user, profile, safeSignOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -14,12 +13,7 @@ export default function MemberProfilePage() {
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        throw error;
-      }
-      
+      await safeSignOut();
       toast({ title: 'Berhasil logout' });
       navigate('/id');
     } catch (error) {
