@@ -29,7 +29,7 @@ ORDER BY ordinal_position;
 -- 3. Check RLS status on profiles
 -- ================================================================
 
-SELECT rowsecurity as rls_enabled
+SELECT relrowsecurity as rls_enabled
 FROM pg_class 
 WHERE relname = 'profiles';
 
