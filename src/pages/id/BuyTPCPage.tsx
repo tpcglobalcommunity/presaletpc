@@ -174,29 +174,43 @@ export default function BuyTPCPage() {
         return;
       }
 
+      // Get current user to check self-referral
+      const { data: { user } } = await supabase.auth.getUser();
+      const currentUserId = user?.id;
+
       try {
-        // Use RPC to validate referral (safer and handles permissions)
-        const { data, error } = await supabase.rpc('is_referral_code_valid', {
-          p_referral_code: referralCode.trim()
-        });
+        // Query profiles table directly using member_code
+        const { data: sponsor, error } = await supabase
+          .from('profiles')
+          .select('user_id, member_code')
+          .eq('member_code', referralCode.trim().toUpperCase())
+          .maybeSingle();
 
         if (error) {
-          setReferralValid(false);
-          setReferralError('Kode referral tidak valid');
-          setSponsorInfo(null);
-          return;
-        }
-
-        if (!data) {
           setReferralValid(false);
           setReferralError('Kode referral tidak terdaftar');
           setSponsorInfo(null);
           return;
         }
 
+        if (!sponsor) {
+          setReferralValid(false);
+          setReferralError('Kode referral tidak terdaftar');
+          setSponsorInfo(null);
+          return;
+        }
+
+        // Check self-referral
+        if (sponsor.user_id === currentUserId) {
+          setReferralValid(false);
+          setReferralError('Tidak boleh pakai kode sendiri');
+          setSponsorInfo(null);
+          return;
+        }
+
         setReferralValid(true);
         setReferralError('');
-        setSponsorInfo({ member_code: referralCode.trim().toUpperCase() });
+        setSponsorInfo({ member_code: sponsor.member_code });
       } catch (error) {
         setReferralValid(false);
         setReferralError('Gagal memvalidasi referral');
