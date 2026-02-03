@@ -10,7 +10,15 @@ export default function AuthCallbackPage() {
 
     const handleAuth = async () => {
       try {
+        console.log("[AUTH CALLBACK] Starting session check...");
         const { data, error } = await supabase.auth.getSession();
+        
+        console.log("[AUTH CALLBACK] Session result:", { 
+          hasSession: !!data.session, 
+          hasError: !!error,
+          error: error?.message,
+          sessionUser: data.session?.user?.email
+        });
 
         if (error || !data.session) {
           console.warn("[AUTH] No session, back to login");

@@ -5,6 +5,10 @@ import type { Database } from './types';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// Debug logging to verify environment variables
+console.log("[AUTH ENV] Supabase URL:", supabaseUrl);
+console.log("[AUTH ENV] Supabase Key (first 10):", supabaseKey?.slice(0, 10) + "...");
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
