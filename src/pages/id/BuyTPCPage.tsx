@@ -63,6 +63,7 @@ export default function BuyTPCPage() {
   const [solPriceLoading, setSolPriceLoading] = useState(false);
   const [referralValid, setReferralValid] = useState<boolean | null>(null);
   const [referralError, setReferralError] = useState('');
+  const [sponsorInfo, setSponsorInfo] = useState<{ member_code: string } | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
@@ -169,11 +170,12 @@ export default function BuyTPCPage() {
       if (!referralCode.trim()) {
         setReferralValid(null);
         setReferralError('');
+        setSponsorInfo(null);
         return;
       }
 
       try {
-        // Use RPC to validate referral
+        // Use RPC to validate referral (safer and handles permissions)
         const { data, error } = await supabase.rpc('is_referral_code_valid', {
           p_referral_code: referralCode.trim()
         });
@@ -181,20 +183,24 @@ export default function BuyTPCPage() {
         if (error) {
           setReferralValid(false);
           setReferralError('Kode referral tidak valid');
+          setSponsorInfo(null);
           return;
         }
 
         if (!data) {
           setReferralValid(false);
-          setReferralError('Kode referral tidak ditemukan');
+          setReferralError('Kode referral tidak terdaftar');
+          setSponsorInfo(null);
           return;
         }
 
         setReferralValid(true);
         setReferralError('');
+        setSponsorInfo({ member_code: referralCode.trim().toUpperCase() });
       } catch (error) {
         setReferralValid(false);
         setReferralError('Gagal memvalidasi referral');
+        setSponsorInfo(null);
       }
     };
 
@@ -482,6 +488,15 @@ export default function BuyTPCPage() {
                   Alamat wallet TPC wajib diisi (minimal 20 karakter)
                 </p>
               )}
+              <div className="mt-2">
+                <button
+                  type="button"
+                  onClick={() => navigate('/id/tutorial/phantom-wallet')}
+                  className="text-xs text-[#F0B90B] hover:text-[#F8D56B] transition-colors"
+                >
+                  Belum punya wallet? Lihat tutorial Phantom →
+                </button>
+              </div>
             </div>
 
             {/* Referral Code */}
@@ -507,15 +522,15 @@ export default function BuyTPCPage() {
               {/* Referral Validation Status */}
               {referralCode.trim() && (
                 <div className="mt-2">
-                  {referralValid === true && (
-                    <p className="text-xs text-emerald-400">
-                      ✅ Referral valid
-                    </p>
+                  {referralValid === true && sponsorInfo && (
+                    <div className="text-xs text-emerald-400">
+                      ✅ Referral valid - Sponsor: {sponsorInfo.member_code}
+                    </div>
                   )}
                   {referralValid === false && referralError && (
-                    <p className="text-xs text-red-400">
+                    <div className="text-xs text-red-400">
                       ❌ {referralError}
-                    </p>
+                    </div>
                   )}
                 </div>
               )}
