@@ -250,14 +250,21 @@ export type Database = {
       }
       get_referral_tree_stats: {
         Args: {
-          user_uuid?: string;
+          p_user_id: string;
         };
-        Returns: Array<{
-          level: number;
-          count: number;
-          created_at: string;
-        }>;
-      }
+        Returns: {
+          levels: {
+            level1: number;
+            level2: number;
+            level3: number;
+          };
+          summary: {
+            total_downline: number;
+            active_downline: number;
+            total_invoices: number;
+          };
+        };
+      };
       get_all_referrals_admin: {
         Args: never;
         Returns: Array<{

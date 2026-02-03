@@ -9,20 +9,20 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ReferralStats } from '@/types/referral';
+import { ReferralTreeStats } from '@/types/referral';
 
 export default function MemberReferralPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [referralCode, setReferralCode] = useState('');
-  const [referralStats, setReferralStats] = useState<ReferralStats[]>([]);
+  const [referralStats, setReferralStats] = useState<ReferralTreeStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   const referralLink = `${window.location.origin}/id/buytpc?ref=${referralCode}`;
 
   // Calculate total downline from stats
-  const totalDownline = referralStats.reduce((sum, stat) => sum + stat.count, 0);
+  const totalDownline = referralStats ? referralStats.summary.total_downline : 0;
 
   // Fetch user profile and referral stats
   useEffect(() => {
@@ -46,7 +46,9 @@ export default function MemberReferralPage() {
         }
 
         // Fetch referral stats
-        const { data, error } = await supabase.rpc('get_referral_tree_stats');
+        const { data, error } = await supabase.rpc('get_referral_tree_stats', {
+          p_user_id: user.id
+        });
 
         if (error) {
           console.error('Error fetching referral stats:', error);
@@ -56,7 +58,7 @@ export default function MemberReferralPage() {
             variant: 'destructive'
           });
         } else {
-          setReferralStats(data || []);
+          setReferralStats(data);
         }
       } catch (error) {
         console.error('Unexpected error:', error);
@@ -241,7 +243,7 @@ export default function MemberReferralPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {referralStats.length === 0 ? (
+            {!referralStats ? (
               <div className="text-center py-8">
                 <div className="text-6xl mb-4">👥</div>
                 <p className="text-[#848E9C] mb-2">Belum ada downline</p>
@@ -251,32 +253,57 @@ export default function MemberReferralPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {referralStats.map((stat) => (
-                  <div
-                    key={stat.level}
-                    className="flex items-center justify-between p-3 bg-[#0B0E11] rounded-lg"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-[#F0B90B]/20 rounded-full flex items-center justify-center">
-                        <span className="text-xs font-bold text-[#F0B90B]">
-                          {stat.level}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="text-white font-medium">Level {stat.level}</p>
-                        <p className="text-xs text-[#848E9C]">
-                          {new Date(stat.created_at).toLocaleDateString('id-ID')}
-                        </p>
-                      </div>
+                <div className="flex items-center justify-between p-3 bg-[#0B0E11] rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-[#F0B90B]/20 rounded-full flex items-center justify-center">
+                      <span className="text-xs font-bold text-[#F0B90B]">1</span>
                     </div>
-                    <div className="text-right">
-                      <p className="text-xl font-bold text-[#F0B90B]">
-                        {formatNumberID(stat.count)}
-                      </p>
-                      <p className="text-xs text-[#848E9C]">orang</p>
+                    <div>
+                      <p className="text-white font-medium">Level 1</p>
+                      <p className="text-xs text-[#848E9C]">Direct referral</p>
                     </div>
                   </div>
-                ))}
+                  <div className="text-right">
+                    <p className="text-xl font-bold text-[#F0B90B]">
+                      {formatNumberID(referralStats.levels.level1)}
+                    </p>
+                    <p className="text-xs text-[#848E9C]">member</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-[#0B0E11] rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-[#F0B90B]/20 rounded-full flex items-center justify-center">
+                      <span className="text-xs font-bold text-[#F0B90B]">2</span>
+                    </div>
+                    <div>
+                      <p className="text-white font-medium">Level 2</p>
+                      <p className="text-xs text-[#848E9C]">Level 1 referral</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xl font-bold text-[#F0B90B]">
+                      {formatNumberID(referralStats.levels.level2)}
+                    </p>
+                    <p className="text-xs text-[#848E9C]">member</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-[#0B0E11] rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-[#F0B90B]/20 rounded-full flex items-center justify-center">
+                      <span className="text-xs font-bold text-[#F0B90B]">3</span>
+                    </div>
+                    <div>
+                      <p className="text-white font-medium">Level 3</p>
+                      <p className="text-xs text-[#848E9C]">Level 2 referral</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xl font-bold text-[#F0B90B]">
+                      {formatNumberID(referralStats.levels.level3)}
+                    </p>
+                    <p className="text-xs text-[#848E9C]">member</p>
+                  </div>
+                </div>
               </div>
             )}
           </CardContent>
