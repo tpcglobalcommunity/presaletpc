@@ -6,9 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ensureProfile } from "@/lib/ensureProfile";
 
-export default function AuthCallbackPage() {
+interface AuthCallbackPageProps {
+  forcedLang?: "id" | "en";
+}
+
+export default function AuthCallbackPage({ forcedLang }: AuthCallbackPageProps = {}) {
   const navigate = useNavigate();
   const { lang = "id" } = useParams<{ lang: string }>();
+  
+  // Determine final lang: forcedLang takes priority, then URL param, then fallback
+  const finalLang = forcedLang || lang || "id";
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,7 +45,7 @@ export default function AuthCallbackPage() {
 
         // B) Handle OAuth code exchange
         if (code) {
-          const exchangeKey = `tpc_oauth_exchanged_${lang}`;
+          const exchangeKey = `tpc_oauth_exchanged_${finalLang}`;
           const alreadyExchanged = sessionStorage.getItem(exchangeKey);
           
           if (!alreadyExchanged) {
@@ -57,7 +65,7 @@ export default function AuthCallbackPage() {
             sessionStorage.setItem(exchangeKey, '1');
             
             // Clean URL to remove code parameter
-            const cleanUrl = `${window.location.origin}/${lang}/auth/callback`;
+            const cleanUrl = `${window.location.origin}/${finalLang}/auth/callback`;
             window.history.replaceState({}, document.title, cleanUrl);
           } else {
             console.log("[AUTH CALLBACK] Code present but already exchanged, skipping exchange");
@@ -86,7 +94,7 @@ export default function AuthCallbackPage() {
           }
           
           console.log("[AUTH CALLBACK] Session found, redirecting to dashboard");
-          navigate(`/${lang}/dashboard`, { replace: true });
+          navigate(`/${finalLang}/dashboard`, { replace: true });
           return;
         }
 
@@ -112,10 +120,10 @@ export default function AuthCallbackPage() {
     return () => {
       isMounted = false;
     };
-  }, [navigate, lang]);
+  }, [navigate, finalLang]);
 
   const handleBackToLogin = () => {
-    navigate(`/${lang}/login`, { replace: true });
+    navigate(`/${finalLang}/login`, { replace: true });
   };
 
   if (loading) {

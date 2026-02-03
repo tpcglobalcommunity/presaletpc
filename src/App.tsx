@@ -100,6 +100,8 @@ const App = () => {
   useEffect(() => {
     console.log("[ROUTER] Auth callback route registered");
     console.log("[ROUTER LIVE] /:lang/auth/callback ACTIVE");
+    console.log("[ROUTER LIVE] /id/auth/callback ACTIVE");
+    console.log("[ROUTER LIVE] /en/auth/callback ACTIVE");
   }, []);
 
   return (
@@ -115,6 +117,18 @@ const App = () => {
       >
         <AuthProvider>
           <Routes>
+            {/* Explicit Auth Callback Routes */}
+            <Route path="/id/auth/callback" element={
+              <Suspense fallback={<PageLoader />}>
+                <AuthCallbackPage forcedLang="id" />
+              </Suspense>
+            } />
+            <Route path="/en/auth/callback" element={
+              <Suspense fallback={<PageLoader />}>
+                <AuthCallbackPage forcedLang="en" />
+              </Suspense>
+            } />
+
             {/* Canonical Auth Callback Routes */}
             <Route path="/:lang/auth/callback" element={
               <Suspense fallback={<PageLoader />}>
