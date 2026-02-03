@@ -97,6 +97,7 @@ const App = () => {
   // Router sanity check
   useEffect(() => {
     console.log("[ROUTER] Auth callback route registered");
+    console.log("[ROUTER LIVE] /:lang/auth/callback ACTIVE");
   }, []);
 
   return (
