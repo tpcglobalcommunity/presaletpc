@@ -12,12 +12,20 @@ export default function AuthCallbackPage() {
       try {
         console.log("[AUTH CALLBACK RAW URL]", window.location.href);
         
+        // Cookie policy diagnostic (DEV only)
+        if (import.meta.env.DEV) {
+          console.log("[AUTH COOKIE] document.cookie:", document.cookie);
+          console.log("[AUTH COOKIE] navigator.cookieEnabled:", navigator.cookieEnabled);
+          console.log("[AUTH COOKIE] cookie count:", document.cookie.split(';').length);
+        }
+        
         // Check for Supabase auth token cookie
         const cookies = document.cookie.split(';').map(c => c.trim());
         const authCookie = cookies.find(c => c.startsWith('sb-') && c.includes('auth-token'));
         console.log("[AUTH CALLBACK] Auth cookie found:", !!authCookie);
         if (authCookie) {
           console.log("[AUTH CALLBACK] Auth cookie name:", authCookie.split('=')[0]);
+          console.log("[AUTH CALLBACK] Auth cookie length:", authCookie.length);
         }
         
         console.log("[AUTH CALLBACK] Starting session check...");
