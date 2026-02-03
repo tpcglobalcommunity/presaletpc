@@ -91,10 +91,7 @@ export type Database = {
           email_initial: string
           id: string
           member_code: string
-          referral_code: string | null
           referred_by: string | null
-          referred_by_code: string | null
-          role: string
           updated_at: string
           user_id: string
         }
@@ -104,10 +101,7 @@ export type Database = {
           email_initial: string
           id?: string
           member_code: string
-          referral_code?: string | null
           referred_by?: string | null
-          referred_by_code?: string | null
-          role?: string
           updated_at?: string
           user_id: string
         }
@@ -117,10 +111,7 @@ export type Database = {
           email_initial?: string
           id?: string
           member_code?: string
-          referral_code?: string | null
           referred_by?: string | null
-          referred_by_code?: string | null
-          role?: string
           updated_at?: string
           user_id?: string
         }

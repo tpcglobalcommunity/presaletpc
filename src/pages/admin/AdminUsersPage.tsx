@@ -12,18 +12,12 @@ interface Profile {
   email_initial?: string;
   email_current?: string;
   member_code: string;
-  referred_by_code?: string | null;
+  referred_by?: string | null;
   role: string;
-}
-
-interface Sponsor {
-  member_code: string;
-  referral_code?: string;
 }
 
 export default function AdminUsersPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [filteredProfiles, setFilteredProfiles] = useState<Profile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,7 +37,7 @@ export default function AdminUsersPage() {
             email_initial,
             email_current,
             member_code,
-            referred_by_code,
+            referred_by,
             role
           `)
           .eq('role', 'member')
@@ -56,27 +50,6 @@ export default function AdminUsersPage() {
 
         const profiles = profilesData || [];
         setProfiles(profiles);
-
-        // Collect sponsor referral codes (referred_by_code contains referral_code)
-        const sponsorCodes = [...new Set(
-          profiles
-            .map(p => p.referred_by_code)
-            .filter(Boolean)
-        )] as string[];
-
-        // Fetch sponsors if any exist
-        if (sponsorCodes.length > 0) {
-          const { data: sponsorsData, error: sponsorsError } = await supabase
-            .from('profiles')
-            .select('member_code, referral_code')
-            .in('referral_code', sponsorCodes);
-
-          if (sponsorsError) {
-            console.error('[ADMIN USERS] Error fetching sponsors:', sponsorsError);
-          } else {
-            setSponsors(sponsorsData || []);
-          }
-        }
 
       } catch (error) {
         console.error('[ADMIN USERS] Unexpected error:', error);
@@ -101,11 +74,6 @@ export default function AdminUsersPage() {
 
     setFilteredProfiles(filtered);
   }, [profiles, searchTerm]);
-
-  const getSponsor = (referredByCode: string | null) => {
-    if (!referredByCode) return null;
-    return sponsors.find(s => s.referral_code === referredByCode);
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('id-ID', {
@@ -181,12 +149,10 @@ export default function AdminUsersPage() {
                     <th className="text-left p-4 text-[#848E9C] font-medium">Display Name</th>
                     <th className="text-left p-4 text-[#848E9C] font-medium">Email</th>
                     <th className="text-left p-4 text-[#848E9C] font-medium">Role</th>
-                    <th className="text-left p-4 text-[#848E9C] font-medium">Sponsor</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredProfiles.map((profile) => {
-                    const sponsor = getSponsor(profile.referred_by);
                     return (
                       <tr key={profile.id} className="border-b border-[#2B3139] hover:bg-[#0B0E11]/50">
                         <td className="p-4">
@@ -215,11 +181,6 @@ export default function AdminUsersPage() {
                         <td className="p-4">
                           <div className="text-green-400 text-sm font-medium">
                             {profile.role}
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="text-white text-sm">
-                            {sponsor ? sponsor.member_code : '-'}
                           </div>
                         </td>
                       </tr>
