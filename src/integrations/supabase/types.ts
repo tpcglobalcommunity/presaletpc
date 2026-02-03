@@ -122,6 +122,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_invoice_locked: {
+        Args: {
+          p_email: string;
+          p_referral_code: string | null;
+          p_base_currency: Database["public"]["Enums"]["payment_currency"];
+          p_amount_input: number;
+        };
+        Returns: {
+          invoice_no: string;
+          email: string;
+          amount_input: number;
+          base_currency: Database["public"]["Enums"]["payment_currency"];
+          created_at: string;
+          expires_at: string;
+        };
+      };
       generate_invoice_no: { Args: never; Returns: string }
       generate_member_code: { Args: never; Returns: string }
       get_referral_network: { 

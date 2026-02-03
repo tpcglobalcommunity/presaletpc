@@ -48,6 +48,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Error fetching profile:', error);
       return null;
     }
+    
+    // Handle case where columns don't exist yet
+    if (!data || 'error' in data) {
+      return null;
+    }
+    
     return data as Profile | null;
   };
 
@@ -71,7 +77,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Error creating profile:', error);
       return null;
     }
-    return data as Profile;
+    
+    // Handle case where data structure doesn't match Profile interface yet
+    if (!data) {
+      return null;
+    }
+    
+    return data as unknown as Profile;
   };
 
   const linkInvoicesToUser = async (userId: string, email: string) => {

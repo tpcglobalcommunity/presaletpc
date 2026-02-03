@@ -3,8 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Coins, ArrowRight, Loader2, Shield, CheckCircle, ExternalLink } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
-import { formatInputNumber, parseNumberID, formatNumberID, formatRupiah } from '@/lib/number';
-import { calculateTPCFromUSD, calculateSponsorBonus, fetchSOLPrice, convertSOLToUSD, convertIDRToUSD, BASE_TPC_PRICE_USD, FIXED_IDR_RATE, LOCKED_SPONSOR_COMMISSION_PERCENTAGE } from '@/config/pricing';
+import { formatRupiah } from '@/lib/number';
+import { calculateSponsorBonus } from '@/config/pricing';
 import { formatIdr, parseIdr, formatUsdc, parseUsdc, formatSol, parseSol, formatTpc, clampDecimals } from '@/lib/formatters';
 import { getSolUsdPrice } from '@/lib/prices';
 import { calcTpc, USD_IDR, TPC_PRICE_USDC } from '@/lib/tpcPricing';
@@ -15,7 +15,6 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { SEO } from '@/lib/seo';
 import CountdownCard from '@/components/CountdownCard';
 import tpcLogo from '@/assets/tpc.png';
 
@@ -64,27 +63,20 @@ export default function BuyTPCPage() {
   const [solUsdPrice, setSolUsdPrice] = useState<number | null>(null);
   const [solPriceLoading, setSolPriceLoading] = useState(false);
 
-  const getReferralFromUrl = () => {
-    const sp = new URLSearchParams(location.search);
-    const ref = sp.get("ref") || sp.get("referral") || sp.get("code");
-    return ref ? sanitizeReferral(ref) : "";
-  };
-
   useEffect(() => {
-    const ref = getReferralFromUrl();
+    const sp = new URLSearchParams(location.search);
+    const refRaw = sp.get("ref") || sp.get("referral") || sp.get("code");
+    const ref = refRaw ? sanitizeReferral(refRaw) : "";
+
     if (ref) {
       setRefFromUrl(ref);
       setReferralCode(ref);
-      sessionStorage.setItem("referralCode", ref); // opsional: biar kebawa kalau pindah/login
+      sessionStorage.setItem("referralCode", ref);
     } else {
-      // opsional: fallback dari sessionStorage
-      const saved = sessionStorage.getItem("referralCode");
-      if (saved) {
-        const cleaned = sanitizeReferral(saved);
-        setReferralCode(cleaned);
-      }
+      setRefFromUrl("");
+      setReferralCode("");
+      sessionStorage.removeItem("referralCode");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search]);
   const [presaleConfig, setPresaleConfig] = useState<PresaleConfig | null>(null);
   const [isPresaleConfigLoading, setIsPresaleConfigLoading] = useState(true);
@@ -177,7 +169,8 @@ export default function BuyTPCPage() {
   // Calculate derived values
   const tpcAmount = calcTpc(currency, amountValue, solUsdPrice);
   const sponsorBonus = amountValue >= 1000000 ? calculateSponsorBonus(amountValue) : 0;
-  const totalTPC = tpcAmount + sponsorBonus;
+  const sponsorBonusAmount = typeof sponsorBonus === 'number' ? sponsorBonus : sponsorBonus?.bonus_amount || 0;
+  const totalTPC = tpcAmount + sponsorBonusAmount;
 
   const isValid = amountValue > 0 && email.includes('@') && agreed;
 
@@ -211,6 +204,11 @@ export default function BuyTPCPage() {
       }
 
       const invoice = Array.isArray(data) ? data[0] : data;
+      
+      // Type guard untuk memastikan invoice memiliki invoice_no
+      if (!invoice || typeof invoice !== 'object' || !('invoice_no' in invoice)) {
+        throw new Error('Invalid invoice data returned');
+      }
 
       toast({
         title: "Invoice Berhasil Dibuat",
@@ -322,13 +320,13 @@ export default function BuyTPCPage() {
               <div className="flex justify-between items-center">
                 <span className="text-sm text-[#848E9C]">Tahap 1:</span>
                 <span className="text-sm font-medium text-white">
-                  {presaleConfig ? formatNumberID(presaleConfig.stage1_supply) : '100.000.000'} TPC — ${presaleConfig?.stage1_price_usd || '0.001'}
+                  {presaleConfig ? formatRupiah(presaleConfig.stage1_supply) : '100.000.000'} TPC — ${presaleConfig?.stage1_price_usd || '0.001'}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-[#848E9C]">Tahap 2:</span>
                 <span className="text-sm font-medium text-white">
-                  {presaleConfig ? formatNumberID(presaleConfig.stage2_supply) : '100.000.000'} TPC — ${presaleConfig?.stage2_price_usd || '0.002'}
+                  {presaleConfig ? formatRupiah(presaleConfig.stage2_supply) : '100.000.000'} TPC — ${presaleConfig?.stage2_price_usd || '0.002'}
                 </span>
               </div>
               <div className="flex justify-between items-center">
@@ -452,7 +450,7 @@ export default function BuyTPCPage() {
                   <div className="flex justify-between text-sm">
                     <span className="text-[#848E9C]">Bonus Sponsor:</span>
                     <span className="text-emerald-400 font-medium">
-                      +{formatTpc(sponsorBonus)} TPC
+                      +{formatTpc(sponsorBonusAmount)} TPC
                     </span>
                   </div>
                 )}
