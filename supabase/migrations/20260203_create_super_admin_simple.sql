@@ -2,7 +2,63 @@
 -- Email: tpcglobal.io@gmail.com
 
 -- ================================================================
--- 1. CREATE SUPER ADMIN FUNCTIONS
+-- 1. ADD MISSING COLUMNS TO PROFILES TABLE
+-- ================================================================
+
+-- Add role column if not exists
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'profiles' 
+        AND column_name = 'role'
+        AND table_schema = 'public'
+    ) THEN
+        ALTER TABLE public.profiles ADD COLUMN role TEXT DEFAULT 'member';
+    END IF;
+END $$;
+
+-- Add display_name column if not exists
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'profiles' 
+        AND column_name = 'display_name'
+        AND table_schema = 'public'
+    ) THEN
+        ALTER TABLE public.profiles ADD COLUMN display_name TEXT;
+    END IF;
+END $$;
+
+-- Add avatar_url column if not exists
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'profiles' 
+        AND column_name = 'avatar_url'
+        AND table_schema = 'public'
+    ) THEN
+        ALTER TABLE public.profiles ADD COLUMN avatar_url TEXT;
+    END IF;
+END $$;
+
+-- Add updated_at column if not exists
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'profiles' 
+        AND column_name = 'updated_at'
+        AND table_schema = 'public'
+    ) THEN
+        ALTER TABLE public.profiles ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();
+    END IF;
+END $$;
+
+-- ================================================================
+-- 2. CREATE SUPER ADMIN FUNCTIONS
 -- ================================================================
 
 -- Function to check if user is super admin
@@ -15,7 +71,7 @@ AS $$
 DECLARE
     is_admin BOOLEAN;
 BEGIN
-    SELECT (role = 'super_admin' AND is_active = true) INTO is_admin
+    SELECT (role = 'super_admin') INTO is_admin
     FROM public.profiles
     WHERE user_id = p_user_id;
     
@@ -33,7 +89,7 @@ AS $$
 DECLARE
     is_admin BOOLEAN;
 BEGIN
-    SELECT (role IN ('super_admin', 'admin') AND is_active = true) INTO is_admin
+    SELECT (role IN ('super_admin', 'admin')) INTO is_admin
     FROM public.profiles
     WHERE user_id = p_user_id;
     
@@ -80,7 +136,7 @@ END;
 $$;
 
 -- ================================================================
--- 2. CREATE SUPER ADMIN PROFILE
+-- 3. CREATE SUPER ADMIN PROFILE
 -- ================================================================
 
 -- Insert super admin profile
@@ -89,11 +145,10 @@ INSERT INTO public.profiles (
     email_initial,
     email_current,
     member_code,
+    referred_by,
     display_name,
     avatar_url,
     role,
-    is_active,
-    is_verified,
     created_at,
     updated_at
 ) VALUES (
@@ -101,24 +156,21 @@ INSERT INTO public.profiles (
     'tpcglobal.io@gmail.com',
     'tpcglobal.io@gmail.com',
     'TPC-ADMIN',
+    NULL,
     'TPC Global Admin',
     NULL,
     'super_admin',
-    true,
-    true,
     NOW(),
     NOW()
 );
 
 -- ================================================================
--- 3. CREATE ADMIN RLS POLICIES
+-- 4. CREATE ADMIN RLS POLICIES
 -- ================================================================
 
 -- Drop existing admin policies if they exist
 DROP POLICY IF EXISTS "admin_full_access_profiles" ON public.profiles;
 DROP POLICY IF EXISTS "admin_full_access_invoices" ON public.invoices;
-DROP POLICY IF EXISTS "admin_full_access_app_settings" ON public.app_settings;
-DROP POLICY IF EXISTS "admin_full_access_stage_timers" ON public.stage_timers;
 
 -- Create admin policies for profiles
 CREATE POLICY "admin_full_access_profiles" ON public.profiles
@@ -132,35 +184,13 @@ CREATE POLICY "admin_full_access_invoices" ON public.invoices
     USING (is_admin(auth.uid()))
     WITH CHECK (is_admin(auth.uid()));
 
--- Create admin policies for app_settings
-CREATE POLICY "admin_full_access_app_settings" ON public.app_settings
-    FOR ALL TO authenticated
-    USING (is_admin(auth.uid()))
-    WITH CHECK (is_admin(auth.uid()));
-
--- Create admin policies for stage_timers
-CREATE POLICY "admin_full_access_stage_timers" ON public.stage_timers
-    FOR ALL TO authenticated
-    USING (is_admin(auth.uid()))
-    WITH CHECK (is_admin(auth.uid()));
-
 -- ================================================================
--- 4. GRANT PERMISSIONS
+-- 5. GRANT PERMISSIONS
 -- ================================================================
 
 GRANT EXECUTE ON FUNCTION public.is_super_admin(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.is_admin(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.link_admin_user(TEXT) TO authenticated;
-
--- ================================================================
--- 5. CREATE APP SETTINGS
--- ================================================================
-
-INSERT INTO public.app_settings (key, value, description, is_public, created_at, updated_at) VALUES
-    ('admin_email', 'tpcglobal.io@gmail.com', 'Super admin email', false, NOW(), NOW()),
-    ('system_initialized', 'true', 'System has been initialized', false, NOW(), NOW()),
-    ('maintenance_mode', 'false', 'System maintenance mode', false, NOW(), NOW())
-ON CONFLICT (key) DO NOTHING;
 
 -- ================================================================
 -- 6. VERIFICATION
