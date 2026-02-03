@@ -5,20 +5,22 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 
-interface Profile {
+interface AdminUser {
   id: string;
-  user_id: string;
-  created_at: string;
-  email_initial?: string;
-  email_current?: string;
+  email: string;
+  full_name: string;
   member_code: string;
-  referred_by?: string | null;
-  role: string;
+  referred_by: string | null;
+  role_name: string;
+  created_at: string;
+  total_invoices: number;
+  paid_invoices: number;
+  total_revenue: number;
 }
 
 export default function AdminUsersPage() {
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [filteredProfiles, setFilteredProfiles] = useState<Profile[]>([]);
+  const [profiles, setProfiles] = useState<AdminUser[]>([]);
+  const [filteredProfiles, setFilteredProfiles] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -27,28 +29,20 @@ export default function AdminUsersPage() {
       try {
         setIsLoading(true);
         
-        // Fetch profiles with role='member' only
+        // Fetch admin users data via RPC
         const { data: profilesData, error: profilesError } = await supabase
-          .from('profiles')
-          .select(`
-            id,
-            user_id,
-            created_at,
-            email_initial,
-            email_current,
-            member_code,
-            referred_by,
-            role
-          `)
-          .eq('role', 'member')
-          .order('created_at', { ascending: false });
+          .rpc('get_admin_users_data');
 
         if (profilesError) {
           console.error('[ADMIN USERS] Error fetching profiles:', profilesError);
           return;
         }
 
-        const profiles = profilesData || [];
+        // Filter only members and sort by created_at desc
+        const profiles = (profilesData || [])
+          .filter(user => user.role_name === 'member')
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        
         setProfiles(profiles);
 
       } catch (error) {
@@ -66,8 +60,8 @@ export default function AdminUsersPage() {
 
     if (searchTerm) {
       filtered = filtered.filter(profile => 
-        (profile.email_current && profile.email_current.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (profile.email_initial && profile.email_initial.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (profile.email && profile.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (profile.full_name && profile.full_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
         profile.member_code.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -83,13 +77,13 @@ export default function AdminUsersPage() {
     });
   };
 
-  const getDisplayName = (profile: Profile) => {
-    // Fallback hierarchy: member_code -> "Member"
-    return profile.member_code || "Member";
+  const getDisplayName = (profile: AdminUser) => {
+    // Use full_name from RPC, fallback to member_code
+    return profile.full_name || profile.member_code || "Member";
   };
 
-  const getEmail = (profile: Profile) => {
-    return profile.email_current || profile.email_initial || "Email tidak tersedia";
+  const getEmail = (profile: AdminUser) => {
+    return profile.email || "Email tidak tersedia";
   };
 
   if (isLoading) {
@@ -145,10 +139,9 @@ export default function AdminUsersPage() {
                 <thead>
                   <tr className="border-b border-[#2B3139]">
                     <th className="text-left p-4 text-[#848E9C] font-medium">Register</th>
-                    <th className="text-left p-4 text-[#848E9C] font-medium">UID</th>
-                    <th className="text-left p-4 text-[#848E9C] font-medium">Display Name</th>
+                    <th className="text-left p-4 text-[#848E9C] font-medium">Name</th>
                     <th className="text-left p-4 text-[#848E9C] font-medium">Email</th>
-                    <th className="text-left p-4 text-[#848E9C] font-medium">Role</th>
+                    <th className="text-left p-4 text-[#848E9C] font-medium">Sponsor</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -158,11 +151,6 @@ export default function AdminUsersPage() {
                         <td className="p-4">
                           <div className="text-white text-sm">
                             {formatDate(profile.created_at)}
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="text-[#848E9C] text-xs font-mono">
-                            {profile.user_id}
                           </div>
                         </td>
                         <td className="p-4">
@@ -179,8 +167,8 @@ export default function AdminUsersPage() {
                           </div>
                         </td>
                         <td className="p-4">
-                          <div className="text-green-400 text-sm font-medium">
-                            {profile.role}
+                          <div className="text-white text-sm">
+                            {profile.referred_by || '-'}
                           </div>
                         </td>
                       </tr>

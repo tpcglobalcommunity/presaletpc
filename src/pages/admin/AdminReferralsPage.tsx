@@ -1,25 +1,12 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Users, Search, Filter, ArrowLeft } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { formatNumberID } from '@/lib/number';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-
-interface AdminReferral {
-  referral_id: string;
-  user_email: string;
-  user_referral_code: string;
-  parent_email: string | null;
-  parent_referral_code: string | null;
-  level: number;
-  created_at: string;
-}
+import { AdminReferral } from '@/types/referral';
 
 export default function AdminReferralsPage() {
   const navigate = useNavigate();

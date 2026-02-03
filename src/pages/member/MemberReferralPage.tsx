@@ -1,19 +1,15 @@
-import { useEffect, useState } from 'react';
 import { Users, Copy, TrendingUp, Wallet, Share2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { formatNumberID } from '@/lib/number';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-
-interface ReferralStats {
-  level: number;
-  count: number;
-  created_at: string;
-}
+import { ReferralStats } from '@/types/referral';
 
 export default function MemberReferralPage() {
   const { user } = useAuth();
