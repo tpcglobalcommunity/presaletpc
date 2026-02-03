@@ -477,6 +477,7 @@ const App = () => {
                     </RequireAdmin>
                   }
                 >
+                  {/* /id/admin */}
                   <Route
                     index
                     element={
@@ -485,9 +486,15 @@ const App = () => {
                       </Suspense>
                     }
                   />
+
+                  {/* /id/admin/dashboard */}
                   <Route
                     path="dashboard"
-                    element={<Navigate to=".." replace />}
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <AdminDashboardPageNew />
+                      </Suspense>
+                    }
                   />
                   <Route
                     path="invoices"

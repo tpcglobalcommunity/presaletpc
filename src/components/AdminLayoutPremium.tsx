@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useParams } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -36,6 +36,9 @@ interface MenuItem {
 export function AdminLayoutPremium() {
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
+  const { lang } = useParams();
+  const safe = lang === "en" ? "en" : "id";
+  const base = `/${safe}/admin`;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [stats, setStats] = useState({
@@ -68,62 +71,62 @@ export function AdminLayoutPremium() {
     {
       title: 'Dashboard',
       icon: <LayoutDashboard className="h-5 w-5" />,
-      href: '/id/admin',
+      href: `${base}`,
     },
     {
       title: 'Invoices',
       icon: <FileText className="h-5 w-5" />,
-      href: '/id/admin/invoices',
+      href: `${base}/invoices`,
       badge: stats.pending_review.toString(),
     },
     {
       title: 'Members',
       icon: <Users className="h-5 w-5" />,
-      href: '/id/admin/users',
+      href: `${base}/users`,
       badge: stats.total_users.toString(),
     },
     {
       title: 'Referrals',
       icon: <TrendingUp className="h-5 w-5" />,
-      href: '/id/admin/analytics',
+      href: `${base}/analytics`,
     },
     {
       title: 'Marketing',
       icon: <MessageSquare className="h-5 w-5" />,
-      href: '/id/admin/marketing',
+      href: `${base}/marketing`,
       children: [
         {
           title: 'Message Templates',
           icon: <MessageSquare className="h-4 w-4" />,
-          href: '/id/admin/marketing/templates',
+          href: `${base}/marketing/templates`,
           badge: '⭐'
         },
         {
           title: 'Email Campaigns',
           icon: <Mail className="h-4 w-4" />,
-          href: '/id/admin/marketing/campaigns'
+          href: `${base}/marketing/campaigns`
         },
         {
           title: 'Promotions',
           icon: <Megaphone className="h-4 w-4" />,
-          href: '/id/admin/marketing/promotions'
+          href: `${base}/marketing/promotions`
         },
         {
           title: 'Target Audience',
           icon: <Target className="h-4 w-4" />,
-          href: '/id/admin/marketing/audience'
+          href: `${base}/marketing/audience`
         },
         {
           title: 'Marketing Analytics',
           icon: <BarChart3 className="h-4 w-4" />,
-          href: '/id/admin/marketing/analytics'
+          href: `${base}/marketing/analytics`
         }
       ]
     },
     {
       title: 'Settings',
       icon: <Settings className="h-5 w-5" />,
-      href: '/id/admin/settings',
+      href: `${base}/settings`,
     },
   ];
 
