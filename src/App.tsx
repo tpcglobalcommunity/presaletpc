@@ -503,7 +503,7 @@ const App = () => {
                     }
                   />
                   <Route
-                    path="invoices/:invoiceId"
+                    path="invoices/:invoiceNo"
                     element={
                       <Suspense fallback={<PageLoader />}>
                         <AdminInvoiceDetailPageNew />

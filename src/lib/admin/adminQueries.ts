@@ -1,10 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Invoice {
-  id?: string;
-  invoice_id?: string;
-  uuid?: string;
-  invoice_uuid?: string;
   invoice_no: string;
   status: string;
   amount_input: number;
@@ -57,46 +53,16 @@ export async function fetchInvoices(options: FetchInvoicesOptions = {}) {
   return data as Invoice[];
 }
 
-export async function fetchInvoiceById(invoiceId: string) {
-  if (!invoiceId) {
-    throw new Error('Invoice ID is required');
+export async function fetchInvoiceById(invoiceNo: string) {
+  if (!invoiceNo) {
+    throw new Error('Invoice No is required');
   }
 
-  let data, error;
-  
-  // Try invoice_id first (primary)
-  ({ data, error } = await supabase
+  const { data, error } = await supabase
     .from('invoices')
     .select('*')
-    .eq('invoice_id', invoiceId)
-    .single());
-  
-  // Fallback to uuid
-  if (error && !data) {
-    ({ data, error } = await supabase
-      .from('invoices')
-      .select('*')
-      .eq('uuid', invoiceId)
-      .single());
-  }
-  
-  // Fallback to invoice_uuid
-  if (error && !data) {
-    ({ data, error } = await supabase
-      .from('invoices')
-      .select('*')
-      .eq('invoice_uuid', invoiceId)
-      .single());
-  }
-  
-  // Final fallback to id
-  if (error && !data) {
-    ({ data, error } = await supabase
-      .from('invoices')
-      .select('*')
-      .eq('id', invoiceId)
-      .single());
-  }
+    .eq('invoice_no', invoiceNo)
+    .single();
 
   if (error) {
     console.error('Error fetching invoice:', error);
@@ -106,9 +72,9 @@ export async function fetchInvoiceById(invoiceId: string) {
   return data as Invoice;
 }
 
-export async function updateInvoiceStatus(invoiceId: string, status: string, note?: string) {
-  if (!invoiceId) {
-    throw new Error('Invoice ID is required');
+export async function updateInvoiceStatus(invoiceNo: string, status: string, note?: string) {
+  if (!invoiceNo) {
+    throw new Error('Invoice No is required');
   }
 
   const updateData: any = {
@@ -120,45 +86,12 @@ export async function updateInvoiceStatus(invoiceId: string, status: string, not
     updateData.review_note = note;
   }
 
-  let data, error;
-  
-  // Try invoice_id first (primary)
-  ({ data, error } = await supabase
+  const { data, error } = await supabase
     .from('invoices')
     .update(updateData)
-    .eq('invoice_id', invoiceId)
+    .eq('invoice_no', invoiceNo)
     .select()
-    .single());
-  
-  // Fallback to uuid
-  if (error && !data) {
-    ({ data, error } = await supabase
-      .from('invoices')
-      .update(updateData)
-      .eq('uuid', invoiceId)
-      .select()
-      .single());
-  }
-  
-  // Fallback to invoice_uuid
-  if (error && !data) {
-    ({ data, error } = await supabase
-      .from('invoices')
-      .update(updateData)
-      .eq('invoice_uuid', invoiceId)
-      .select()
-      .single());
-  }
-  
-  // Final fallback to id
-  if (error && !data) {
-    ({ data, error } = await supabase
-      .from('invoices')
-      .update(updateData)
-      .eq('id', invoiceId)
-      .select()
-      .single());
-  }
+    .single();
 
   if (error) {
     console.error('Error updating invoice status:', error);

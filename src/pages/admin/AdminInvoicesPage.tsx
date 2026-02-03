@@ -11,10 +11,6 @@ import { formatNumberID, formatRupiah } from '@/lib/number';
 import { useToast } from '@/hooks/use-toast';
 
 interface Invoice {
-  id?: string;
-  invoice_id?: string;
-  uuid?: string;
-  invoice_uuid?: string;
   invoice_no: string;
   status: string;
   amount_input: number;
@@ -39,11 +35,6 @@ export default function AdminInvoicesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all');
-
-  // Helper function to get primary key with priority order
-  const getInvoicePK = (invoice: Invoice): string | null => {
-    return invoice.invoice_id ?? invoice.uuid ?? invoice.invoice_uuid ?? invoice.id ?? null;
-  };
 
   useEffect(() => {
     const fetchInvoices = async () => {
@@ -193,32 +184,30 @@ export default function AdminInvoicesPage() {
                         key={invoice.invoice_no} 
                         className="border-b border-[#2B3139] hover:bg-[#2B3139]/30 cursor-pointer group"
                         onClick={() => {
-                          const pk = getInvoicePK(invoice);
-                          if (!pk) {
+                          if (!invoice.invoice_no) {
                             toast({
                               title: 'Error',
-                              description: 'Invoice ID tidak valid',
+                              description: 'Invoice No tidak valid',
                               variant: 'destructive'
                             });
                             return;
                           }
                           const safeLang = lang === 'en' ? 'en' : 'id';
-                          navigate(`/${safeLang}/admin/invoices/${pk}`);
+                          navigate(`/${safeLang}/admin/invoices/${invoice.invoice_no}`);
                         }}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            const pk = getInvoicePK(invoice);
-                            if (!pk) {
+                            if (!invoice.invoice_no) {
                               toast({
                                 title: 'Error',
-                                description: 'Invoice ID tidak valid',
+                                description: 'Invoice No tidak valid',
                                 variant: 'destructive'
                               });
                               return;
                             }
                             const safeLang = lang === 'en' ? 'en' : 'id';
-                            navigate(`/${safeLang}/admin/invoices/${pk}`);
+                            navigate(`/${safeLang}/admin/invoices/${invoice.invoice_no}`);
                           }
                         }}
                         role="button"
@@ -236,17 +225,16 @@ export default function AdminInvoicesPage() {
                                 className="bg-[#F0B90B]/10 text-[#F0B90B] border-[#F0B90B]/20 hover:bg-[#F0B90B]/20"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  const pk = getInvoicePK(invoice);
-                                  if (!pk) {
+                                  if (!invoice.invoice_no) {
                                     toast({
                                       title: 'Error',
-                                      description: 'Invoice ID tidak valid',
+                                      description: 'Invoice No tidak valid',
                                       variant: 'destructive'
                                     });
                                     return;
                                   }
                                   const safeLang = lang === 'en' ? 'en' : 'id';
-                                  navigate(`/${safeLang}/admin/invoices/${pk}`);
+                                  navigate(`/${safeLang}/admin/invoices/${invoice.invoice_no}`);
                                 }}
                               >
                                 <Eye className="h-3 w-3 mr-1" />

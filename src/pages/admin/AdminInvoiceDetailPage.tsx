@@ -35,7 +35,7 @@ interface Invoice {
 }
 
 export default function AdminInvoiceDetailPage() {
-  const { invoiceId } = useParams<{ invoiceId: string }>();
+  const { invoiceNo } = useParams<{ invoiceNo: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
@@ -48,52 +48,33 @@ export default function AdminInvoiceDetailPage() {
 
   useEffect(() => {
     const fetchInvoice = async () => {
-      if (!invoiceId) {
+      // HARD GUARD: Only proceed if invoiceNo exists and is not undefined
+      if (!invoiceNo || invoiceNo === 'undefined') {
         setNotFound(true);
         setIsLoading(false);
         return;
       }
-      
+
       try {
-        let data, error;
-        
-        ({ data, error } = await supabase
+        const { data, error } = await supabase
           .from('invoices')
           .select('*')
-          .eq('invoice_id', invoiceId)
-          .single());
-        
-        if (error && !data) {
-          ({ data, error } = await supabase
-            .from('invoices')
-            .select('*')
-            .eq('uuid', invoiceId)
-            .single());
-        }
-        
-        if (error && !data) {
-          ({ data, error } = await supabase
-            .from('invoices')
-            .select('*')
-            .eq('invoice_uuid', invoiceId)
-            .single());
-        }
-        
-        if (error && !data) {
-          ({ data, error } = await supabase
-            .from('invoices')
-            .select('*')
-            .eq('id', invoiceId)
-            .single());
-        }
+          .eq('invoice_no', invoiceNo)
+          .single();
 
-        if (error || !data) {
+        if (error) {
           console.error('Error fetching invoice:', error);
           setNotFound(true);
           setIsLoading(false);
           return;
         }
-        
+
+        if (!data) {
+          setNotFound(true);
+          setIsLoading(false);
+          return;
+        }
+
         setInvoice(data);
       } catch (error) {
         console.error('Unexpected error:', error);
@@ -104,14 +85,14 @@ export default function AdminInvoiceDetailPage() {
     };
 
     fetchInvoice();
-  }, [invoiceId, navigate, toast]);
+  }, [invoiceNo]);
 
   const handleApprove = async () => {
     if (!invoice) return;
     
     setIsApproving(true);
     try {
-      const { data, error } = await supabase.rpc('admin_approve_invoice', { p_id: invoice.id });
+      const { data, error } = await supabase.rpc('admin_approve_invoice', { p_id: invoice.invoice_no });
       
       if (error) {
         if (error.message.includes('Forbidden')) {
@@ -148,7 +129,7 @@ export default function AdminInvoiceDetailPage() {
           rejected_reason: rejectNote.trim(),
           rejected_at: new Date().toISOString(),
         })
-        .eq('id', invoice.id)
+        .eq('invoice_no', invoice.invoice_no)
         .select()
         .single();
       
