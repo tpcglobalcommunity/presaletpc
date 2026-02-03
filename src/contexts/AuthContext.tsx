@@ -6,12 +6,12 @@ import { getAuthCallbackUrl } from '@/lib/auth-urls';
 import { ensureProfile } from "@/lib/ensureProfile";
 
 interface Profile {
-  id: string;
   user_id: string;
   email_initial: string;
-  email_current: string;
-  member_code: string;
-  referred_by: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  created_at: string;
+  last_sign_in_at: string | null;
 }
 
 interface AuthContextType {
@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
       .from('profiles')
-      .select('*')
+      .select('user_id,email_initial,display_name,avatar_url,created_at,last_sign_in_at')
       .eq('user_id', userId)
       .maybeSingle();
 

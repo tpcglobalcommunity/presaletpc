@@ -68,7 +68,9 @@ const SettingsPage = lazy(() => import("@/pages/id/dashboard/SettingsPage"));
 // New Member Pages (Lazy Loaded)
 const MemberDashboardPage = lazy(() => import("@/pages/member/MemberDashboardPage"));
 const ProfilePage = lazy(() => import("@/pages/id/member/ProfilePage"));
+const EnProfilePage = lazy(() => import("@/pages/en/member/ProfilePage"));
 const AdminUsersPage = lazy(() => import("@/pages/id/admin/UsersPage"));
+const EnAdminUsersPage = lazy(() => import("@/pages/en/admin/UsersPage"));
 const MemberInvoicesPage = lazy(() => import("@/pages/member/MemberInvoicesPage"));
 const MemberInvoiceDetailPage = lazy(() => import("@/pages/member/MemberInvoiceDetailPage"));
 const MemberReferralPage = lazy(() => import("@/pages/member/MemberReferralPage"));
@@ -337,6 +339,22 @@ const App = () => {
                   <EnLoginPage />
                 </Suspense>
               } />
+              <Route path="dashboard" element={<MemberLayout />}>
+                <Route index element={<Navigate to="/en/member/dashboard" replace />} />
+                <Route path="profile" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <EnProfilePage />
+                  </Suspense>
+                } />
+              </Route>
+              <Route path="admin" element={<RequireAdmin><AdminLayoutPremium /></RequireAdmin>}>
+                <Route index element={<Navigate to="/en/admin/dashboard" replace />} />
+                <Route path="users" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <EnAdminUsersPage />
+                  </Suspense>
+                } />
+              </Route>
             </Route>
 
             {/* Catch-all */}

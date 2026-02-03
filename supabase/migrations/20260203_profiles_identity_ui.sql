@@ -23,6 +23,8 @@ AS $$
 DECLARE
     auth_user_record auth.users%ROWTYPE;
     existing_profile profiles%ROWTYPE;
+    v_display_name text;
+    v_avatar_url text;
 BEGIN
     -- Get auth user data
     SELECT * INTO auth_user_record 
@@ -33,47 +35,51 @@ BEGIN
         RAISE EXCEPTION 'User not found: %', p_user_id;
     END IF;
     
-    -- Check if profile exists
-    SELECT * INTO existing_profile 
-    FROM profiles 
-    WHERE user_id = p_user_id;
+    -- Extract display_name with priority
+    v_display_name := COALESCE(
+        auth_user_record.raw_user_meta_data->>'full_name',
+        auth_user_record.raw_user_meta_data->>'name',
+        auth_user_record.raw_user_meta_data->>'given_name',
+        SPLIT_PART(auth_user_record.email, '@', 1)
+    );
     
-    -- Upsert profile data
+    -- Extract avatar_url with priority
+    v_avatar_url := COALESCE(
+        auth_user_record.raw_user_meta_data->>'avatar_url',
+        auth_user_record.raw_user_meta_data->>'picture'
+    );
+    
+    -- Upsert profile data with safe updates
     INSERT INTO profiles (
         user_id,
         email_initial,
         display_name,
         avatar_url,
         last_sign_in_at,
+        created_at,
         updated_at
     ) VALUES (
         p_user_id,
         auth_user_record.email,
-        COALESCE(
-            auth_user_record.raw_user_meta_data->>'full_name',
-            auth_user_record.raw_user_meta_data->>'name',
-            'Member'
-        ),
-        auth_user_record.raw_user_meta_data->>'avatar_url',
+        v_display_name,
+        v_avatar_url,
         auth_user_record.last_sign_in_at,
+        NOW(),
         NOW()
     )
     ON CONFLICT (user_id) DO UPDATE SET
         display_name = CASE 
-            WHEN profiles.display_name IS NULL THEN 
-                COALESCE(
-                    auth_user_record.raw_user_meta_data->>'full_name',
-                    auth_user_record.raw_user_meta_data->>'name',
-                    'Member'
-                )
-            ELSE profiles.display_name
+            WHEN EXCLUDED.display_name IS NOT NULL AND EXCLUDED.display_name != '' 
+            THEN EXCLUDED.display_name 
+            ELSE profiles.display_name 
         END,
         avatar_url = CASE 
-            WHEN profiles.avatar_url IS NULL THEN 
-                auth_user_record.raw_user_meta_data->>'avatar_url'
-            ELSE profiles.avatar_url
+            WHEN EXCLUDED.avatar_url IS NOT NULL AND EXCLUDED.avatar_url != '' 
+            THEN EXCLUDED.avatar_url 
+            ELSE profiles.avatar_url 
         END,
-        last_sign_in_at = auth_user_record.last_sign_in_at,
+        last_sign_in_at = EXCLUDED.last_sign_in_at,
+        email_initial = COALESCE(profiles.email_initial, EXCLUDED.email_initial),
         updated_at = NOW()
     WHERE profiles.user_id = p_user_id;
     
@@ -111,8 +117,10 @@ RETURNS TABLE (
     display_name text,
     avatar_url text,
     created_at timestamptz,
+    last_sign_in_at timestamptz,
     auth_email text,
-    last_sign_in_at timestamptz
+    auth_created_at timestamptz,
+    last_sign_in_auth timestamptz
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -130,8 +138,10 @@ BEGIN
         p.display_name,
         p.avatar_url,
         p.created_at,
+        p.last_sign_in_at,
         a.email as auth_email,
-        p.last_sign_in_at
+        a.created_at as auth_created_at,
+        a.last_sign_in_at as last_sign_in_auth
     FROM profiles p
     JOIN auth.users a ON p.user_id = a.id
     ORDER BY p.created_at DESC
@@ -148,8 +158,10 @@ ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can read own profile" ON profiles
     FOR SELECT USING (user_id = auth.uid());
 
--- Users cannot update their profile (read-only for now)
--- No UPDATE policy needed as it's disabled by default
+-- Users can update their own display_name and avatar_url
+CREATE POLICY "Users can update own profile" ON profiles
+    FOR UPDATE USING (user_id = auth.uid())
+    WITH CHECK (user_id = auth.uid());
 
 -- Only service roles can insert (via trigger/function)
 -- No INSERT policy needed as it's handled by SECURITY DEFINER functions
