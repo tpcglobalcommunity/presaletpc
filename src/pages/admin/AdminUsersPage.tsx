@@ -99,12 +99,12 @@ export default function AdminUsersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Daftar User</h1>
-          <p className="text-[#848E9C]">Kelola semua user terdaftar</p>
+          <h1 className="text-2xl font-bold text-white">Daftar Member</h1>
+          <p className="text-[#848E9C]">Kelola semua member terdaftar</p>
         </div>
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-[#F0B90B]" />
-          <span className="text-[#F0B90B] font-medium">{filteredProfiles.length} User</span>
+          <span className="text-[#F0B90B] font-medium">{filteredProfiles.length} Member</span>
         </div>
       </div>
 
@@ -114,7 +114,7 @@ export default function AdminUsersPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#848E9C]" />
             <Input
-              placeholder="Cari email atau member code..."
+              placeholder="Cari nama, email, atau member code..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 bg-[#2B3139] border-[#3A3F47] text-white placeholder-[#848E9C]"
@@ -130,16 +130,16 @@ export default function AdminUsersPage() {
             <div className="text-center py-12">
               <Users className="h-12 w-12 text-[#848E9C] mx-auto mb-4" />
               <p className="text-[#848E9C] font-medium">
-                {profiles.length === 0 ? 'Belum ada user terdaftar' : 'Tidak ada user yang cocok dengan pencarian'}
+                {profiles.length === 0 ? 'Belum ada member terdaftar' : 'Tidak ada member yang cocok dengan pencarian'}
               </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[#2B3139]">
-                    <th className="text-left p-4 text-[#848E9C] font-medium">Register</th>
-                    <th className="text-left p-4 text-[#848E9C] font-medium">Name</th>
+                  <tr className="border-b border-[#2B3139] bg-[#0B0E11]/30">
+                    <th className="text-left p-4 text-[#848E9C] font-medium">Tanggal Register</th>
+                    <th className="text-left p-4 text-[#848E9C] font-medium">Nama</th>
                     <th className="text-left p-4 text-[#848E9C] font-medium">Email</th>
                     <th className="text-left p-4 text-[#848E9C] font-medium">Sponsor</th>
                   </tr>
@@ -147,9 +147,9 @@ export default function AdminUsersPage() {
                 <tbody>
                   {filteredProfiles.map((profile) => {
                     return (
-                      <tr key={profile.id} className="border-b border-[#2B3139] hover:bg-[#0B0E11]/50">
+                      <tr key={profile.id} className="border-b border-[#2B3139] hover:bg-[#0B0E11]/30 transition-colors">
                         <td className="p-4">
-                          <div className="text-white text-sm">
+                          <div className="text-gray-400 text-sm font-medium">
                             {formatDate(profile.created_at)}
                           </div>
                         </td>
@@ -167,7 +167,7 @@ export default function AdminUsersPage() {
                           </div>
                         </td>
                         <td className="p-4">
-                          <div className="text-white text-sm">
+                          <div className="text-gray-300 text-sm">
                             {profile.referred_by || '-'}
                           </div>
                         </td>
