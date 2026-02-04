@@ -9,20 +9,21 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ReferralTreeStats } from '@/types/referral';
+import { SimpleReferralStats, Referral } from '@/types/referral';
 
 export default function MemberReferralPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [referralCode, setReferralCode] = useState('');
-  const [referralStats, setReferralStats] = useState<ReferralTreeStats | null>(null);
+  const [referralStats, setReferralStats] = useState<SimpleReferralStats | null>(null);
+  const [referrals, setReferrals] = useState<Referral[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   const referralLink = `${window.location.origin}/id/buytpc?ref=${referralCode}`;
 
   // Calculate total downline from stats
-  const totalDownline = referralStats ? referralStats.summary.total_downline : 0;
+  const totalDownline = referralStats ? referralStats.total_downline : 0;
 
   // Fetch user profile and referral stats
   useEffect(() => {
@@ -46,19 +47,26 @@ export default function MemberReferralPage() {
         }
 
         // Fetch referral stats
-        const { data, error } = await supabase.rpc('get_referral_tree_stats', {
-          p_user_id: user.id
-        });
+        const { data: statsData, error: statsError } = await supabase.rpc('get_referral_stats');
 
-        if (error) {
-          console.error('Error fetching referral stats:', error);
+        if (statsError) {
+          console.error('Error fetching referral stats:', statsError);
           toast({
             title: 'Error',
             description: 'Gagal memuat data referral',
             variant: 'destructive'
           });
+        } else if (statsData && statsData.length > 0) {
+          setReferralStats(statsData[0]);
+        }
+
+        // Fetch referrals list
+        const { data: referralsData, error: referralsError } = await supabase.rpc('get_my_referrals');
+
+        if (referralsError) {
+          console.error('Error fetching referrals:', referralsError);
         } else {
-          setReferralStats(data);
+          setReferrals(referralsData || []);
         }
       } catch (error) {
         console.error('Unexpected error:', error);
@@ -256,53 +264,41 @@ export default function MemberReferralPage() {
                 <div className="flex items-center justify-between p-3 bg-[#0B0E11] rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-[#F0B90B]/20 rounded-full flex items-center justify-center">
-                      <span className="text-xs font-bold text-[#F0B90B]">1</span>
+                      <Users className="h-4 w-4 text-[#F0B90B]" />
                     </div>
                     <div>
-                      <p className="text-white font-medium">Level 1</p>
-                      <p className="text-xs text-[#848E9C]">Direct referral</p>
+                      <p className="text-white font-medium">Total Referral</p>
+                      <p className="text-xs text-[#848E9C]">All direct referrals</p>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="text-xl font-bold text-[#F0B90B]">
-                      {formatNumberID(referralStats.levels.level1)}
+                      {formatNumberID(totalDownline)}
                     </p>
-                    <p className="text-xs text-[#848E9C]">member</p>
+                    <p className="text-xs text-[#848E9C]">members</p>
                   </div>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-[#0B0E11] rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-[#F0B90B]/20 rounded-full flex items-center justify-center">
-                      <span className="text-xs font-bold text-[#F0B90B]">2</span>
+              </div>
+            )}
+
+            {/* Referrals List */}
+            {referrals.length > 0 && (
+              <div className="mt-6">
+                <h3 className="text-white font-medium mb-4">Daftar Referral</h3>
+                <div className="space-y-2">
+                  {referrals.map((referral) => (
+                    <div key={referral.user_id} className="flex items-center justify-between p-3 bg-[#0B0E11] rounded-lg">
+                      <div>
+                        <p className="text-white font-medium">{referral.display_name}</p>
+                        <p className="text-xs text-[#848E9C]">{referral.email}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-[#848E9C]">
+                          Bergabung {new Date(referral.joined_at).toLocaleDateString('id-ID')}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-white font-medium">Level 2</p>
-                      <p className="text-xs text-[#848E9C]">Level 1 referral</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xl font-bold text-[#F0B90B]">
-                      {formatNumberID(referralStats.levels.level2)}
-                    </p>
-                    <p className="text-xs text-[#848E9C]">member</p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-[#0B0E11] rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-[#F0B90B]/20 rounded-full flex items-center justify-center">
-                      <span className="text-xs font-bold text-[#F0B90B]">3</span>
-                    </div>
-                    <div>
-                      <p className="text-white font-medium">Level 3</p>
-                      <p className="text-xs text-[#848E9C]">Level 2 referral</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xl font-bold text-[#F0B90B]">
-                      {formatNumberID(referralStats.levels.level3)}
-                    </p>
-                    <p className="text-xs text-[#848E9C]">member</p>
-                  </div>
+                  ))}
                 </div>
               </div>
             )}

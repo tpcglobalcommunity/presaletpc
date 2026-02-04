@@ -1,30 +1,14 @@
 // Referral system types
 
+export interface SimpleReferralStats {
+  total_downline: number;
+}
+
 export interface Referral {
-  id: string;
   user_id: string;
-  parent_user_id: string | null;
-  level: number;
-  created_at: string;
-}
-
-export interface ReferralStats {
-  level: number;
-  count: number;
-  created_at: string;
-}
-
-export interface ReferralTreeStats {
-  levels: {
-    level1: number;
-    level2: number;
-    level3: number;
-  };
-  summary: {
-    total_downline: number;
-    active_downline: number;
-    total_invoices: number;
-  };
+  display_name: string;
+  email: string;
+  joined_at: string;
 }
 
 export interface AdminReferral {

@@ -206,16 +206,6 @@ export type Database = {
           referred_by: string | null;
         }>
       }
-      get_referral_stats: { 
-        Args: { 
-          member_code: string 
-        }; 
-        Returns: Array<{
-          total_referrals: number;
-          active_referrals: number;
-          total_levels: number;
-        }>
-      }
       get_all_invoices_admin: {
         Args: never;
         Returns: Array<{
@@ -290,6 +280,21 @@ export type Database = {
           sponsor_user_id: string;
           sponsor_code: string;
           reason: 'assigned_from_ref' | 'assigned_hrw' | 'already_assigned' | 'no_eligible_sponsor';
+        }>;
+      };
+      get_referral_stats: {
+        Args: never;
+        Returns: Array<{
+          total_downline: number;
+        }>;
+      };
+      get_my_referrals: {
+        Args: never;
+        Returns: Array<{
+          user_id: string;
+          display_name: string;
+          email: string;
+          joined_at: string;
         }>;
       };
       get_all_referrals_admin: {
