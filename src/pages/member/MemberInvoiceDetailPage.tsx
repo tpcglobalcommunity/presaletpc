@@ -65,7 +65,7 @@ export default function MemberInvoiceDetailPage() {
         const { data, error } = await supabase
           .from('invoices')
           .select('*')
-          .eq('invoice_no', id)
+          .eq('id', id)
           .single();
         
         if (error) {
