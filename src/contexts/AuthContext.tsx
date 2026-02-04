@@ -119,8 +119,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(currentSession?.user ?? null);
 
         if (currentSession?.user) {
-          // Ensure profile exists from auth data
-          setTimeout(async () => {
+          // Ensure profile exists from auth data (prevent multiple calls)
+          const initializeProfile = async () => {
             try {
               // Call ensureProfile to sync auth data to profiles table
               await ensureProfile(currentSession.user.id);
@@ -150,15 +150,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
               setProfile(userProfile);
             } catch (error) {
-              console.warn('[AUTH] Profile operations failed:', error);
-              // Continue without profile - don't block auth flow
+              console.error("[AUTH] Profile initialization failed:", error);
             } finally {
               setIsLoading(false);
+              isInitializingRef.current = false;
             }
-          }, 0);
+          };
+
+          // Immediate execution instead of setTimeout to prevent race conditions
+          initializeProfile();
         } else {
           setProfile(null);
           setIsLoading(false);
+          isInitializingRef.current = false;
         }
       }
     );

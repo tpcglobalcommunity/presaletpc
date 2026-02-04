@@ -169,12 +169,35 @@ function App() {
                   element={<PublicInvoiceDetailPage />}
                 />
                 
-                {/* LEGACY DASHBOARD ALIASES (ONE-TIME REDIRECT, NO LOOP) */}
-                <Route path="dashboard" element={<Navigate replace to="member" relative="route" />} />
-                <Route path="dashboard/*" element={<Navigate replace to="member" relative="route" />} />
-                <Route path="dashboard/member" element={<Navigate replace to="../member" relative="route" />} />
-                <Route path="member/dashboard" element={<Navigate replace to="../member" relative="route" />} />
-                
+                {/* CANONICAL DASHBOARD ROUTE */}
+                <Route
+                  path="dashboard"
+                  element={
+                    <RouteErrorBoundary>
+                      <Suspense fallback={<FullScreenLoader />}>
+                        <MemberLayout />
+                      </Suspense>
+                    </RouteErrorBoundary>
+                  }
+                >
+                  <Route
+                    index
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <Navigate replace to="member" />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="member"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <MemberDashboardPage />
+                      </Suspense>
+                    }
+                  />
+                </Route>
+
                 {/* CANONICAL MEMBER AREA */}
                 <Route 
                   path="member" 
@@ -190,7 +213,7 @@ function App() {
                     index
                     element={
                       <Suspense fallback={<PageLoader />}>
-                        <Navigate replace to="invoices" />
+                        <MemberDashboardPage />
                       </Suspense>
                     }
                   />

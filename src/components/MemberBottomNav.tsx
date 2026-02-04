@@ -1,106 +1,79 @@
-import { LayoutDashboard, Wallet, Share2, Settings, FileText } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { memberNavConfig, getActiveNavItem } from '@/config/memberNav';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function MemberBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { safeSignOut } = useAuth();
+  
+  const activeItem = getActiveNavItem(location.pathname);
 
-  const isActive = (path: string) => {
-    if (path === '/id/member/dashboard') {
-      return location.pathname === '/id/member/dashboard';
+  const handleNavClick = (item: any) => {
+    if (item.id === 'logout') {
+      safeSignOut();
+      navigate('/id');
+    } else {
+      navigate(item.path);
     }
-    if (path === '/id/member/invoices') {
-      return location.pathname === '/id/member/invoices' || location.pathname.startsWith('/id/member/invoices/');
-    }
-    return location.pathname === path;
   };
-
-  const navItems = [
-    { 
-      icon: LayoutDashboard, 
-      label: 'Dashboard', 
-      path: '/id/member/dashboard',
-      activeColor: 'text-blue-500',
-      activeBg: 'bg-blue-500/15'
-    },
-    { 
-      icon: FileText, 
-      label: 'Invoice', 
-      path: '/id/member/invoices',
-      activeColor: 'text-green-500',
-      activeBg: 'bg-green-500/15'
-    },
-    { 
-      icon: Wallet, 
-      label: 'Wallet', 
-      path: '/id/member/wallet',
-      activeColor: 'text-[#F0B90B]',
-      activeBg: 'bg-[#F0B90B]/15'
-    },
-    { 
-      icon: Share2, 
-      label: 'Referral', 
-      path: '/id/member/referrals',
-      activeColor: 'text-purple-500',
-      activeBg: 'bg-purple-500/15'
-    },
-    { 
-      icon: Settings, 
-      label: 'Pengaturan', 
-      path: '/id/member/settings',
-      activeColor: 'text-orange-500',
-      activeBg: 'bg-orange-500/15'
-    },
-  ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-[#1E2329] via-[#1E2329]/95 to-[#1E2329]/90 backdrop-blur-xl border-t border-[#2B3139]/50 safe-area-pb">
-      <div className="flex items-center justify-around py-2 max-w-lg mx-auto">
-        {navItems.map((item) => {
-          const active = isActive(item.path);
+      <div className="flex items-center justify-around py-2 max-w-lg mx-auto overflow-x-auto">
+        {memberNavConfig.map((item) => {
+          const isActive = activeItem?.id === item.id;
+          const isLogout = item.id === 'logout';
+          
           return (
             <button
-              key={item.path}
-              onClick={() => navigate(item.path)}
-              className="relative flex flex-col items-center justify-center min-w-[72px] py-2 px-3 rounded-2xl transition-all duration-300 group"
+              key={item.id}
+              onClick={() => handleNavClick(item)}
+              className={`relative flex flex-col items-center justify-center min-w-[60px] py-2 px-2 rounded-2xl transition-all duration-300 group flex-shrink-0 ${
+                isLogout ? 'hover:bg-red-500/10' : ''
+              }`}
             >
               {/* Active Background Indicator */}
               <div 
                 className={`absolute inset-0 rounded-2xl transition-all duration-300 ${
-                  active 
-                    ? `${item.activeBg} scale-100 shadow-lg` 
+                  isActive 
+                    ? `${item.activeColor ? item.activeColor.replace('text-', 'bg-') + '/15' : 'bg-blue-500/15'} scale-100 shadow-lg` 
                     : 'scale-0 bg-transparent group-hover:scale-100 group-hover:bg-muted/50'
                 }`}
               />
               
               {/* Icon Container */}
-              <div className="relative z-10 mb-1.5">
+              <div className="relative z-10 mb-1">
                 <div 
-                  className={`p-2.5 rounded-xl transition-all duration-300 ${
-                    active 
-                      ? `${item.activeBg} ${item.activeColor} scale-110 shadow-md` 
-                      : 'text-muted-foreground group-hover:text-foreground group-hover:scale-105'
-                  }`}
+                  className={`p-2 rounded-xl transition-all duration-300 ${
+                    isActive 
+                      ? `${item.activeColor ? item.activeColor.replace('text-', 'bg-') + '/15' : 'bg-blue-500/15'} ${item.activeColor || 'text-blue-500'} scale-110 shadow-md` 
+                      : isLogout
+                        ? 'text-gray-400 group-hover:text-red-500'
+                        : 'text-muted-foreground group-hover:text-foreground'
+                  } group-hover:scale-105`}
                 >
                   <item.icon 
-                    className={`h-5 w-5 transition-all duration-300 ${
-                      active ? 'stroke-[2.5px]' : 'stroke-[1.5px]'
+                    className={`h-4 w-4 transition-all duration-300 ${
+                      isActive ? 'stroke-[2.5px]' : 'stroke-[1.5px]'
                     }`} 
                   />
                 </div>
                 
                 {/* Active Dot Indicator */}
-                {active && (
-                  <div className={`absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full ${item.activeColor.replace('text-', 'bg-')} shadow-sm`} />
+                {isActive && (
+                  <div className={`absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full ${item.activeColor ? item.activeColor.replace('text-', 'bg-') : 'bg-blue-500'} shadow-sm`} />
                 )}
               </div>
               
               {/* Label */}
               <span 
-                className={`relative z-10 text-[11px] font-medium transition-all duration-300 ${
-                  active 
-                    ? `${item.activeColor} font-semibold`
-                    : 'text-muted-foreground group-hover:text-foreground'
+                className={`relative z-10 text-[10px] font-medium transition-all duration-300 ${
+                  isActive 
+                    ? `${item.activeColor || 'text-blue-500'} font-semibold`
+                    : isLogout
+                      ? 'text-gray-400 group-hover:text-red-500'
+                      : 'text-muted-foreground group-hover:text-foreground'
                 }`}
               >
                 {item.label}
