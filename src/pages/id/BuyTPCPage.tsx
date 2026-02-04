@@ -112,14 +112,18 @@ export default function BuyTPCPage() {
 
   // Initialize pending sponsor
   useEffect(() => {
-    console.log('[ACTIVE_PAGE] BuyTPCPage ACTIVE: src/pages/id/BuyTPCPage.tsx');
-    console.log('[ACTIVE_PAGE] BuyTPCPage @ FILE_PATH_HERE');
-    console.log('[ACTIVE_PAGE] BuyTPCPage @ src/pages/id/BuyTPCPage.tsx');
+    if (import.meta.env.DEV) {
+      console.log('[ACTIVE_PAGE] BuyTPCPage ACTIVE: src/pages/id/BuyTPCPage.tsx');
+      console.log('[ACTIVE_PAGE] BuyTPCPage @ FILE_PATH_HERE');
+      console.log('[ACTIVE_PAGE] BuyTPCPage @ src/pages/id/BuyTPCPage.tsx');
+    }
     
     let cancelled = false;
 
     async function initSponsor() {
-      console.log('[SPONSOR] init start');
+      if (import.meta.env.DEV) {
+        console.log('[SPONSOR] init start');
+      }
 
       setSponsorLoading(true);
       setSponsorError('');
@@ -128,7 +132,9 @@ export default function BuyTPCPage() {
       const refFromUrl = (params.get('ref') || '').trim().toUpperCase();
 
       if (refFromUrl) {
-        console.log('[SPONSOR] from URL:', refFromUrl);
+        if (import.meta.env.DEV) {
+          console.log('[SPONSOR] from URL:', refFromUrl);
+        }
         localStorage.setItem(LS_KEY, refFromUrl);
         if (!cancelled) {
           setSponsorCode(refFromUrl);
@@ -139,7 +145,9 @@ export default function BuyTPCPage() {
 
       const existing = (localStorage.getItem(LS_KEY) || '').trim().toUpperCase();
       if (existing) {
-        console.log('[SPONSOR] from localStorage:', existing);
+        if (import.meta.env.DEV) {
+          console.log('[SPONSOR] from localStorage:', existing);
+        }
         if (!cancelled) {
           setSponsorCode(existing);
           setSponsorLoading(false);
@@ -147,7 +155,9 @@ export default function BuyTPCPage() {
         return;
       }
 
-      console.log('[SPONSOR] fetching random sponsor via RPC...');
+      if (import.meta.env.DEV) {
+        console.log('[SPONSOR] fetching random sponsor via RPC...');
+      }
       const { data, error } = await supabase.rpc('get_random_referral_code');
 
       if (cancelled) return;
@@ -158,7 +168,9 @@ export default function BuyTPCPage() {
         
         // Fallback to TPC-GLOBAL if RPC fails
         const fallbackCode = 'TPC-GLOBAL';
-        console.log('[SPONSOR] Using fallback code:', fallbackCode);
+        if (import.meta.env.DEV) {
+          console.log('[SPONSOR] Using fallback code:', fallbackCode);
+        }
         localStorage.setItem(LS_KEY, fallbackCode);
         setSponsorCode(fallbackCode);
         setSponsorFallback(true);
@@ -167,15 +179,19 @@ export default function BuyTPCPage() {
       }
 
       const code = (data || '').toString().trim().toUpperCase();
-      console.log('[SPONSOR] RPC returned data:', data);
-      console.log('[SPONSOR] Processed code:', code);
+      if (import.meta.env.DEV) {
+        console.log('[SPONSOR] RPC returned data:', data);
+        console.log('[SPONSOR] Processed code:', code);
+      }
 
       if (!code) {
         console.error('[SPONSOR] RPC returned empty data');
         
         // Fallback to TPC-GLOBAL if empty
         const fallbackCode = 'TPC-GLOBAL';
-        console.log('[SPONSOR] Using fallback code for empty response:', fallbackCode);
+        if (import.meta.env.DEV) {
+          console.log('[SPONSOR] Using fallback code for empty response:', fallbackCode);
+        }
         localStorage.setItem(LS_KEY, fallbackCode);
         setSponsorCode(fallbackCode);
         setSponsorFallback(true);
@@ -187,7 +203,9 @@ export default function BuyTPCPage() {
       const isFallback = code === 'TPC-GLOBAL';
       setSponsorFallback(isFallback);
       
-      console.log('[SPONSOR] random sponsor result:', code, isFallback ? '(fallback)' : '(random)');
+      if (import.meta.env.DEV) {
+        console.log('[SPONSOR] random sponsor result:', code, isFallback ? '(fallback)' : '(random)');
+      }
       localStorage.setItem(LS_KEY, code);
       setSponsorCode(code);
       setSponsorLoading(false);
