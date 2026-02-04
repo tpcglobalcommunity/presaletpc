@@ -1,5 +1,5 @@
 export const ORDER_RULES = {
-  MIN_TPC_ORDER: 10_000,
+  MIN_TPC_ORDER: 1_000,
   MIN_USD_ORDER: 10,
 } as const;
 
