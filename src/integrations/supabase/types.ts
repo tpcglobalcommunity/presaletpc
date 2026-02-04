@@ -304,6 +304,15 @@ export type Database = {
           sponsor_code: string;
         }>;
       };
+      get_referral_direct_financial_stats: {
+        Args: never;
+        Returns: Array<{
+          direct_total_tpc_bought: number;
+          direct_total_commission_tpc: number;
+          total_withdrawn_tpc: number;
+          pending_withdrawn_tpc: number;
+        }>;
+      };
       get_all_referrals_admin: {
         Args: never;
         Returns: Array<{

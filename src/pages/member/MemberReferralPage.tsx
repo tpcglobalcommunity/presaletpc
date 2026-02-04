@@ -1,4 +1,4 @@
-import { Users, Copy, TrendingUp, Wallet, Share2 } from 'lucide-react';
+import { Users, Copy, TrendingUp, Wallet, Share2, ShoppingCart, DollarSign, ArrowUpRight, Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,12 +11,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { SimpleReferralStats, Referral } from '@/types/referral';
 
+interface FinancialStats {
+  direct_total_tpc_bought: number;
+  direct_total_commission_tpc: number;
+  total_withdrawn_tpc: number;
+  pending_withdrawn_tpc: number;
+}
+
 export default function MemberReferralPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [referralCode, setReferralCode] = useState('');
   const [referralStats, setReferralStats] = useState<SimpleReferralStats | null>(null);
   const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [financialStats, setFinancialStats] = useState<FinancialStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
@@ -58,6 +66,16 @@ export default function MemberReferralPage() {
           });
         } else if (statsData && statsData.length > 0) {
           setReferralStats(statsData[0]);
+        }
+
+        // Fetch financial stats
+        const { data: financialData, error: financialError } = await supabase.rpc('get_referral_direct_financial_stats');
+
+        if (financialError) {
+          console.error('Error fetching financial stats:', financialError);
+          // Don't show toast for financial stats error to avoid spam
+        } else if (financialData && Array.isArray(financialData) && financialData.length > 0) {
+          setFinancialStats(financialData[0]);
         }
 
         // Fetch referrals list
@@ -240,6 +258,108 @@ export default function MemberReferralPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Financial Stats Overview */}
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <DollarSign className="h-5 w-5 text-[#F0B90B]" />
+            Statistik Keuangan (Direct Level 1)
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Card A: Total Pembelian TPC */}
+            <Card className="bg-[#1E2329] border-[#2B3139]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-[#848E9C] text-sm">Total Pembelian TPC (Direct)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-[#3B82F6]/20 rounded-lg">
+                    <ShoppingCart className="h-5 w-5 text-[#3B82F6]" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-white">
+                      {financialStats ? formatNumberID(financialStats.direct_total_tpc_bought) : '0'}
+                    </p>
+                    <p className="text-xs text-[#848E9C]">TPC</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card B: Total Komisi TPC */}
+            <Card className="bg-[#1E2329] border-[#2B3139]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-[#848E9C] text-sm">Total Komisi TPC (Direct)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-[#10B981]/20 rounded-lg">
+                    <DollarSign className="h-5 w-5 text-[#10B981]" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-white">
+                      {financialStats ? formatNumberID(financialStats.direct_total_commission_tpc) : '0'}
+                    </p>
+                    <p className="text-xs text-[#848E9C]">TPC</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card C: Komisi Sudah Withdraw */}
+            <Card className="bg-[#1E2329] border-[#2B3139]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-[#848E9C] text-sm">Komisi Sudah Withdraw</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-[#F0B90B]/20 rounded-lg">
+                    <ArrowUpRight className="h-5 w-5 text-[#F0B90B]" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-white">
+                      {financialStats ? formatNumberID(financialStats.total_withdrawn_tpc) : '0'}
+                    </p>
+                    <p className="text-xs text-[#848E9C]">TPC</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card D: Komisi Belum Withdraw */}
+            <Card className="bg-[#1E2329] border-[#2B3139]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-[#848E9C] text-sm">Komisi Belum Withdraw</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-[#EF4444]/20 rounded-lg">
+                    <Clock className="h-5 w-5 text-[#EF4444]" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-white">
+                      {financialStats 
+                        ? formatNumberID(
+                            financialStats.direct_total_commission_tpc - 
+                            financialStats.total_withdrawn_tpc - 
+                            financialStats.pending_withdrawn_tpc
+                          )
+                        : '0'
+                      }
+                    </p>
+                    <p className="text-xs text-[#848E9C]">TPC</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          {financialStats?.pending_withdrawn_tpc && financialStats.pending_withdrawn_tpc > 0 && (
+            <div className="mt-4 text-sm text-[#848E9C]">
+              <Clock className="h-4 w-4 inline mr-1" />
+              {formatNumberID(financialStats.pending_withdrawn_tpc)} TPC sedang dalam proses penarikan
+            </div>
+          )}
         </div>
 
         {/* Referral Stats by Level */}
