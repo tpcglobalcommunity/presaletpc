@@ -3,10 +3,17 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Upload, FileText, Clock, CheckCircle, XCircle, AlertTriangle, Wallet, CreditCard, ExternalLink, Copy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { formatRupiah, formatNumberID } from '@/lib/number';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+
+const isValidUuid = (uuid: string) => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+};
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getDestination } from '@/config/paymentDestinations';
 import { ErrorCard, LoadingCard } from '@/components/member/MemberUIStates';
@@ -48,7 +55,7 @@ const transferMethods = {
 };
 
 export default function MemberInvoiceDetailPage() {
-  const { id: invoiceId } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -61,59 +68,57 @@ export default function MemberInvoiceDetailPage() {
   const [walletAddress, setWalletAddress] = useState('');
   const [uploadingFile, setUploadingFile] = useState(false);
 
-  useEffect(() => {
-    const fetchInvoice = async () => {
-      if (!invoiceId || !user) {
-        setIsLoading(false);
-        if (!invoiceId) {
-          setError('ID tidak valid');
-        } else if (!user) {
-          setError('User tidak terautentikasi');
-        }
+  const fetchInvoice = async () => {
+    if (!id || !isValidUuid(id)) {
+      setIsLoading(false);
+      setError('ID tidak valid');
+      return;
+    }
+    
+    if (!user) {
+      setIsLoading(false);
+      setError('User tidak terautentikasi');
+      return;
+    }
+    
+    try {
+      setError(null);
+      const { data, error } = await supabase
+        .from('invoices')
+        .select('*')
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Error fetching invoice:', error);
+        setError('Gagal memuat invoice.');
         return;
       }
       
-      try {
-        setError(null);
-        const { data, error } = await supabase
-          .from('invoices')
-          .select('*')
-          .eq('id', invoiceId)
-          .eq('user_id', user.id)
-          .single();
-        
-        if (error) {
-          console.error('Error fetching invoice:', error);
-          if (error.code === 'PGRST116') {
-            setError('Invoice tidak ditemukan.');
-          } else {
-            setError('Gagal memuat invoice.');
-          }
-          return;
-        }
-        
-        if (!data) {
-          setError('Invoice tidak ditemukan.');
-          return;
-        }
-        
-        // Security check: ensure user owns this invoice
-        if (data.email !== user.email) {
-          setError('Akses ditolak.');
-          return;
-        }
-        
-        setInvoice(data);
-      } catch (error) {
-        console.error('Error:', error);
-        setError('Terjadi kesalahan yang tidak terduga.');
-      } finally {
-        setIsLoading(false);
+      if (!data) {
+        setError('Invoice tidak ditemukan.');
+        return;
       }
-    };
+      
+      // Security check: ensure user owns this invoice
+      if (data.email !== user.email) {
+        setError('Invoice tidak ditemukan.');
+        return;
+      }
+      
+      setInvoice(data);
+    } catch (error) {
+      console.error('Error:', error);
+      setError('Terjadi kesalahan yang tidak terduga.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchInvoice();
-  }, [invoiceId, user, navigate, toast]);
+  }, [id, user, navigate, toast]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -214,10 +219,7 @@ export default function MemberInvoiceDetailPage() {
             onRetry={() => {
               setIsLoading(true);
               setError(null);
-              // Re-trigger fetch by setting a dummy state
-              setTimeout(() => {
-                window.location.reload();
-              }, 100);
+              fetchInvoice();
             }}
           />
         </div>
