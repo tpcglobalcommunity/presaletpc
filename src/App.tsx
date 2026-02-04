@@ -62,8 +62,41 @@ const RootDashboardRedirectPage = lazy(() => import("@/pages/RootDashboardRedire
 // Dashboard Alias Redirect Component
 function DashboardAliasRedirect() {
   const params = useParams();
-  const rest = params["*"] || "";
-  const to = rest ? `member/${rest}` : "member";
+  let rest = params["*"] || "";
+  
+  // Trim slashes and normalize
+  rest = rest.replace(/^\/+|\/+$/g, "");
+  
+  // Prevent infinite loops with strict guards
+  if (!rest) {
+    // /:lang/dashboard -> /:lang/member
+    return <Navigate replace to="member" />;
+  }
+  
+  // If rest is exactly "member", redirect to member
+  if (rest === "member") {
+    return <Navigate replace to="member" />;
+  }
+  
+  // If rest already starts with "member/", use it directly (don't double-prefix)
+  if (rest.startsWith("member/")) {
+    return <Navigate replace to={rest} />;
+  }
+  
+  // If rest starts with "dashboard/", strip it (safety)
+  if (rest.startsWith("dashboard/")) {
+    rest = rest.replace(/^dashboard\/+/, "");
+  }
+  
+  // Collapse repeated "member/member/" patterns (max 3 iterations for safety)
+  let iterations = 0;
+  while (rest.startsWith("member/member/") && iterations < 3) {
+    rest = rest.replace(/^member\/+member\//, "member/");
+    iterations++;
+  }
+  
+  // Final redirect
+  const to = `member/${rest}`;
   return <Navigate replace to={to} />;
 }
 
@@ -225,6 +258,12 @@ const App = () => {
                 <Route 
                   path="dashboard" 
                   element={<Navigate replace to="member" />} 
+                />
+                
+                {/* ✅ DASHBOARD MEMBER SAFETY - Direct redirect for /dashboard/member/* */}
+                <Route 
+                  path="dashboard/member/*" 
+                  element={<Navigate replace to="member/*" />} 
                 />
                 
                 {/* ✅ DASHBOARD NESTED ALIAS - Redirect /:lang/dashboard/* to /:lang/member/* */}
