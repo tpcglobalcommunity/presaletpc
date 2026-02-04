@@ -11,6 +11,7 @@ import { calcTpc, USD_IDR, TPC_PRICE_USDC, TPC_PRICING, getTPCPriceInIDR } from 
 import { getUsdToIdrRate } from '@/lib/fx';
 import { getSolToUsdPrice } from '@/lib/cryptoPrice';
 import { parseCurrencyInput, formatCurrencyInput, getCurrencyPlaceholder, getCurrencyHint, normalizeForSubmit, type Currency as MoneyCurrency } from '@/lib/money';
+import { isValidSolanaAddress } from '@/lib/validators';
 import { ORDER_RULES } from '@/lib/orderRules';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -401,6 +402,8 @@ export default function BuyTPCPage() {
     // Check wallet TPC
     if (!walletTpc || walletTpc.trim().length < 32) {
       reasons.push("Alamat wallet TPC wajib diisi (minimal 32 karakter).");
+    } else if (!isValidSolanaAddress(walletTpc.trim())) {
+      reasons.push("Alamat wallet tidak valid. Gunakan alamat Phantom Wallet (Solana / base58).");
     }
     
     // Check USD amount
@@ -425,16 +428,20 @@ export default function BuyTPCPage() {
 
   const ctaDisabled = !validation.ok;
 
+  // Wallet validation
+  const walletClean = walletTpc.trim();
+  const walletBase58Ok = isValidSolanaAddress(walletClean);
+
   // Derived checklist for "Why locked?" panel
   const validationChecklist = useMemo(() => {
     return {
       termsOk: agreed,
       amountOk: isFiniteNumber(amountValue) && amountValue > 0,
-      walletOk: walletTpc && walletTpc.trim().length >= 32,
+      walletOk: walletBase58Ok,
       minUsdOk: isFiniteNumber(amountUsd) && amountUsd >= ORDER_RULES.MIN_USD_ORDER,
       minTpcOk: isFiniteNumber(tpcAmount) && tpcAmount >= ORDER_RULES.MIN_TPC_ORDER,
     };
-  }, [agreed, amountValue, amountUsd, tpcAmount, walletTpc]);
+  }, [agreed, amountValue, amountUsd, tpcAmount, walletBase58Ok]);
 
   // Calculate derived values
   const sponsorBonus = amountValue >= 1000000 ? calculateSponsorBonus(amountValue) : 0;
@@ -442,10 +449,8 @@ export default function BuyTPCPage() {
   const totalTPC = tpcAmount + sponsorBonusAmount;
 
   const amountSubmit = useMemo(() => normalizeAmountForSubmit(currency, amountValue), [currency, amountValue]);
-  const walletClean = walletTpc.trim();
-  const walletOk = walletClean.length >= 32;
 
-  const isValid = amountSubmit > 0 && walletOk && agreed && !!userEmail && !!sponsorCode && !sponsorLoading && !sponsorError;
+  const isValid = amountSubmit > 0 && walletBase58Ok && agreed && !!userEmail && !!sponsorCode && !sponsorLoading && !sponsorError;
 
   const handleContinue = async () => {
     setSubmitAttempted(true);
@@ -640,27 +645,39 @@ export default function BuyTPCPage() {
                 {/* Wallet TPC Input */}
                 <div>
                   <label className="text-sm font-medium text-white mb-2 block">
-                    Alamat Wallet TPC
+                    Alamat Wallet TPC (Phantom / Solana)
                   </label>
                   <input
                     type="text"
-                    placeholder="Masukkan alamat wallet TPC Anda"
+                    placeholder="Masukkan alamat wallet pribadi Anda"
                     value={walletTpc}
                     onChange={(e) => setWalletTpc(e.target.value)}
                     className="w-full px-4 py-3 bg-[#1E2329] border border-[#2B3139] rounded-xl text-white placeholder-[#848E9C] focus:outline-none focus:ring-2 focus:ring-[#F0B90B]/40 focus:border-[#F0B90B]/50"
                   />
                   <p className="text-xs text-[#848E9C] mt-2">
-                    <Shield className="h-3 w-3 inline mr-1" />
-                    Pastikan alamat wallet benar. Transaksi tidak bisa dibatalkan.
+                    Masukkan alamat wallet pribadi Anda (Phantom – jaringan Solana).
+                    Token TPC akan dikirim ke alamat ini setelah pembayaran diverifikasi.
                   </p>
+                  <p className="text-xs text-amber-400 mt-1">
+                    ⚠️ Pastikan alamat benar. Token yang sudah dikirim tidak dapat dibatalkan.
+                  </p>
+                  {walletTpc && !walletBase58Ok && (
+                    <p className="mt-1 text-xs text-red-400">
+                      Alamat wallet tidak valid. Gunakan alamat Phantom Wallet (Solana / base58).
+                    </p>
+                  )}
                   <div className="mt-2">
                     <button
                       type="button"
                       onClick={() => navigate('/id/tutorial/phantom-wallet')}
                       className="text-xs text-[#F0B90B] hover:text-[#F8D56B] transition-colors"
                     >
-                      Belum punya wallet? Lihat tutorial Phantom →
+                      Belum punya wallet Phantom? Pelajari cara membuatnya di sini →
                     </button>
+                  </div>
+                  <div className="mt-3 text-xs text-[#848E9C]">
+                    💡 TPC adalah token non-custodial.
+                    Hanya wallet yang Anda miliki private key-nya yang bisa menerima token.
                   </div>
                 </div>
 
