@@ -59,11 +59,13 @@ export default function AdminUsersPage() {
     let filtered = profiles;
 
     if (searchTerm) {
-      filtered = filtered.filter(profile => 
-        (profile.email && profile.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (profile.full_name && profile.full_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        profile.member_code.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      const q = searchTerm.toLowerCase();
+      filtered = filtered.filter(profile => {
+        const email = (profile.email || "").toLowerCase();
+        const fullName = (profile.full_name || "").toLowerCase();
+        const memberCode = (profile.member_code || "").toLowerCase();
+        return email.includes(q) || fullName.includes(q) || memberCode.includes(q);
+      });
     }
 
     setFilteredProfiles(filtered);

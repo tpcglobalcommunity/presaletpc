@@ -281,6 +281,17 @@ export type Database = {
           proof_url: string;
         };
       };
+      assign_sponsor: {
+        Args: {
+          p_ref_code?: string;
+        };
+        Returns: Array<{
+          assigned: boolean;
+          sponsor_user_id: string;
+          sponsor_code: string;
+          reason: 'assigned_from_ref' | 'assigned_hrw' | 'already_assigned' | 'no_eligible_sponsor';
+        }>;
+      };
       get_all_referrals_admin: {
         Args: never;
         Returns: Array<{

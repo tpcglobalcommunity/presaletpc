@@ -265,9 +265,40 @@ async function validateSponsor(codeRaw: string) {
 
     setIsLoading(true);
     try {
-      // Call locked RPC function instead of direct insert
+      // Assign sponsor using HRW algorithm
       const referralClean = referralCode ? sanitizeReferral(referralCode) : null;
+      
+      const { data: sponsorData, error: sponsorError } = await supabase.rpc('assign_sponsor', {
+        p_ref_code: referralClean
+      });
 
+      if (sponsorError) {
+        console.error('Sponsor assignment error:', sponsorError);
+      } else if (sponsorData && Array.isArray(sponsorData) && sponsorData.length > 0) {
+        const sponsor = sponsorData[0];
+        console.log('Sponsor assignment:', {
+          assigned: sponsor.assigned,
+          sponsorCode: sponsor.sponsor_code,
+          reason: sponsor.reason
+        });
+        
+        // Show toast for different assignment reasons
+        if (sponsor.reason === 'assigned_from_ref') {
+          toast({
+            title: "Referral Valid",
+            description: `Sponsor: ${sponsor.sponsor_code}`,
+          });
+        } else if (sponsor.reason === 'assigned_hrw') {
+          toast({
+            title: "Sistem Assign Sponsor",
+            description: `Sponsor otomatis: ${sponsor.sponsor_code}`,
+          });
+        } else if (sponsor.reason === 'already_assigned') {
+          console.log('Already assigned to:', sponsor.sponsor_code);
+        }
+      }
+
+      // Call locked RPC function instead of direct insert
       const { data, error } = await supabase.rpc('create_invoice_locked', {
         p_email: userEmail.toLowerCase().trim(),
         p_referral_code: referralClean,          // ✅ WAJIB, tidak null
