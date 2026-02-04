@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
-import { Coins, ArrowRight, Loader2, Shield, CheckCircle, ExternalLink } from 'lucide-react';
+import { Coins, ArrowRight, Loader2, Shield, CheckCircle, ExternalLink, AlertTriangle } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { formatRupiah } from '@/lib/number';
@@ -11,6 +11,7 @@ import { calcTpc, USD_IDR, TPC_PRICE_USDC, TPC_PRICING, getTPCPriceInIDR } from 
 import { getUsdToIdrRate } from '@/lib/fx';
 import { getSolToUsdPrice } from '@/lib/cryptoPrice';
 import { parseCurrencyInput, formatCurrencyInput, getCurrencyPlaceholder, getCurrencyHint, type Currency as MoneyCurrency } from '@/lib/money';
+import { ORDER_RULES } from '@/lib/orderRules';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -87,6 +88,10 @@ export default function BuyTPCPage() {
   // Calculation state
   const [amountUsd, setAmountUsd] = useState<number>(0);
   const [tpcAmount, setTpcAmount] = useState<number>(0);
+  
+  // Validation state
+  const [touched, setTouched] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   // Navigation helpers
   const goToTerms = () => navigate('/id/syarat-ketentuan');
@@ -322,12 +327,64 @@ export default function BuyTPCPage() {
     setAmountRaw(value);
     const parsedValue = parseCurrencyInput(value, currency);
     setAmountValue(parsedValue);
+    setTouched(true);
   };
 
   const handleAmountBlur = () => {
     const formattedValue = formatCurrencyInput(amountValue, currency);
     setAmountRaw(formattedValue);
+    setTouched(true);
   };
+
+  const handleCurrencyChange = (newCurrency: Currency) => {
+    setCurrency(newCurrency);
+    setTouched(true);
+  };
+
+  // Helper functions
+  const isFiniteNumber = (n: number): boolean => {
+    return typeof n === 'number' && isFinite(n) && !isNaN(n);
+  };
+
+  const safeNumber = (n: number): number => {
+    return isFiniteNumber(n) ? n : 0;
+  };
+
+  // Validation logic with useMemo to prevent re-renders
+  const validation = useMemo(() => {
+    const reasons: string[] = [];
+    
+    // Check terms agreement
+    if (!agreed) {
+      reasons.push("Setujui Syarat & Ketentuan terlebih dahulu.");
+    }
+    
+    // Check amount value
+    if (!isFiniteNumber(amountValue) || amountValue <= 0) {
+      reasons.push("Masukkan jumlah pembelian.");
+    }
+    
+    // Check USD amount
+    if (!isFiniteNumber(amountUsd) || amountUsd <= 0) {
+      reasons.push("Jumlah USD tidak valid.");
+    } else if (amountUsd < ORDER_RULES.MIN_USD_ORDER) {
+      reasons.push(`Minimal pembelian setara ${ORDER_RULES.MIN_USD_ORDER} USDC.`);
+    }
+    
+    // Check TPC amount
+    if (!isFiniteNumber(tpcAmount) || tpcAmount <= 0) {
+      reasons.push("Perhitungan TPC tidak valid.");
+    } else if (tpcAmount < ORDER_RULES.MIN_TPC_ORDER) {
+      reasons.push(`Minimal pembelian ${ORDER_RULES.MIN_TPC_ORDER.toLocaleString('id-ID')} TPC.`);
+    }
+    
+    return {
+      ok: reasons.length === 0,
+      reasons
+    };
+  }, [agreed, amountValue, amountUsd, tpcAmount]);
+
+  const ctaDisabled = !validation.ok;
 
   // Calculate derived values
   const sponsorBonus = amountValue >= 1000000 ? calculateSponsorBonus(amountValue) : 0;
@@ -337,12 +394,16 @@ export default function BuyTPCPage() {
   const isValid = amountValue > 0 && walletTpc.trim().length >= 20 && agreed && userEmail !== null && sponsorCode && !sponsorLoading && !sponsorError;
 
   const handleSubmit = async () => {
-    if (!isValid || isLoading) return;
+    setSubmitAttempted(true);
+    
+    if (!validation.ok || isLoading) {
+      return;
+    }
 
     if (!userEmail) {
       toast({
         title: "Error",
-        description: "Harus login untuk membeli TPC",
+        description: "User email tidak ditemukan. Silakan login kembali.",
         variant: "destructive",
       });
       return;
@@ -564,7 +625,10 @@ export default function BuyTPCPage() {
                   <Checkbox
                     id="agreement"
                     checked={agreed}
-                    onCheckedChange={(checked) => setAgreed(checked as boolean)}
+                    onCheckedChange={(checked) => {
+                      setAgreed(checked as boolean);
+                      setTouched(true);
+                    }}
                     className="mt-1"
                   />
                   <div className="text-sm text-[#848E9C]">
@@ -572,11 +636,26 @@ export default function BuyTPCPage() {
                   </div>
                 </div>
 
+                {/* Error Message */}
+                {(touched || submitAttempted) && !validation.ok && (
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-sm text-red-400">
+                      {validation.reasons[0]}
+                    </span>
+                  </div>
+                )}
+
                 {/* Submit Button */}
                 <Button
                   onClick={handleSubmit}
-                  disabled={!isValid || isLoading}
-                  className="w-full bg-[#F0B90B] hover:bg-[#F8D56B] text-white font-semibold py-3"
+                  disabled={ctaDisabled || isLoading}
+                  className={cn(
+                    "w-full font-semibold py-3 transition-all",
+                    ctaDisabled 
+                      ? "bg-gray-600 text-gray-400 cursor-not-allowed opacity-50" 
+                      : "bg-[#F0B90B] hover:bg-[#F8D56B] text-white"
+                  )}
                 >
                   {isLoading ? (
                     <>
@@ -680,8 +759,8 @@ export default function BuyTPCPage() {
                   <div className="flex justify-between items-center">
                     <span className="text-[#848E9C]">TPC yang didapat</span>
                     <span className="text-white font-semibold">
-                      {amountUsd <= 0 || isNaN(tpcAmount) ? '0' : 
-                       tpcAmount >= 1000 ? tpcAmount.toFixed(2) : tpcAmount.toFixed(4)}
+                      {safeNumber(tpcAmount) <= 0 ? '0' : 
+                       safeNumber(tpcAmount) >= 1000 ? safeNumber(tpcAmount).toFixed(2) : safeNumber(tpcAmount).toFixed(4)}
                     </span>
                   </div>
                   {sponsorBonusAmount > 0 && (
