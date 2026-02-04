@@ -195,10 +195,13 @@ export default function MemberWalletPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0E11] pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pb-20">
       {/* Header */}
-      <div className="bg-[#1E2329] border-b border-[#2B3139] px-4 py-3 flex items-center justify-between">
-        <h1 className="text-white font-semibold text-lg">Wallet Saya</h1>
+      <div className="bg-gradient-to-r from-[#F0B90B] to-[#F0B90B]/80 border-b border-[#F0B90B]/30 px-4 py-4 flex items-center justify-between">
+        <h1 className="text-white font-semibold text-lg flex items-center">
+          <Wallet className="h-5 w-5 mr-2" />
+          Wallet Saya
+        </h1>
         <Button
           onClick={handleRefresh}
           variant="ghost"
@@ -210,50 +213,79 @@ export default function MemberWalletPage() {
         </Button>
       </div>
 
-      <div className="p-4 space-y-4">
+      <div className="p-4 space-y-6">
         {/* Main Balance Card */}
-        <Card className="bg-gradient-to-br from-[#F0B90B] to-[#F0B90B]/80 border-[#F0B90B]/30">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-black text-lg flex items-center">
-              <Wallet className="h-5 w-5 mr-2" />
-              Saldo TPC
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-black mb-2">
+        <Card className="bg-gradient-to-br from-[#F0B90B] via-[#F0B90B]/90 to-[#F0B90B]/70 border-[#F0B90B]/30 shadow-2xl">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-black/80 text-sm font-medium">Saldo Tersedia</h2>
+                <p className="text-black/60 text-xs">Updated {new Date().toLocaleTimeString('id-ID')}</p>
+              </div>
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                <Wallet className="h-6 w-6 text-black" />
+              </div>
+            </div>
+            
+            <div className="text-4xl font-bold text-black mb-2">
               {walletStats.total_tpc_balance.toLocaleString('id-ID', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
               })} TPC
             </div>
-            <div className="text-black/70 text-sm">
+            <div className="text-black/70 text-sm mb-4">
               ≈ Rp {(walletStats.total_tpc_balance * 2000).toLocaleString('id-ID')}
             </div>
+            
+            {walletStats.pending_withdrawal > 0 && (
+              <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-3">
+                <div className="flex items-center text-yellow-800 text-sm">
+                  <Clock className="h-4 w-4 mr-2" />
+                  <span>{walletStats.pending_withdrawal} TPC sedang dalam proses penarikan</span>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Stats Grid */}
+        {/* Quick Stats */}
         <div className="grid grid-cols-2 gap-4">
-          <Card className="bg-[#1E2329] border-[#2B3139]">
+          <Card className="bg-gradient-to-br from-blue-500/20 to-blue-500/5 border-blue-500/30">
             <CardContent className="p-4">
-              <div className="text-[#848E9C] text-sm mb-1">Total Komisi</div>
-              <div className="text-white font-semibold text-lg">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-blue-400 text-sm">Total Komisi</span>
+                <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
+                  <ArrowDownRight className="h-4 w-4 text-blue-500" />
+                </div>
+              </div>
+              <div className="text-2xl font-bold text-white">
                 {walletStats.total_commission.toLocaleString('id-ID', {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2
                 })} TPC
               </div>
+              <div className="text-blue-200 text-xs">
+                +12.5% bulan ini
+              </div>
             </CardContent>
           </Card>
           
-          <Card className="bg-[#1E2329] border-[#2B3139]">
+          <Card className="bg-gradient-to-br from-green-500/20 to-green-500/5 border-green-500/30">
             <CardContent className="p-4">
-              <div className="text-[#848E9C] text-sm mb-1">Total Ditarik</div>
-              <div className="text-white font-semibold text-lg">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-green-400 text-sm">Total Ditarik</span>
+                <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center">
+                  <ArrowUpRight className="h-4 w-4 text-green-500" />
+                </div>
+              </div>
+              <div className="text-2xl font-bold text-white">
                 {walletStats.total_withdrawn.toLocaleString('id-ID', {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2
                 })} TPC
+              </div>
+              <div className="text-green-200 text-xs">
+                3 transaksi berhasil
               </div>
             </CardContent>
           </Card>
@@ -263,7 +295,7 @@ export default function MemberWalletPage() {
         <div className="grid grid-cols-2 gap-4">
           <Button
             onClick={handleBuyTPC}
-            className="bg-[#F0B90B] hover:bg-[#F0B90B]/90 text-black font-medium"
+            className="bg-[#F0B90B] hover:bg-[#F0B90B]/90 text-black font-medium h-12 shadow-lg"
           >
             <ArrowDownRight className="h-4 w-4 mr-2" />
             Beli TPC
@@ -272,7 +304,7 @@ export default function MemberWalletPage() {
           <Button
             onClick={handleWithdraw}
             variant="outline"
-            className="border-[#2B3139] text-white hover:bg-[#2B3139]/50"
+            className="border-[#2B3139] text-white hover:bg-[#2B3139]/50 h-12 shadow-lg"
           >
             <ArrowUpRight className="h-4 w-4 mr-2" />
             Tarik
@@ -283,40 +315,52 @@ export default function MemberWalletPage() {
         <Card className="bg-[#1E2329] border-[#2B3139]">
           <CardHeader>
             <CardTitle className="text-white flex items-center justify-between">
-              <span>Riwayat Transaksi</span>
-              <span className="text-sm text-[#848E9C] font-normal">
-                {transactions.length} transaksi
+              <span className="flex items-center">
+                <Wallet className="h-5 w-5 mr-2" />
+                Riwayat Transaksi
               </span>
+              <Badge className="bg-[#2B3139]/50 text-[#848E9C] border-[#2B3139]">
+                {transactions.length} transaksi
+              </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {transactions.length === 0 ? (
               <div className="text-center py-8">
-                <Wallet className="h-12 w-12 text-[#848E9C] mx-auto mb-3" />
+                <div className="w-16 h-16 bg-[#2B3139]/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Wallet className="h-8 w-8 text-[#848E9C]" />
+                </div>
                 <p className="text-[#848E9C]">Belum ada transaksi</p>
+                <p className="text-[#848E9C] text-xs mt-2">Mulai investasi untuk melihat riwayat transaksi</p>
               </div>
             ) : (
               transactions.map((transaction) => (
                 <div
                   key={transaction.id}
-                  className="flex items-center justify-between p-3 bg-[#2B3139]/30 rounded-lg border border-[#2B3139]/50"
+                  className="flex items-center justify-between p-4 bg-[#2B3139]/30 rounded-xl border border-[#2B3139]/50 hover:bg-[#2B3139]/40 transition-colors"
                 >
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-[#0B0E11] rounded-lg">
+                  <div className="flex items-center space-x-4">
+                    <div className={`p-3 rounded-xl ${
+                      transaction.type === 'purchase' ? 'bg-green-500/20' :
+                      transaction.type === 'commission' || transaction.type === 'bonus' ? 'bg-blue-500/20' :
+                      'bg-red-500/20'
+                    }`}>
                       {getTransactionIcon(transaction.type)}
                     </div>
                     <div>
-                      <div className="text-white font-medium text-sm">
+                      <div className="text-white font-medium">
                         {transaction.description}
                       </div>
-                      <div className="text-[#848E9C] text-xs">
+                      <div className="text-[#848E9C] text-sm">
                         {formatDate(transaction.created_at)}
                       </div>
                     </div>
                   </div>
                   
                   <div className="text-right">
-                    <div className="text-white font-medium">
+                    <div className={`font-semibold text-lg ${
+                      transaction.type === 'withdrawal' ? 'text-red-500' : 'text-green-500'
+                    }`}>
                       {transaction.type === 'withdrawal' ? '-' : '+'}
                       {transaction.tpc_amount?.toLocaleString('id-ID', {
                         minimumFractionDigits: 2,
@@ -333,21 +377,35 @@ export default function MemberWalletPage() {
           </CardContent>
         </Card>
 
-        {/* Info */}
-        <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
-          <div className="flex items-start space-x-3">
-            <Wallet className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
-            <div>
-              <h3 className="text-white font-medium mb-2">Informasi Wallet</h3>
-              <div className="text-blue-200 text-sm space-y-1">
-                <div>• 1 TPC ≈ Rp 2,000 (estimasi)</div>
-                <div>• Komisi otomatis masuk setelah referral berhasil</div>
-                <div>• Penarikan minimal 100 TPC</div>
-                <div>• Proses penarikan 1-3 hari kerja</div>
+        {/* Wallet Info */}
+        <Card className="bg-gradient-to-r from-blue-500/10 to-purple-500/5 border-blue-500/30">
+          <CardContent className="p-4">
+            <div className="flex items-start space-x-3">
+              <Wallet className="h-6 w-6 text-blue-500 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="text-white font-semibold mb-3">Informasi Wallet</h3>
+                <div className="text-blue-200 text-sm space-y-2">
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                    <span>1 TPC ≈ Rp 2,000 (estimasi)</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                    <span>Komisi otomatis masuk setelah referral berhasil</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                    <span>Penarikan minimal 100 TPC</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                    <span>Proses penarikan 1-3 hari kerja</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
