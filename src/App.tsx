@@ -48,37 +48,30 @@ import VerifiedCoordinatorsPage from "@/pages/chapters/VerifiedCoordinatorsPage"
 import ChaptersSopPage from "@/pages/chapters/ChaptersSopPage";
 import TermsConditionsPage from "@/pages/legal/TermsConditionsPage";
 import PrivacyPolicyPage from "@/pages/legal/PrivacyPolicyPage";
-import TutorialPhantomWalletPage from "@/pages/public/TutorialPhantomWalletPage";
-import PublicInvoiceDetailPage from "@/pages/public/PublicInvoiceDetailPage";
 
 // English Public Pages (Static Imports - NO LAZY)
 // Note: English pages reuse Indonesian components, so no separate imports needed
-
-// Legacy Redirect Pages
-const LegacyDashboardRedirectPage = lazy(() => import("@/pages/LegacyDashboardRedirectPage"));
-const LegacyDashboardPathRedirectPage = lazy(() => import("@/pages/LegacyDashboardPathRedirectPage"));
-const RootDashboardRedirectPage = lazy(() => import("@/pages/RootDashboardRedirectPage"));
+import PublicInvoiceDetailPage from "@/pages/public/PublicInvoiceDetailPage";
 
 // Member Pages (New Member Area)
 const MemberDashboardPage = lazy(() => import("@/pages/member/MemberDashboardPage"));
 const MemberInvoicesPage = lazy(() => import("@/pages/member/MemberInvoicesPage"));
 const MemberInvoiceDetailPage = lazy(() => import("@/pages/member/MemberInvoiceDetailPage"));
-const InvoiceLegacyRedirectPage = lazy(() => import("@/pages/id/member/InvoiceLegacyRedirectPage"));
 const MemberReferralPage = lazy(() => import("@/pages/member/MemberReferralPage"));
 const MemberSettingsPage = lazy(() => import("@/pages/id/dashboard/SettingsPage"));
 const ProfilePage = lazy(() => import("@/pages/id/member/ProfilePage"));
 const EnProfilePage = lazy(() => import("@/pages/en/member/ProfilePage"));
 
-// Admin Pages (New)
-const AdminDashboardPageNew = lazy(() => import("@/pages/admin/AdminDashboardPage"));
-const AdminInvoicesPageNew = lazy(() => import("@/pages/admin/AdminInvoicesPage"));
-const AdminInvoiceDetailPageNew = lazy(() => import("@/pages/admin/AdminInvoiceDetailPage"));
-const AdminUsersPageNew = lazy(() => import("@/pages/admin/AdminUsersPage"));
+// Admin Pages (Lazy Loaded)
+const AdminDashboardPage = lazy(() => import("@/pages/admin/AdminDashboardPage"));
+const AdminUsersPage = lazy(() => import("@/pages/admin/AdminUsersPage"));
+const AdminInvoicesPage = lazy(() => import("@/pages/admin/AdminInvoicesPage"));
+const AdminInvoiceDetailPage = lazy(() => import("@/pages/admin/AdminInvoiceDetailPage"));
 const AdminReferralsPage = lazy(() => import("@/pages/admin/AdminReferralsPage"));
-const AdminSettingsPageNew = lazy(() => import("@/pages/admin/AdminSettingsPage"));
-const AdminAuditPageNew = lazy(() => import("@/pages/admin/AdminAuditPage"));
-const AdminAnalyticsPageNew = lazy(() => import("@/pages/admin/AdminAnalyticsPage"));
-const AdminNotificationsPageNew = lazy(() => import("@/pages/admin/AdminNotificationsPage"));
+const AdminSettingsPage = lazy(() => import("@/pages/admin/AdminSettingsPage"));
+const AdminAuditPage = lazy(() => import("@/pages/admin/AdminAuditPage"));
+const AdminAnalyticsPage = lazy(() => import("@/pages/admin/AdminAnalyticsPage"));
+const AdminNotificationsPage = lazy(() => import("@/pages/admin/AdminNotificationsPage"));
 const MessageTemplatesPage = lazy(() => import("@/pages/admin/MessageTemplatesPageNew"));
 
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -121,72 +114,114 @@ const App = () => {
     console.log("[AUTH] Profile ensured");
     console.log("[AUTH] Admin access:", isAdmin);
     if (isAdmin) {
-      console.log("[AUTH] Admin access granted");
+      console.log("[AUTH] Admin routes available");
     }
   }, [isAdmin]);
 
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <Routes>
-          {/* Legacy / non-lang callback redirects */}
-          <Route path="/auth/callback" element={<Navigate to="/id/auth/callback" replace />} />
-          <Route path="/auth/callback-page" element={<Navigate to="/id/auth/callback" replace />} />
-
-          {/* Root -> /id */}
-          <Route path="/" element={<Navigate to="/id" replace />} />
-
-          {/* ✅ ROOT-LEVEL LEGACY DASHBOARD REDIRECTS - MUST BE BEFORE :lang */}
-          <Route 
-            path="/dashboard" 
-            element={
-              <Suspense fallback={<PageLoader />}>
-                <RootDashboardRedirectPage />
-              </Suspense>
-            } 
-          />
-          <Route 
-            path="/dashboard/*" 
-            element={
-              <Suspense fallback={<PageLoader />}>
-                <RootDashboardRedirectPage />
-              </Suspense>
-            } 
-          />
-
-          {/* ✅ SINGLE SOURCE OF TRUTH: Language Shell */}
-              <Route path="/:lang" element={
-                <RouteErrorBoundary>
-                  <MobileLayout />
-                </RouteErrorBoundary>
-              }>
-                {/* Index: Home */}
+        <AuthProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Root redirect to default language */}
+              <Route path="/" element={<Navigate replace to="/id" />} />
+              
+              {/* Language shell */}
+              <Route path="/:lang" element={<MobileLayout />}>
+                {/* Index route */}
                 <Route index element={<LangIndexPage />} />
-
-                {/* Auth callback (canonical) */}
+                
+                {/* Auth callback */}
+                <Route path="auth/callback" element={<AuthCallbackPage />} />
+                
+                {/* Login */}
                 <Route
-                  path="auth/callback"
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <AuthCallbackPage />
-                    </Suspense>
-                  }
-                />
-                {/* Fix: callback-page MUST resolve :lang properly */}
-                <Route path="auth/callback-page" element={<LangCallbackPageRedirect />} />
-
-                {/* Public pages */}
-                <Route
-                  path="market"
+                  path="login"
                   element={
                     <LangRoute
-                      id={<MarketPage />}
-                      en={<MarketPage />}
+                      id={<LoginPage />}
+                      en={<LoginPage />}
                     />
                   }
                 />
+                
+                {/* Legacy alias routes (STATIC ONLY, NO WILDCARD PARSING) */}
+                <Route 
+                  path="dashboard" 
+                  element={<Navigate replace to="member" />} 
+                />
+                <Route 
+                  path="dashboard/*" 
+                  element={<Navigate replace to="member" />} 
+                />
+                <Route 
+                  path="member/dashboard" 
+                  element={<Navigate replace to="member" />} 
+                />
+                
+                {/* Member area */}
+                <Route path="member" element={
+                  <RouteErrorBoundary>
+                    <Suspense fallback={<FullScreenLoader />}>
+                      <MemberLayout />
+                    </Suspense>
+                  </RouteErrorBoundary>
+                }>
+                  <Route
+                    index
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <MemberDashboardPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="invoices"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <MemberInvoicesPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="invoices/:id"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <MemberInvoiceDetailPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="referrals"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <MemberReferralPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="settings"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <MemberSettingsPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="profile"
+                    element={
+                      <LangRoute
+                        id={<ProfilePage />}
+                        en={<EnProfilePage />}
+                      />
+                    }
+                  />
+                </Route>
+                
+                {/* Buy TPC */}
                 <Route
                   path="buytpc"
                   element={
@@ -206,47 +241,13 @@ const App = () => {
                   }
                 />
                 
+                {/* Public invoice */}
                 <Route
                   path="invoice/:invoiceNo"
                   element={<PublicInvoiceDetailPage />}
                 />
                 
-                {/* ✅ DASHBOARD MEMBER EDGE-CASE - Explicit redirect */}
-                <Route 
-                  path="dashboard/member" 
-                  element={<Navigate replace to="member" />} 
-                />
-                
-                {/* ✅ DASHBOARD ALIAS - HARD LOCK to member (no wildcard logic) */}
-                <Route 
-                  path="dashboard" 
-                  element={<Navigate replace to="member" />} 
-                />
-                
-                {/* ✅ DASHBOARD CATCH-ALL - Redirect everything to member */}
-                <Route 
-                  path="dashboard/*" 
-                  element={<Navigate replace to="member" />} 
-                />
-                
-                {/* ✅ LEGACY EXTERNAL REDIRECTS */}
-                <Route 
-                  path="invoices/:invoiceNo" 
-                  element={<Navigate to="../member/invoices-no/:invoiceNo" replace />} 
-                />
-                <Route 
-                  path="member/invoice/:invoiceNo" 
-                  element={<Navigate to="../invoices-no/:invoiceNo" replace />} 
-                />
-                <Route
-                  path="login"
-                  element={
-                    <LangRoute
-                      id={<LoginPage />}
-                      en={<LoginPage />}
-                    />
-                  }
-                />
+                {/* Other public pages */}
                 <Route
                   path="transparansi"
                   element={
@@ -264,10 +265,6 @@ const App = () => {
                       en={<AntiScamPage />}
                     />
                   }
-                />
-                <Route
-                  path="tutorial/phantom-wallet"
-                  element={<TutorialPhantomWalletPage />}
                 />
                 <Route
                   path="edukasi"
@@ -306,23 +303,6 @@ const App = () => {
                   }
                 />
                 <Route
-                  path="verified-coordinators"
-                  element={<VerifiedCoordinatorsPage />}
-                />
-                <Route
-                  path="chapters"
-                  element={<ChaptersSopPage />}
-                />
-                <Route
-                  path="syarat-ketentuan"
-                  element={
-                    <LangRoute
-                      id={<TermsConditionsPage />}
-                      en={<TermsConditionsPage />}
-                    />
-                  }
-                />
-                <Route
                   path="kebijakan-privasi"
                   element={
                     <LangRoute
@@ -331,137 +311,21 @@ const App = () => {
                     />
                   }
                 />
-
-                {/* ✅ FINAL MEMBER AREA (SINGLE NAMESPACE) */}
                 
-                {/* ✅ MEMBER DASHBOARD ALIAS - Explicit redirect */}
+                {/* Admin area */}
                 <Route 
-                  path="member/dashboard" 
-                  element={<Navigate replace to="member" />} 
-                />
-                
-                <Route path="member" element={
-                  <RouteErrorBoundary>
-                    <Suspense fallback={<FullScreenLoader />}>
-                      <MemberLayout />
-                    </Suspense>
-                  </RouteErrorBoundary>
-                }>
-                  <Route
-                    index
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <MemberDashboardPage />
-                      </Suspense>
-                    }
-                  />
-                  
-                  <Route
-                    path="invoices"
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <MemberInvoicesPage />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="invoices/:id"
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <MemberInvoiceDetailPage />
-                      </Suspense>
-                    }
-                  />
-                  
-                  {/* ✅ LEGACY COMPAT */}
-                  <Route
-                    path="invoices-no/:invoiceNo"
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <InvoiceLegacyRedirectPage />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="profile"
-                    element={
-                      <LangRoute
-                        id={
-                          <Suspense fallback={<PageLoader />}>
-                            <ProfilePage />
-                          </Suspense>
-                        }
-                        en={
-                          <Suspense fallback={<PageLoader />}>
-                            <EnProfilePage />
-                          </Suspense>
-                        }
-                      />
-                    }
-                  />
-                  <Route
-                    path="referrals"
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <MemberReferralPage />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="settings"
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <MemberSettingsPage />
-                      </Suspense>
-                    }
-                  />
-                </Route>
-
-                {/* ✅ ADMIN */}
-                <Route
-                  path="admin"
+                  path="admin/*" 
                   element={
                     <RequireAdmin>
-                      <RouteErrorBoundary>
-                        <Suspense fallback={<FullScreenLoader />}>
-                          <AdminLayoutPremium />
-                        </Suspense>
-                      </RouteErrorBoundary>
+                      <AdminLayoutPremium />
                     </RequireAdmin>
                   }
                 >
-                  {/* /id/admin */}
                   <Route
                     index
                     element={
                       <Suspense fallback={<PageLoader />}>
-                        <AdminDashboardPageNew />
-                      </Suspense>
-                    }
-                  />
-
-                  {/* /id/admin/dashboard */}
-                  <Route
-                    path="dashboard"
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <AdminDashboardPageNew />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="invoices"
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <AdminInvoicesPageNew />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="invoices/:invoiceNo"
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <AdminInvoiceDetailPageNew />
+                        <AdminDashboardPage />
                       </Suspense>
                     }
                   />
@@ -469,23 +333,23 @@ const App = () => {
                     path="users"
                     element={
                       <Suspense fallback={<PageLoader />}>
-                        <AdminUsersPageNew />
+                        <AdminUsersPage />
                       </Suspense>
                     }
                   />
                   <Route
-                    path="analytics"
+                    path="invoices"
                     element={
                       <Suspense fallback={<PageLoader />}>
-                        <AdminAnalyticsPageNew />
+                        <AdminInvoicesPage />
                       </Suspense>
                     }
                   />
                   <Route
-                    path="notifications"
+                    path="invoices/:id"
                     element={
                       <Suspense fallback={<PageLoader />}>
-                        <AdminNotificationsPageNew />
+                        <AdminInvoiceDetailPage />
                       </Suspense>
                     }
                   />
@@ -501,7 +365,7 @@ const App = () => {
                     path="settings"
                     element={
                       <Suspense fallback={<PageLoader />}>
-                        <AdminSettingsPageNew />
+                        <AdminSettingsPage />
                       </Suspense>
                     }
                   />
@@ -509,20 +373,28 @@ const App = () => {
                     path="audit"
                     element={
                       <Suspense fallback={<PageLoader />}>
-                        <AdminAuditPageNew />
+                        <AdminAuditPage />
                       </Suspense>
                     }
                   />
                   <Route
-                    path="marketing"
+                    path="analytics"
                     element={
                       <Suspense fallback={<PageLoader />}>
-                        <MessageTemplatesPage />
+                        <AdminAnalyticsPage />
                       </Suspense>
                     }
                   />
                   <Route
-                    path="marketing/templates"
+                    path="notifications"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <AdminNotificationsPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="message-templates"
                     element={
                       <Suspense fallback={<PageLoader />}>
                         <MessageTemplatesPage />
@@ -530,8 +402,8 @@ const App = () => {
                     }
                   />
                 </Route>
-
-                {/* Shell catch-all */}
+                
+                {/* 404 - MUST BE LAST */}
                 <Route
                   path="*"
                   element={
@@ -541,17 +413,9 @@ const App = () => {
                   }
                 />
               </Route>
-
-              {/* Global catch-all */}
-              <Route
-                path="*"
-                element={
-                  <Suspense fallback={<PageLoader />}>
-                    <NotFound />
-                  </Suspense>
-                }
-              />
             </Routes>
+          </BrowserRouter>
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
