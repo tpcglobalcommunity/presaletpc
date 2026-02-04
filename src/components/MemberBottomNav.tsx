@@ -1,4 +1,4 @@
-import { LayoutDashboard, Share2, Settings, FileText } from 'lucide-react';
+import { LayoutDashboard, Wallet, Share2, Settings, FileText } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export function MemberBottomNav() {
@@ -24,11 +24,18 @@ export function MemberBottomNav() {
       activeBg: 'bg-blue-500/15'
     },
     { 
+      icon: Wallet, 
+      label: 'Wallet', 
+      path: '/id/member/wallet',
+      activeColor: 'text-[#F0B90B]',
+      activeBg: 'bg-[#F0B90B]/15'
+    },
+    { 
       icon: FileText, 
       label: 'Invoice', 
       path: '/id/member/invoices',
-      activeColor: 'text-[#F0B90B]',
-      activeBg: 'bg-[#F0B90B]/15'
+      activeColor: 'text-green-500',
+      activeBg: 'bg-green-500/15'
     },
     { 
       icon: Share2, 

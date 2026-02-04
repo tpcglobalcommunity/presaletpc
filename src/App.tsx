@@ -62,6 +62,7 @@ const MemberInvoiceDetailPage = lazy(() => import("@/pages/member/MemberInvoiceD
 const MemberReferralPage = lazy(() => import("@/pages/member/MemberReferralPage"));
 const MemberProfilePage = lazy(() => import("@/pages/member/MemberProfilePage"));
 const MemberSettingsPage = lazy(() => import("@/pages/member/MemberSettingsPage"));
+const MemberWalletPage = lazy(() => import("@/pages/member/MemberWalletPage"));
 
 // Admin Pages (Lazy Loaded)
 const AdminInvoicesPage = lazy(() => import("@/pages/admin/AdminInvoicesPage"));
@@ -229,6 +230,14 @@ function App() {
                     element={
                       <Suspense fallback={<PageLoader />}>
                         <MemberSettingsPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="wallet"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <MemberWalletPage />
                       </Suspense>
                     }
                   />
