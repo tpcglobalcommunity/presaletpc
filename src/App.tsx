@@ -166,6 +166,12 @@ function App() {
                   element={<PublicInvoiceDetailPage />}
                 />
                 
+                {/* LEGACY DASHBOARD ALIASES (ONE-TIME REDIRECT, NO LOOP) */}
+                <Route path="dashboard" element={<Navigate replace to="member" relative="route" />} />
+                <Route path="dashboard/*" element={<Navigate replace to="member" relative="route" />} />
+                <Route path="dashboard/member" element={<Navigate replace to="../member" relative="route" />} />
+                <Route path="member/dashboard" element={<Navigate replace to="../member" relative="route" />} />
+                
                 {/* CANONICAL MEMBER AREA */}
                 <Route 
                   path="member" 
