@@ -23,7 +23,8 @@ export default function MemberReferralPage() {
   
   const { user } = useAuth();
   const { toast } = useToast();
-  const [referralCode, setReferralCode] = useState('');
+  const LS_KEY = 'tpc_pending_sponsor_code';
+  const [referralCode, setReferralCode] = useState<string>('');
   const [referralStats, setReferralStats] = useState<SimpleReferralStats | null>(null);
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [financialStats, setFinancialStats] = useState<FinancialStats | null>(null);
@@ -31,6 +32,45 @@ export default function MemberReferralPage() {
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   const referralLink = `${window.location.origin}/id/buytpc?ref=${referralCode}`;
+
+  // Auto sponsor initialization
+  useEffect(() => {
+    console.log('[REFERRAL] init auto sponsor');
+
+    const fromUrl = new URLSearchParams(window.location.search)
+      .get('ref')
+      ?.trim()
+      .toUpperCase();
+
+    if (fromUrl) {
+      console.log('[REFERRAL] from URL:', fromUrl);
+      localStorage.setItem(LS_KEY, fromUrl);
+      setReferralCode(fromUrl);
+      return;
+    }
+
+    const existing = localStorage.getItem(LS_KEY);
+    if (existing) {
+      console.log('[REFERRAL] from localStorage:', existing);
+      setReferralCode(existing);
+      return;
+    }
+
+    (async () => {
+      console.log('[REFERRAL] fetching random sponsor...');
+      const { data, error } = await supabase.rpc('get_random_referral_code' as any);
+
+      if (error || !data) {
+        console.error('[REFERRAL] random sponsor failed', error);
+        return;
+      }
+
+      console.log('[REFERRAL] random sponsor result:', data);
+      const sponsorCode = typeof data === 'string' ? data : String(data);
+      localStorage.setItem(LS_KEY, sponsorCode);
+      setReferralCode(sponsorCode);
+    })();
+  }, []);
 
   // Calculate total downline from stats
   const totalDownline = referralStats ? referralStats.total_downline : 0;
