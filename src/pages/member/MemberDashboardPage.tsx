@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Coins, FileText, Users, User, ArrowRight, TrendingUp, Shield } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,33 +23,55 @@ export default function MemberDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
 
-  // Fetch user's own profile
-  useEffect(() => {
-    if (!user?.id) return;
-    let cancelled = false;
+  // Refs to prevent duplicate fetches
+  const fetchingRef = useRef(false);
+  const lastUserIdRef = useRef<string | null>(null);
 
-    (async () => {
-      console.log('[PROFILE] Loading profile for user:', user.id);
+  // Optimized profile loader
+  const loadProfile = useCallback(async (uid: string) => {
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
+
+    try {
+      if (import.meta.env.DEV) {
+        console.log('[PROFILE] Loading profile for user:', uid);
+      }
       
       const { data, error } = await supabase
         .from('profiles')
         .select('user_id,email_initial,email_current,member_code,created_at')
-        .eq('user_id', user.id)
+        .eq('user_id', uid)
         .maybeSingle();
-
-      if (cancelled) return;
 
       if (error) {
         console.error('[PROFILE] load failed', error);
         return;
       }
 
-      console.log('[PROFILE] Loaded profile:', { user_id: data?.user_id, member_code: data?.member_code, email_current: data?.email_current });
-      setProfile(data);
-    })();
+      if (import.meta.env.DEV) {
+        console.log('[PROFILE] Loaded profile:', { user_id: data?.user_id, member_code: data?.member_code, email_current: data?.email_current });
+      }
 
-    return () => { cancelled = true; };
-  }, [user?.id]);
+      // Only update state if data actually changed
+      setProfile(prev => {
+        if (JSON.stringify(prev) === JSON.stringify(data)) return prev;
+        return data;
+      });
+    } finally {
+      fetchingRef.current = false;
+    }
+  }, []);
+
+  // Fetch user's own profile (optimized)
+  useEffect(() => {
+    const uid = user?.id;
+    if (!uid) return;
+
+    if (lastUserIdRef.current === uid) return;
+    lastUserIdRef.current = uid;
+
+    loadProfile(uid);
+  }, [user?.id, loadProfile]);
 
   useEffect(() => {
     const fetchInvoices = async () => {
