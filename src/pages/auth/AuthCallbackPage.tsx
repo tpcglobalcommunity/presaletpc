@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -13,6 +14,7 @@ interface AuthCallbackPageProps {
 export default function AuthCallbackPage({ forcedLang }: AuthCallbackPageProps = {}) {
   const navigate = useNavigate();
   const { lang = "id" } = useParams<{ lang: string }>();
+  const { user, isAdmin } = useAuth();
   
   // Determine final lang: forcedLang takes priority, then URL param, then fallback
   const finalLang = forcedLang || lang || "id";
@@ -99,7 +101,8 @@ export default function AuthCallbackPage({ forcedLang }: AuthCallbackPageProps =
           }
           
           console.log("[AUTH CALLBACK] Session found, redirecting to dashboard");
-          navigate(`/${finalLang}/member`, { replace: true });
+          const target = isAdmin ? `/${finalLang}/admin` : `/${finalLang}/member`;
+          navigate(target, { replace: true });
           return;
         }
 
