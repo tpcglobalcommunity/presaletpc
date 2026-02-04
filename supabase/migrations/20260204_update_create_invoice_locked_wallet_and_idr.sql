@@ -44,13 +44,11 @@ DECLARE
   v_currency text;
   v_wallet text;
 BEGIN
-  -- Normalize inputs
   v_email := lower(trim(p_email));
   v_referral := upper(trim(p_referral_code));
   v_currency := upper(trim(p_base_currency));
   v_wallet := trim(p_wallet_tpc);
 
-  -- Validate
   IF v_email IS NULL OR position('@' in v_email) = 0 THEN
     RAISE EXCEPTION 'Email tidak valid';
   END IF;
@@ -63,18 +61,15 @@ BEGIN
     RAISE EXCEPTION 'Nominal tidak valid';
   END IF;
 
-  -- Wallet required
   IF v_wallet IS NULL OR length(v_wallet) < 32 THEN
     RAISE EXCEPTION 'Wallet TPC wajib diisi';
   END IF;
 
-  -- Generate invoice number
   SELECT public.generate_invoice_no() INTO v_invoice_no;
   IF v_invoice_no IS NULL THEN
     RAISE EXCEPTION 'Gagal generate invoice_no';
   END IF;
 
-  -- Currency rules + calculation
   IF v_currency = 'IDR' THEN
     v_amount_idr := trunc(p_amount_input)::numeric(18,0);
     IF v_amount_idr <= 0 THEN
@@ -89,7 +84,6 @@ BEGIN
     v_amount_sol := NULL;
 
   ELSIF v_currency = 'USDC' THEN
-    -- Allow max 2 decimals
     IF round(p_amount_input, 2) <> p_amount_input THEN
       RAISE EXCEPTION 'USDC maksimal 2 angka desimal';
     END IF;
@@ -97,13 +91,12 @@ BEGIN
     v_amount_usd := p_amount_input;
     v_tpc_amount := floor(v_amount_usd / v_tpc_price_usd);
 
+    v_amount_idr := NULL;
     v_sol_price_usd := NULL;
     v_sol_updated_at := NULL;
     v_amount_sol := NULL;
-    v_amount_idr := NULL;
 
   ELSIF v_currency = 'SOL' THEN
-    -- Match UI requirement: 4 decimals
     IF round(p_amount_input, 4) <> p_amount_input THEN
       RAISE EXCEPTION 'SOL maksimal 4 angka desimal';
     END IF;
@@ -135,12 +128,10 @@ BEGIN
     RAISE EXCEPTION 'Jumlah TPC minimal 1';
   END IF;
 
-  -- Sponsor bonus 5%
   v_sponsor_bonus_pct := v_sponsor_pct;
   v_sponsor_bonus_tpc := floor(v_tpc_amount * 0.05);
 
-  -- Insert invoice
-  INSERT INTO public.invoices AS inv (
+  INSERT INTO public.invoices (
     invoice_no,
     email,
     referral_code,
@@ -178,12 +169,12 @@ BEGIN
     v_sponsor_bonus_pct,
     v_sponsor_bonus_tpc
   )
-  RETURNING inv.id INTO v_invoice_id;
+  RETURNING id INTO v_invoice_id;  -- ✅ FIXED (NO inv.id)
 
   RETURN (
-    SELECT inv.*
-    FROM public.invoices inv
-    WHERE inv.id = v_invoice_id
+    SELECT i.*
+    FROM public.invoices i
+    WHERE i.id = v_invoice_id
   );
 END;
 $$;
