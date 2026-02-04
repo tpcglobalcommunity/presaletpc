@@ -68,7 +68,6 @@ export default function MemberInvoicesPage() {
         const { data, error } = await supabase
           .from('invoices')
           .select('*')
-          .eq('email', user.email)
           .order('created_at', { ascending: false });
         
         if (error) {
