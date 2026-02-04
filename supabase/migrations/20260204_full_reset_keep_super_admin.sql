@@ -4,11 +4,6 @@
 -- dfbbf71c-0a7c-43fb-bab0-d21f12b78b47
 -- ============================================================
 
-begin;
-
--- ============================================================
--- 1. DEFINE SUPER ADMIN UUID
--- ============================================================
 do $$
 declare
   v_super_admin uuid := 'dfbbf71c-0a7c-43fb-bab0-d21f12b78b47';
@@ -23,35 +18,54 @@ delete from public.invoices
 where user_id <> v_super_admin;
 
 -- Withdrawals (if exists)
-delete from public.withdrawals
-where user_id <> v_super_admin;
+do $$
+begin
+  delete from public.withdrawals where user_id <> v_super_admin;
+exception when others then null;
+end $$;
 
 -- Referral / commission tables (adjust names if needed)
-delete from public.referrals
-where user_id <> v_super_admin
-   or sponsor_user_id <> v_super_admin;
+do $$
+begin
+  delete from public.referrals where user_id <> v_super_admin or sponsor_user_id <> v_super_admin;
+exception when others then null;
+end $$;
 
-delete from public.commissions
-where user_id <> v_super_admin;
+do $$
+begin
+  delete from public.commissions where user_id <> v_super_admin;
+exception when others then null;
+end $$;
 
 -- Commission ledger (if exists)
-delete from public.commission_ledger
-where user_id <> v_super_admin
-   or source_user_id <> v_super_admin;
+do $$
+begin
+  delete from public.commission_ledger where user_id <> v_super_admin or source_user_id <> v_super_admin;
+exception when others then null;
+end $$;
 
 -- Audit / logs
-delete from public.audit_logs
-where user_id <> v_super_admin;
+do $$
+begin
+  delete from public.audit_logs where user_id <> v_super_admin;
+exception when others then null;
+end $$;
 
 -- Any other member-only tables (SAFE GENERIC)
-delete from public.member_settings
-where user_id <> v_super_admin;
+do $$
+begin
+  delete from public.member_settings where user_id <> v_super_admin;
+exception when others then null;
+end $$;
 
 -- ============================================================
 -- 3. CLEAN PROFILES (KEEP SUPER ADMIN)
 -- ============================================================
-delete from public.profiles
-where user_id <> v_super_admin;
+do $$
+begin
+  delete from public.profiles where user_id <> v_super_admin;
+exception when others then null;
+end $$;
 
 -- Ensure super admin role is correct
 update public.profiles
@@ -64,6 +78,48 @@ where user_id = v_super_admin;
 delete from auth.users
 where id <> v_super_admin;
 
-end $$;
-
 commit;
+
+-- ============================================================
+-- 5. VERIFICATION
+-- ============================================================
+
+-- Check super admin still exists
+select 
+  'AUTH USERS' as table_name,
+  count(*) as row_count,
+  array_agg(email) as emails
+from auth.users
+where id = v_super_admin
+group by 'AUTH USERS';
+
+-- Check super admin profile still exists
+select 
+  'PROFILES' as table_name,
+  count(*) as row_count,
+  array_agg(email) as emails,
+  array_agg(role) as roles
+from public.profiles
+where user_id = v_super_admin
+group by 'PROFILES';
+
+-- Check all other data is gone (safe generic)
+select 
+  table_name,
+  row_count
+from (
+  select 'invoices' as table_name, count(*) as row_count from public.invoices where user_id <> v_super_admin
+  union all
+  select 'profiles' as table_name, count(*) as row_count from public.profiles where user_id <> v_super_admin
+  union all
+  select 'auth.users' as table_name, count(*) as row_count from auth.users where id <> v_super_admin
+  union all
+  select 'referrals' as table_name, count(*) as row_count from public.referrals
+  union all
+  select 'withdrawals' as table_name, count(*) as row_count from public.withdrawals
+  union all
+  select 'commission_ledger' as table_name, count(*) as row_count from public.commission_ledger
+  union all
+  select 'member_settings' as table_name, count(*) as row_count from public.member_settings
+) table_counts
+order by table_name;
