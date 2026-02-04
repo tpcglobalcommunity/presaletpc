@@ -59,6 +59,7 @@ export default function BuyTPCPage() {
   const [sponsorCode, setSponsorCode] = useState<string>('');
   const [sponsorLoading, setSponsorLoading] = useState<boolean>(false);
   const [sponsorError, setSponsorError] = useState<string>('');
+  const [sponsorFallback, setSponsorFallback] = useState<boolean>(false);
 
   // EXISTING STATE
   const [currency, setCurrency] = useState<Currency>('IDR');
@@ -119,22 +120,41 @@ export default function BuyTPCPage() {
       if (cancelled) return;
 
       if (error) {
-        console.error('[SPONSOR] RPC error:', error.message);
-        setSponsorError('Gagal menentukan sponsor otomatis. Silakan refresh halaman.');
+        console.error('[SPONSOR] RPC error:', error);
+        console.error('[SPONSOR] RPC error details:', error.message);
+        
+        // Fallback to TPC-GLOBAL if RPC fails
+        const fallbackCode = 'TPC-GLOBAL';
+        console.log('[SPONSOR] Using fallback code:', fallbackCode);
+        localStorage.setItem(LS_KEY, fallbackCode);
+        setSponsorCode(fallbackCode);
+        setSponsorFallback(true);
         setSponsorLoading(false);
         return;
       }
 
       const code = (data || '').toString().trim().toUpperCase();
+      console.log('[SPONSOR] RPC returned data:', data);
+      console.log('[SPONSOR] Processed code:', code);
 
       if (!code) {
-        console.error('[SPONSOR] RPC returned empty');
-        setSponsorError('Sponsor otomatis belum tersedia. Silakan refresh atau coba lagi nanti.');
+        console.error('[SPONSOR] RPC returned empty data');
+        
+        // Fallback to TPC-GLOBAL if empty
+        const fallbackCode = 'TPC-GLOBAL';
+        console.log('[SPONSOR] Using fallback code for empty response:', fallbackCode);
+        localStorage.setItem(LS_KEY, fallbackCode);
+        setSponsorCode(fallbackCode);
+        setSponsorFallback(true);
         setSponsorLoading(false);
         return;
       }
 
-      console.log('[SPONSOR] random sponsor result:', code);
+      // Check if returned code is fallback
+      const isFallback = code === 'TPC-GLOBAL';
+      setSponsorFallback(isFallback);
+      
+      console.log('[SPONSOR] random sponsor result:', code, isFallback ? '(fallback)' : '(random)');
       localStorage.setItem(LS_KEY, code);
       setSponsorCode(code);
       setSponsorLoading(false);
@@ -427,6 +447,10 @@ export default function BuyTPCPage() {
 
                   {!sponsorLoading && sponsorError && (
                     <div className="text-xs text-red-400 mt-2">{sponsorError}</div>
+                  )}
+
+                  {!sponsorLoading && sponsorFallback && (
+                    <div className="text-xs text-amber-400 mt-2">Fallback sponsor dipakai</div>
                   )}
 
                   <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-3">
