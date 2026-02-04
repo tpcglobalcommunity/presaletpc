@@ -10,7 +10,7 @@ import { getSolUsdPrice } from '@/lib/prices';
 import { calcTpc, USD_IDR, TPC_PRICE_USDC, TPC_PRICING, getTPCPriceInIDR } from '@/lib/tpcPricing';
 import { getUsdToIdrRate } from '@/lib/fx';
 import { getSolToUsdPrice } from '@/lib/cryptoPrice';
-import { parseCurrencyInput, formatCurrencyInput, getCurrencyPlaceholder, getCurrencyHint, type Currency as MoneyCurrency } from '@/lib/money';
+import { parseCurrencyInput, formatCurrencyInput, getCurrencyPlaceholder, getCurrencyHint, normalizeForSubmit, type Currency as MoneyCurrency } from '@/lib/money';
 import { ORDER_RULES } from '@/lib/orderRules';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -460,12 +460,18 @@ export default function BuyTPCPage() {
         p_email: userEmail.toLowerCase().trim(),
         p_referral_code: referralClean,
         p_base_currency: currency,
-        p_amount_input: amountValue
+        p_amount_input: normalizeForSubmit(currency, amountValue)
       });
 
       if (error) {
         console.error('Invoice creation error:', error);
-        setSubmitError(error.message || 'Gagal membuat invoice. Coba lagi beberapa saat.');
+        
+        // Specific error handling for IDR decimal issues
+        if (currency === 'IDR' && error.message?.includes('desimal')) {
+          setSubmitError('Nominal IDR harus tanpa desimal. Contoh: 10.000.000');
+        } else {
+          setSubmitError(error.message || 'Gagal membuat invoice. Coba lagi beberapa saat.');
+        }
         return;
       }
 

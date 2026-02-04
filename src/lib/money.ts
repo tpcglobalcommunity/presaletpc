@@ -98,6 +98,21 @@ export function clampDecimals(value: number, decimals: number): number {
   return Math.round(value * factor) / factor;
 }
 
+export function normalizeForSubmit(currency: Currency, value: number): number {
+  if (isNaN(value) || !isFinite(value)) return 0;
+  
+  switch (currency) {
+    case 'IDR':
+      return Math.trunc(value); // Integer only
+    case 'USDC':
+      return Number(value.toFixed(2)); // 2 decimal places
+    case 'SOL':
+      return Number(value.toFixed(4)); // 4 decimal places
+    default:
+      return value;
+  }
+}
+
 export function getCurrencyPlaceholder(currency: Currency): string {
   switch (currency) {
     case 'IDR':
