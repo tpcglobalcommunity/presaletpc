@@ -330,7 +330,11 @@ const App = () => {
                   />
                   <Route
                     path="dashboard"
-                    element={<Navigate to="." replace />}
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <MemberDashboardPage />
+                      </Suspense>
+                    }
                   />
                   <Route
                     path="invoices"
