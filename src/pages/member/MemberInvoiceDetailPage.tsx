@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Upload, FileText, Clock, CheckCircle, XCircle, AlertTriangle, Wallet, CreditCard, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Upload, FileText, Clock, CheckCircle, XCircle, AlertTriangle, Wallet, CreditCard, ExternalLink, Copy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatRupiah, formatNumberID } from '@/lib/number';
@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { getDestination } from '@/config/paymentDestinations';
 
 interface Invoice {
   id: string;
@@ -52,6 +53,7 @@ export default function MemberInvoiceDetailPage() {
   const { toast } = useToast();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [copied, setCopied] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState('');
   const [walletAddress, setWalletAddress] = useState('');
@@ -124,6 +126,17 @@ export default function MemberInvoiceDetailPage() {
       return null;
     } finally {
       setUploadingFile(false);
+    }
+  };
+
+  const handleCopy = async (value: string, key: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(key);
+      toast({ title: 'Tersalin!', description: 'Berhasil menyalin ke clipboard' });
+      setTimeout(() => setCopied(null), 1500);
+    } catch (error) {
+      toast({ title: 'Gagal menyalin', variant: 'destructive' });
     }
   };
 
@@ -223,6 +236,47 @@ export default function MemberInvoiceDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* Payment Destination Card - Only show for UNPAID or PENDING_REVIEW */}
+        {(invoice.status === 'UNPAID' || invoice.status === 'PENDING_REVIEW') && (() => {
+          const destination = getDestination(invoice.base_currency);
+          return (
+            <div className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4">
+              <h3 className="text-white font-semibold mb-1">{destination.title}</h3>
+              {destination.subtitle && (
+                <p className="text-[#848E9C] text-sm mb-4">{destination.subtitle}</p>
+              )}
+              
+              <div className="space-y-3">
+                {destination.lines.map((line, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div>
+                      <div className="text-[#848E9C] text-xs">{line.label}</div>
+                      <div className="text-white font-mono text-sm">{line.value}</div>
+                    </div>
+                    {line.copy && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleCopy(line.value, `line-${index}`)}
+                        className="text-[#F0B90B] hover:text-[#F0B90B]/80 hover:bg-[#F0B90B]/10"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              
+              {destination.note && (
+                <div className="mt-4 pt-3 border-t border-[#2B3139]">
+                  <p className="text-[#848E9C] text-xs">{destination.note}</p>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Payment Proof Upload - Only show for UNPAID */}
         {invoice.status === 'UNPAID' && (
