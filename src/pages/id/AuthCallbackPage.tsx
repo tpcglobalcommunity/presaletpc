@@ -48,8 +48,18 @@ export default function AuthCallbackPage() {
           }
         }
 
-        console.log("[AUTH CALLBACK] Session found, redirecting to dashboard");
-        navigate("/id/dashboard", { replace: true });
+        console.log("[AUTH CALLBACK] Session found, checking return URL");
+        
+        // ✅ Honor tpc_return_to for invoice success flow
+        const returnTo = localStorage.getItem('tpc_return_to');
+        if (returnTo) {
+          localStorage.removeItem('tpc_return_to');
+          console.log("[AUTH CALLBACK] Redirecting to return URL:", returnTo);
+          navigate(returnTo, { replace: true });
+        } else {
+          console.log("[AUTH CALLBACK] No return URL, redirecting to member dashboard");
+          navigate("/id/member/dashboard", { replace: true });
+        }
       } catch (err) {
         console.error("[AUTH CALLBACK] Fatal error:", err);
         navigate("/id/login", { replace: true });
