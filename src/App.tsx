@@ -110,12 +110,6 @@ function App() {
                   }
                 />
                 
-                {/* LEGACY DASHBOARD ALIASES (STATIC REDIRECTS ONLY) */}
-                <Route path="dashboard/member" element={<Navigate replace to="../member" relative="route" />} />
-                <Route path="dashboard" element={<Navigate replace to="member" relative="route" />} />
-                <Route path="dashboard/*" element={<Navigate replace to="../member" relative="route" />} />
-                <Route path="member/dashboard" element={<Navigate replace to="../member" relative="route" />} />
-                
                 {/* PUBLIC ID ROUTES (ID-only) */}
                 <Route
                   path="buytpc"
