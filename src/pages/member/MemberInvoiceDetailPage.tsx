@@ -63,6 +63,8 @@ export default function MemberInvoiceDetailPage() {
   const [selectedMethod, setSelectedMethod] = useState('');
   const [walletAddress, setWalletAddress] = useState('');
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const [paymentSettings, setPaymentSettings] = useState({
     idrBankName: 'BCA',
@@ -119,9 +121,43 @@ export default function MemberInvoiceDetailPage() {
     fetchInvoice();
   }, [invoiceNo, user, navigate, toast]);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !invoice || !user) return;
+    if (!file) return;
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ 
+        title: 'File Terlalu Besar', 
+        description: 'Ukuran file maksimal 5MB.',
+        variant: 'destructive' 
+      });
+      return;
+    }
+
+    setSelectedFile(file);
+    
+    // Create preview for images
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreviewUrl(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setPreviewUrl(null);
+    }
+  };
+
+  const handleSubmitProof = async () => {
+    if (!selectedFile || !invoice || !user) {
+      toast({ 
+        title: 'File Belum Dipilih', 
+        description: 'Silakan pilih file bukti pembayaran terlebih dahulu.',
+        variant: 'destructive' 
+      });
+      return;
+    }
 
     // Check if invoice status allows upload
     if (invoice.status !== 'UNPAID') {
@@ -135,13 +171,13 @@ export default function MemberInvoiceDetailPage() {
 
     setUploadingFile(true);
     try {
-      const fileName = `${Date.now()}-${file.name}`;
+      const fileName = `${Date.now()}-${selectedFile.name}`;
       const filePath = `${user.id}/${invoice.id}/${fileName}`;
 
       // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('invoice-proofs')
-        .upload(filePath, file);
+        .upload(filePath, selectedFile);
 
       if (uploadError) {
         throw uploadError;
@@ -152,22 +188,32 @@ export default function MemberInvoiceDetailPage() {
         .from('invoice-proofs')
         .getPublicUrl(filePath);
 
-      // Update invoice with proof_url
+      // Update invoice with all required fields
       const { error: updateError } = await supabase
         .from('invoices')
-        .update({ proof_url: publicUrl })
-        .eq('id', invoice.id);
+        .update({ 
+          proof_url: publicUrl,
+          proof_uploaded_at: new Date().toISOString(),
+          submitted_at: new Date().toISOString(),
+          status: 'PENDING_REVIEW'
+        })
+        .eq('id', invoice.id)
+        .eq('user_id', user.id); // Security check
 
       if (updateError) {
         throw updateError;
       }
+
+      // Clear selected file and preview
+      setSelectedFile(null);
+      setPreviewUrl(null);
 
       // Refresh invoice data
       await fetchInvoice();
       
       toast({ 
         title: 'Upload Berhasil!', 
-        description: 'Bukti pembayaran berhasil diunggah.' 
+        description: 'Bukti pembayaran berhasil diunggah dan dikirim untuk verifikasi.' 
       });
     } catch (error) {
       console.error('Upload error:', error);
@@ -189,45 +235,6 @@ export default function MemberInvoiceDetailPage() {
       setTimeout(() => setCopied(null), 1500);
     } catch (error) {
       toast({ title: 'Gagal menyalin', variant: 'destructive' });
-    }
-  };
-
-  const handleSubmitProof = async (event: React.FormEvent) => {
-    event.preventDefault();
-    
-    if (!invoice || !selectedMethod || !walletAddress) {
-      toast({ title: 'Mohon lengkapi semua field', variant: 'destructive' });
-      return;
-    }
-
-    const fileInput = document.getElementById('proof-file') as HTMLInputElement;
-    const filePath = await handleFileUpload({ target: fileInput } as React.ChangeEvent<HTMLInputElement>);
-    
-    if (!filePath) return;
-
-    setIsSubmitting(true);
-    try {
-      const { data, error } = await supabase.rpc('member_submit_payment_proof', {
-        p_id: invoice.id,
-        p_transfer_method: selectedMethod,
-        p_wallet_tpc: walletAddress,
-        p_proof_url: filePath
-      });
-
-      if (error) {
-        toast({ title: 'Gagal submit bukti', description: error.message, variant: 'destructive' });
-        return;
-      }
-
-      if (data) {
-        setInvoice(prev => ({ ...prev, ...data }));
-        toast({ title: 'Bukti pembayaran berhasil dikirim!' });
-      }
-    } catch (error) {
-      console.error('Submit error:', error);
-      toast({ title: 'Terjadi kesalahan', variant: 'destructive' });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -414,7 +421,7 @@ export default function MemberInvoiceDetailPage() {
                     id="proof-file"
                     type="file"
                     accept="image/*,.pdf"
-                    onChange={handleFileUpload}
+                    onChange={handleFileSelect}
                     className="hidden"
                     disabled={uploadingFile}
                   />
@@ -437,6 +444,49 @@ export default function MemberInvoiceDetailPage() {
                   </label>
                 </div>
               </div>
+
+              {/* File Preview */}
+              {selectedFile && (
+                <div className="space-y-3">
+                  <div className="bg-[#2B3139]/50 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white text-sm font-medium">File Terpilih:</span>
+                      <button
+                        onClick={() => {
+                          setSelectedFile(null);
+                          setPreviewUrl(null);
+                        }}
+                        className="text-[#848E9C] hover:text-white text-xs"
+                      >
+                        Hapus
+                      </button>
+                    </div>
+                    <div className="text-[#848E9C] text-xs">{selectedFile.name}</div>
+                    <div className="text-[#848E9C] text-xs">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</div>
+                  </div>
+
+                  {/* Image Preview */}
+                  {previewUrl && (
+                    <div className="bg-[#2B3139]/50 rounded-lg p-3">
+                      <img 
+                        src={previewUrl} 
+                        alt="Preview" 
+                        className="max-w-full h-auto rounded-lg"
+                        style={{ maxHeight: '200px' }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Submit Button */}
+                  <Button
+                    onClick={handleSubmitProof}
+                    disabled={uploadingFile || !selectedFile}
+                    className="w-full bg-[#F0B90B] hover:bg-[#F8D56B] text-black font-medium"
+                  >
+                    {uploadingFile ? 'Mengirim...' : 'Kirim Bukti Pembayaran'}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         )}
