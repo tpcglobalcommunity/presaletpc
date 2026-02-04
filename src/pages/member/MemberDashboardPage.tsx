@@ -26,6 +26,8 @@ export default function MemberDashboardPage() {
   // Refs to prevent duplicate fetches
   const fetchingRef = useRef(false);
   const lastUserIdRef = useRef<string | null>(null);
+  const invoicesFetchingRef = useRef(false);
+  const lastInvoicesUserIdRef = useRef<string | null>(null);
 
   // Optimized profile loader
   const loadProfile = useCallback(async (uid: string) => {
@@ -48,13 +50,16 @@ export default function MemberDashboardPage() {
         return;
       }
 
-      if (import.meta.env.DEV) {
-        console.log('[PROFILE] Loaded profile:', { user_id: data?.user_id, member_code: data?.member_code, email_current: data?.email_current });
-      }
-
       // Only update state if data actually changed
       setProfile(prev => {
-        if (JSON.stringify(prev) === JSON.stringify(data)) return prev;
+        if (JSON.stringify(prev) === JSON.stringify(data)) {
+          return prev;
+        }
+        
+        if (import.meta.env.DEV) {
+          console.log('[PROFILE] Loaded profile:', { user_id: data?.user_id, member_code: data?.member_code, email_current: data?.email_current });
+        }
+        
         return data;
       });
     } finally {
@@ -74,35 +79,61 @@ export default function MemberDashboardPage() {
   }, [user?.id, loadProfile]);
 
   useEffect(() => {
+    const uid = user?.id;
+    if (!uid) {
+      setInvoices([]);
+      setIsLoading(false);
+      return;
+    }
+
+    if (lastInvoicesUserIdRef.current === uid) return;
+    lastInvoicesUserIdRef.current = uid;
+
     const fetchInvoices = async () => {
+      if (invoicesFetchingRef.current) return;
+      invoicesFetchingRef.current = true;
+
       try {
-        // For now, use direct query since RPC might not exist
+        setIsLoading(true);
+
         const { data, error } = await supabase
           .from('invoices')
           .select('invoice_no,status,tpc_amount,created_at')
-          .eq('user_id', user.id)
+          .eq('user_id', uid)
           .order('created_at', { ascending: false })
           .limit(10);
-        
+
         if (error) {
-          console.error('Error fetching invoices:', error);
+          if (import.meta.env.DEV) console.error('Error fetching invoices:', error);
           toast({ title: 'Gagal memuat data', variant: 'destructive' });
           return;
         }
-        
-        setInvoices(data || []);
-      } catch (error) {
-        console.error('Error:', error);
+
+        const next = data || [];
+        setInvoices(prev => {
+          // minimal compare to avoid spam re-render
+          if (prev.length === next.length) {
+            const same = prev.every((p, i) =>
+              p.invoice_no === next[i]?.invoice_no &&
+              p.status === next[i]?.status &&
+              p.tpc_amount === next[i]?.tpc_amount &&
+              p.created_at === next[i]?.created_at
+            );
+            if (same) return prev;
+          }
+          return next;
+        });
+      } catch (e) {
+        if (import.meta.env.DEV) console.error('Error:', e);
         toast({ title: 'Terjadi kesalahan', variant: 'destructive' });
       } finally {
         setIsLoading(false);
+        invoicesFetchingRef.current = false;
       }
     };
 
-    if (user) {
-      fetchInvoices();
-    }
-  }, [user, toast]);
+    fetchInvoices();
+  }, [user?.id]);
 
   // Calculate stats
   const totalInvoices = invoices.length;
@@ -199,7 +230,7 @@ export default function MemberDashboardPage() {
         {/* Quick Actions */}
         <div className="space-y-3">
           <button
-            onClick={() => navigate('/id/buytpc')}
+            onClick={() => navigate(`/${safeLang}/buytpc`)}
             className="w-full bg-[#F0B90B] hover:bg-[#F8D56B] text-black font-medium py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors"
           >
             <Coins className="h-5 w-5" />
@@ -208,7 +239,7 @@ export default function MemberDashboardPage() {
           </button>
 
           <button
-            onClick={() => navigate('/id/dashboard/invoices')}
+            onClick={() => navigate(`/${safeLang}/dashboard/invoices`)}
             className="w-full bg-[#1E2329] border border-[#2B3139] hover:border-[#F0B90B]/50 text-white font-medium py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors"
           >
             <FileText className="h-5 w-5" />
