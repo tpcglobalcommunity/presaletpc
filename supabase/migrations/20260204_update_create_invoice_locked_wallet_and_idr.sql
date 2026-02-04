@@ -1,8 +1,10 @@
 -- Migration: 20260204_update_create_invoice_locked_wallet_and_idr.sql
 -- Purpose: Update create_invoice_locked to require wallet and handle amount_idr
--- Safety: Maintains existing function signature and return contract
+-- Safety: Maintains existing function return contract
 
+-- Drop old 4-arg (legacy) + drop new 5-arg if rerun
 DROP FUNCTION IF EXISTS public.create_invoice_locked(text,text,text,numeric);
+DROP FUNCTION IF EXISTS public.create_invoice_locked(text,text,text,numeric,text);
 
 CREATE OR REPLACE FUNCTION public.create_invoice_locked(
   p_email text,
@@ -40,11 +42,13 @@ DECLARE
   v_email text;
   v_referral text;
   v_currency text;
+  v_wallet text;
 BEGIN
   -- Normalize inputs
   v_email := lower(trim(p_email));
   v_referral := upper(trim(p_referral_code));
   v_currency := upper(trim(p_base_currency));
+  v_wallet := trim(p_wallet_tpc);
 
   -- Validate
   IF v_email IS NULL OR position('@' in v_email) = 0 THEN
@@ -59,8 +63,8 @@ BEGIN
     RAISE EXCEPTION 'Nominal tidak valid';
   END IF;
 
-  -- Validate wallet TPC
-  IF p_wallet_tpc IS NULL OR length(trim(p_wallet_tpc)) < 32 THEN
+  -- Wallet required
+  IF v_wallet IS NULL OR length(v_wallet) < 32 THEN
     RAISE EXCEPTION 'Wallet TPC wajib diisi';
   END IF;
 
@@ -72,9 +76,7 @@ BEGIN
 
   -- Currency rules + calculation
   IF v_currency = 'IDR' THEN
-    -- Normalize IDR to integer (truncate decimals)
     v_amount_idr := trunc(p_amount_input)::numeric(18,0);
-    
     IF v_amount_idr <= 0 THEN
       RAISE EXCEPTION 'Nominal IDR tidak valid';
     END IF;
@@ -87,8 +89,9 @@ BEGIN
     v_amount_sol := NULL;
 
   ELSIF v_currency = 'USDC' THEN
-    IF p_amount_input <> floor(p_amount_input) THEN
-      RAISE EXCEPTION 'USDC tidak boleh desimal';
+    -- Allow max 2 decimals
+    IF round(p_amount_input, 2) <> p_amount_input THEN
+      RAISE EXCEPTION 'USDC maksimal 2 angka desimal';
     END IF;
 
     v_amount_usd := p_amount_input;
@@ -100,8 +103,9 @@ BEGIN
     v_amount_idr := NULL;
 
   ELSIF v_currency = 'SOL' THEN
-    IF round(p_amount_input, 3) <> p_amount_input THEN
-      RAISE EXCEPTION 'SOL maksimal 3 angka desimal';
+    -- Match UI requirement: 4 decimals
+    IF round(p_amount_input, 4) <> p_amount_input THEN
+      RAISE EXCEPTION 'SOL maksimal 4 angka desimal';
     END IF;
 
     v_amount_sol := p_amount_input;
@@ -135,7 +139,7 @@ BEGIN
   v_sponsor_bonus_pct := v_sponsor_pct;
   v_sponsor_bonus_tpc := floor(v_tpc_amount * 0.05);
 
-  -- Insert invoice & capture ID (NO ambiguity)
+  -- Insert invoice
   INSERT INTO public.invoices AS inv (
     invoice_no,
     email,
@@ -160,14 +164,11 @@ BEGIN
     v_email,
     v_referral,
     v_currency,
-    CASE 
-      WHEN v_currency = 'IDR' THEN v_amount_idr
-      ELSE p_amount_input
-    END,
+    CASE WHEN v_currency = 'IDR' THEN v_amount_idr ELSE p_amount_input END,
     v_amount_usd,
     v_tpc_amount,
     v_amount_idr,
-    trim(p_wallet_tpc),
+    v_wallet,
     'UNPAID',
     v_expires_at,
     v_idr_rate,
@@ -179,7 +180,6 @@ BEGIN
   )
   RETURNING inv.id INTO v_invoice_id;
 
-  -- Return inserted row safely
   RETURN (
     SELECT inv.*
     FROM public.invoices inv
@@ -188,5 +188,6 @@ BEGIN
 END;
 $$;
 
+-- IMPORTANT: grant harus match signature 5 param
 GRANT EXECUTE ON FUNCTION public.create_invoice_locked(text, text, text, numeric, text)
 TO anon, authenticated;
