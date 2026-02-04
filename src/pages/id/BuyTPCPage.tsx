@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Coins, ArrowRight, Loader2, Shield, CheckCircle, ExternalLink } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
@@ -42,6 +42,7 @@ function sanitizeReferral(raw: string) {
 export default function BuyTPCPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   
   // Presale configuration from environment variables
@@ -51,44 +52,190 @@ export default function BuyTPCPage() {
   // Fallback constants for presale config
   const FALLBACK_STAGE1_STARTED_AT = new Date('2026-02-02T00:00:00Z').getTime();
   
+  // NEW REFERRAL STATE IMPLEMENTATION
+  const refFromUrlRaw = (searchParams.get('ref') || '').trim();
+  const refFromUrl = refFromUrlRaw ? refFromUrlRaw.toUpperCase() : '';
+  const isUrlReferral = !!refFromUrl;
+
+  const [referral, setReferral] = useState<string>(refFromUrl);
+  const [referralConfirmed, setReferralConfirmed] = useState<boolean>(isUrlReferral);
+  const [referralValid, setReferralValid] = useState<boolean>(false);
+  const [referralChecking, setReferralChecking] = useState<boolean>(false);
+  const [referralError, setReferralError] = useState<string>('');
+
+  const [suggestedReferral, setSuggestedReferral] = useState<string>('');
+  const [suggestionLoading, setSuggestionLoading] = useState<boolean>(false);
+
+  const debounceRef = useRef<number | null>(null);
+
+  // EXISTING STATE
   const [currency, setCurrency] = useState<Currency>('IDR');
   const [amountRaw, setAmountRaw] = useState('');
   const [amountValue, setAmountValue] = useState(0);
   const [walletTpc, setWalletTpc] = useState('');
-  const [referralCode, setReferralCode] = useState('');
-  const [refFromUrl, setRefFromUrl] = useState<string>('');
   const [agreed, setAgreed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [solUsdPrice, setSolUsdPrice] = useState<number | null>(null);
   const [solPriceLoading, setSolPriceLoading] = useState(false);
-  const [referralValid, setReferralValid] = useState<boolean | null>(null);
-  const [referralError, setReferralError] = useState('');
-  const [sponsorInfo, setSponsorInfo] = useState<{ member_code: string; id: string } | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [sponsorLocked, setSponsorLocked] = useState(false);
-  const [sponsorSource, setSponsorSource] = useState<string>('');
-  const sponsorEnsured = useRef(false);
-
-  useEffect(() => {
-    const sp = new URLSearchParams(location.search);
-    const refRaw = sp.get("ref") || sp.get("referral") || sp.get("code");
-    const ref = refRaw ? sanitizeReferral(refRaw) : "";
-
-    if (ref) {
-      setRefFromUrl(ref);
-      setReferralCode(ref);
-      sessionStorage.setItem("referralCode", ref);
-    } else {
-      setRefFromUrl("");
-      setReferralCode("");
-      sessionStorage.removeItem("referralCode");
-    }
-  }, [location.search]);
   const [presaleConfig, setPresaleConfig] = useState<PresaleConfig | null>(null);
 
   // Navigation helpers
   const goToTerms = () => navigate('/id/syarat-ketentuan');
   const goToPrivacy = () => navigate('/id/kebijakan-privasi');
+
+  // Fetch random suggestion jika TIDAK ada ref di URL
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSuggestion() {
+      if (isUrlReferral) return; // kalau pakai ref=, tidak perlu random suggestion
+      setSuggestionLoading(true);
+
+      const { data, error } = await supabase.rpc('get_random_referral_code');
+
+      if (cancelled) return;
+
+      if (error) {
+        setSuggestedReferral('');
+        setSuggestionLoading(false);
+        return;
+      }
+
+      const code = (data || '').toString().trim().toUpperCase();
+      setSuggestedReferral(code);
+      setSuggestionLoading(false);
+    }
+
+    loadSuggestion();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isUrlReferral]);
+
+  // Jika ref dari URL berubah (edge case), sync state & lock
+  useEffect(() => {
+    if (!isUrlReferral) return;
+    setReferral(refFromUrl);
+    setReferralConfirmed(true);
+  }, [isUrlReferral, refFromUrl]);
+
+  // Validasi referral ke DB (debounced)
+  useEffect(() => {
+    const code = (referral || '').trim().toUpperCase();
+
+    // reset state jika kosong
+    if (!code) {
+      setReferralValid(false);
+      setReferralError('Kode referral/sponsor wajib diisi.');
+      setReferralChecking(false);
+      if (debounceRef.current) window.clearTimeout(debounceRef.current);
+      return;
+    }
+
+    setReferralError('');
+    setReferralChecking(true);
+
+    if (debounceRef.current) window.clearTimeout(debounceRef.current);
+
+    debounceRef.current = window.setTimeout(async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('referral_code', code)
+        .limit(1)
+        .maybeSingle();
+
+      if (error) {
+        setReferralValid(false);
+        setReferralError('Gagal memvalidasi kode. Coba lagi.');
+        setReferralChecking(false);
+        return;
+      }
+
+      if (!data?.id) {
+        setReferralValid(false);
+        setReferralError('Kode referral tidak terdaftar.');
+        setReferralChecking(false);
+        return;
+      }
+
+      setReferralValid(true);
+      setReferralError('');
+      setReferralChecking(false);
+    }, 450);
+
+    return () => {
+      if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    };
+  }, [referral]);
+
+  // Manual confirm rules
+  const onReferralInputChange = (v: string) => {
+    const next = (v || '').toUpperCase();
+    setReferral(next);
+    if (!referralConfirmed) setReferralConfirmed(true); // aksi manual
+  };
+
+  const useSuggestedReferral = () => {
+    if (!suggestedReferral) return;
+    setReferral(suggestedReferral);
+    setReferralConfirmed(true); // aksi manual via klik
+  };
+
+  // Gating submit
+  const canProceed = referralConfirmed && !!referral.trim() && referralValid && !referralChecking;
+
+  // Get current user
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserEmail(user.email || null);
+      }
+    };
+    getCurrentUser();
+  }, []);
+
+  // Fetch presale config
+  useEffect(() => {
+    const fetchPresaleConfig = async () => {
+      try {
+        const config = {
+          stage1_started_at: FALLBACK_STAGE1_STARTED_AT,
+          stage1_duration_days: 30,
+          stage1_supply: 100000000,
+          stage1_price_usd: 0.01,
+          stage2_supply: 50000000,
+          stage2_price_usd: 0.02,
+          listing_price_usd: 0.05,
+        };
+        setPresaleConfig(config);
+      } catch (error) {
+        console.error('Failed to fetch presale config:', error);
+      }
+    };
+
+    fetchPresaleConfig();
+  }, []);
+
+  // Fetch SOL price
+  useEffect(() => {
+    const fetchSolPrice = async () => {
+      try {
+        setSolPriceLoading(true);
+        const price = await getSolUsdPrice();
+        setSolUsdPrice(price);
+      } catch (error) {
+        console.error('Failed to fetch SOL price:', error);
+      } finally {
+        setSolPriceLoading(false);
+      }
+    };
+
+    fetchSolPrice();
+  }, []);
 
   // Currency-specific input handlers
   const handleAmountChange = (value: string) => {
@@ -112,197 +259,17 @@ export default function BuyTPCPage() {
     if (currency === 'USDC') {
       setAmountRaw(formatUsdc(amountValue));
     } else if (currency === 'SOL') {
-      setAmountRaw(formatSol(amountValue)); // always 4 decimals
+      setAmountRaw(formatSol(amountValue));
     }
   };
 
-  // Fetch SOL price when currency is SOL
-  useEffect(() => {
-    if (currency === 'SOL') {
-      setSolPriceLoading(true);
-      getSolUsdPrice().then(price => {
-        setSolUsdPrice(price);
-        setSolPriceLoading(false);
-      });
-    }
-  }, [currency]);
-
-  // Placeholder per currency
-  const placeholder =
-    currency === "IDR" ? "10.000" :
-    currency === "USDC" ? "1,000.00" :
-    "0.0010";
-
-  // Fetch presale config
-  useEffect(() => {
-    const fetchPresaleConfig = async () => {
-      try {
-        // For now, use fallback config
-        const config: PresaleConfig = {
-          stage1_started_at: FALLBACK_STAGE1_STARTED_AT,
-          stage1_duration_days: 30,
-          stage1_supply: 100000000,
-          stage1_price_usd: 0.001,
-          stage2_supply: 200000000,
-          stage2_price_usd: 0.002,
-          listing_price_usd: 0.005
-        };
-        setPresaleConfig(config);
-      } catch (error) {
-        console.error('Failed to fetch presale config:', error);
-      }
-    };
-
-    fetchPresaleConfig();
-  }, []);
-
-  // Get current user and ensure sponsor assignment
-  useEffect(() => {
-    const ensureSponsorAssignment = async () => {
-      if (sponsorEnsured.current) return; // Only run once per session
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      
-      setUserEmail(user.email || null);
-
-      try {
-        // Get ref from URL
-        const params = new URLSearchParams(window.location.search);
-        const refCode = params.get("ref");
-
-        // Assign sponsor (server-side)
-        const { data: assigned, error: assignErr } = await supabase.rpc('assign_sponsor', { 
-          p_ref_code: refCode ?? null 
-        });
-
-        if (assignErr) {
-          console.error('Sponsor assignment error:', assignErr);
-        }
-
-        // Fetch sponsor from DB
-        const { data: sponsorRow, error: sponsorErr } = await supabase.rpc('get_my_sponsor');
-        const sponsor = Array.isArray(sponsorRow) ? sponsorRow[0] : sponsorRow;
-
-        if (sponsorErr) {
-          console.error('Sponsor fetch error:', sponsorErr);
-          return;
-        }
-
-        if (sponsor && sponsor.sponsor_code) {
-          setReferralCode(sponsor.sponsor_code);
-          setSponsorLocked(true);
-          
-          // Set sponsor source from assignment reason
-          const reason = assigned?.[0]?.reason || 'assigned_hrw';
-          setSponsorSource(reason);
-          
-          sponsorEnsured.current = true;
-          console.log('[SPONSOR] Ensured:', {
-            sponsorCode: sponsor.sponsor_code,
-            source: reason,
-            locked: true
-          });
-        } else {
-          // No sponsor available
-          setSponsorSource('no_eligible_sponsor');
-          sponsorEnsured.current = true;
-        }
-      } catch (error) {
-        console.error('Sponsor ensure error:', error);
-        sponsorEnsured.current = true; // Don't retry on error
-      }
-    };
-
-    ensureSponsorAssignment();
-  }, []);
-
-  // Referral validation with debounce
-  useEffect(() => {
-    const validateReferral = async () => {
-      // Get current user to check self-referral
-      const { data: { user } } = await supabase.auth.getUser();
-      const currentUserId = user?.id;
-
-      try {
-        const result = await validateSponsor(referralCode);
-        
-        // Debug: log validation result
-        console.log('[REFERRAL] check', result.code, { 
-          found: result.found, 
-          sponsorId: result.sponsorId, 
-          hasError: !!result.error 
-        });
-
-        if (!result.found) {
-          // If sponsor is empty, it's optional - no error
-          if (result.code === '') {
-            setReferralValid(null);
-            setReferralError('');
-            setSponsorInfo(null);
-          } else {
-            setReferralValid(false);
-            setReferralError('Kode referral tidak terdaftar');
-            setSponsorInfo(null);
-          }
-          return;
-        }
-
-        // Check self-referral
-        if (result.sponsorId === currentUserId) {
-          setReferralValid(false);
-          setReferralError('Tidak boleh pakai kode sendiri');
-          setSponsorInfo(null);
-          return;
-        }
-
-        setReferralValid(true);
-        setReferralError('');
-        setSponsorInfo({ member_code: result.code, id: result.sponsorId });
-      } catch (error) {
-        setReferralValid(false);
-        setReferralError('Gagal memvalidasi referral');
-        setSponsorInfo(null);
-      }
-    };
-
-    const timeoutId = setTimeout(validateReferral, 500);
-    return () => clearTimeout(timeoutId);
-  }, [referralCode]);
-
-  // Helper function to normalize sponsor code
-const normalizeSponsor = (v: string) => v.trim().toUpperCase();
-
-// Helper function to validate sponsor via RPC (RLS-safe)
-async function validateSponsor(codeRaw: string) {
-  const code = normalizeSponsor(codeRaw || "");
-  if (!code) {
-    return { found: true, sponsorId: null, code: "" }; // sponsor optional
-  }
-
-  const { data, error } = await supabase
-    .rpc('public_validate_member_code', { p_code: code })
-    .maybeSingle();
-
-  // RLS-safe: error biasanya null, data null jika tidak ada
-  if (error) {
-    return { found: false, sponsorId: null, code, error };
-  }
-
-  if (!data?.id) {
-    return { found: false, sponsorId: null, code, error: null };
-  }
-
-  return { found: true, sponsorId: data.id, code, error: null };
-}
-
-// Calculate derived values
+  // Calculate derived values
   const tpcAmount = calcTpc(currency, amountValue, solUsdPrice);
   const sponsorBonus = amountValue >= 1000000 ? calculateSponsorBonus(amountValue) : 0;
   const sponsorBonusAmount = typeof sponsorBonus === 'number' ? sponsorBonus : sponsorBonus?.bonus_amount || 0;
   const totalTPC = tpcAmount + sponsorBonusAmount;
 
-  const isValid = amountValue > 0 && walletTpc.trim().length >= 20 && agreed && userEmail !== null;
+  const isValid = amountValue > 0 && walletTpc.trim().length >= 20 && canProceed && agreed && userEmail !== null;
 
   const handleSubmit = async () => {
     if (!isValid || isLoading) return;
@@ -316,20 +283,11 @@ async function validateSponsor(codeRaw: string) {
       return;
     }
 
-    // Hard block: Ensure sponsor is assigned
-    if (!referralCode) {
+    // Guard: Ensure referral is confirmed and valid
+    if (!canProceed) {
       toast({
         title: "Error",
-        description: "Kode referral tidak boleh kosong. Sistem sedang menentukan sponsor, coba refresh atau hubungi admin.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (sponsorSource === 'no_eligible_sponsor') {
-      toast({
-        title: "Error", 
-        description: "Sponsor belum tersedia. Hubungi admin untuk bantuan.",
+        description: "Isi & konfirmasi kode sponsor dulu untuk melanjutkan.",
         variant: "destructive",
       });
       return;
@@ -337,112 +295,57 @@ async function validateSponsor(codeRaw: string) {
 
     setIsLoading(true);
     try {
-      // Assign sponsor using HRW algorithm (double-check)
-      const referralClean = referralCode ? sanitizeReferral(referralCode) : null;
+      // Create invoice with referral
+      const referralClean = referral.trim().toUpperCase();
       
-      const { data: sponsorData, error: sponsorError } = await supabase.rpc('assign_sponsor', {
-        p_ref_code: referralClean
-      });
-
-      if (sponsorError) {
-        console.error('Sponsor assignment error:', sponsorError);
-      } else if (sponsorData && Array.isArray(sponsorData) && sponsorData.length > 0) {
-        const sponsor = sponsorData[0];
-        console.log('Sponsor assignment:', {
-          assigned: sponsor.assigned,
-          sponsorCode: sponsor.sponsor_code,
-          reason: sponsor.reason
-        });
-        
-        // Show toast for different assignment reasons
-        if (sponsor.reason === 'assigned_from_ref') {
-          toast({
-            title: "Referral Valid",
-            description: `Sponsor: ${sponsor.sponsor_code}`,
-          });
-        } else if (sponsor.reason === 'assigned_hrw') {
-          toast({
-            title: "Sistem Assign Sponsor",
-            description: `Sponsor otomatis: ${sponsor.sponsor_code}`,
-          });
-        } else if (sponsor.reason === 'already_assigned') {
-          console.log('Already assigned to:', sponsor.sponsor_code);
-        }
-      }
-
-      // Call locked RPC function instead of direct insert
       const { data, error } = await supabase.rpc('create_invoice_locked', {
         p_email: userEmail.toLowerCase().trim(),
-        p_referral_code: referralClean,          // ✅ WAJIB, tidak null
+        p_referral_code: referralClean,
         p_base_currency: currency,
         p_amount_input: amountValue
       });
 
       if (error) {
-        console.error('RPC Error:', error);
+        console.error('Invoice creation error:', error);
         toast({
           title: "Error",
-          description: error.message || "Gagal membuat invoice. Silakan coba lagi.",
+          description: error.message || "Gagal membuat invoice",
           variant: "destructive",
         });
         return;
       }
 
-      if (!data || Array.isArray(data) && data.length === 0) {
-        throw new Error('No invoice data returned');
-      }
-
-      const invoice = Array.isArray(data) ? data[0] : data;
-      
-      // Type guard untuk memastikan invoice memiliki invoice_no
-      if (!invoice || typeof invoice !== 'object' || !('invoice_no' in invoice)) {
-        throw new Error('Invalid invoice data returned');
-      }
-
-      // Check referral validation feedback
-      if (invoice.referral_valid === false && referralCode) {
-        toast({
-          title: "Peringatan Referral",
-          description: `Kode referral "${referralCode}" tidak ditemukan. Invoice dibuat tanpa bonus sponsor.`,
-          variant: "default",
-        });
-      } else if (invoice.referral_valid === true && referralCode) {
-        toast({
-          title: "Referral Valid",
-          description: `Kode referral "${referralCode}" valid! Bonus sponsor ditambahkan.`,
-          variant: "default",
-        });
-      }
-
-      // Update wallet_tpc after invoice is created
-      if (invoice && 'invoice_no' in invoice) {
-        const { error: updateError } = await supabase
-          .from('invoices')
-          .update({ wallet_tpc: walletTpc.trim() })
-          .eq('invoice_no', invoice.invoice_no);
-
-        if (updateError) {
-          console.error('Error updating wallet_tpc:', updateError);
-          // Continue anyway, invoice is created
+      if (data && data.length > 0) {
+        const invoice = data[0];
+        
+        // Show referral status messages
+        if (invoice.referral_valid === false && referral) {
+          toast({
+            title: "Peringatan Referral",
+            description: `Kode referral "${referral}" tidak ditemukan. Invoice dibuat tanpa bonus sponsor.`,
+            variant: "default",
+          });
+        } else if (invoice.referral_valid === true && referral) {
+          toast({
+            title: "Referral Valid",
+            description: `Kode referral "${referral}" valid! Bonus sponsor ditambahkan.`,
+            variant: "default",
+          });
         }
+
+        toast({
+          title: "Invoice Berhasil Dibuat",
+          description: `Invoice #${invoice.invoice_no} telah dibuat. Silakan lanjut ke pembayaran.`,
+        });
+
+        // Navigate to invoice detail
+        navigate(`/id/invoice/${invoice.invoice_no}`);
       }
-
-      toast({
-        title: "Invoice Berhasil Dibuat",
-        description: `Invoice #${invoice.invoice_no} telah dibuat.`,
-      });
-
-      // Navigate to success page with invoice data
-      navigate('/id/buytpc/success', { 
-        state: { invoice },
-        replace: true 
-      });
-
-    } catch (error: any) {
-      console.error('Error creating invoice:', error);
+    } catch (error) {
+      console.error('Submit error:', error);
       toast({
         title: "Error",
-        description: error.message || "Terjadi kesalahan. Silakan coba lagi.",
+        description: "Terjadi kesalahan saat membuat invoice",
         variant: "destructive",
       });
     } finally {
@@ -450,422 +353,272 @@ async function validateSponsor(codeRaw: string) {
     }
   };
 
+  // UI helpers
   const currencyLabels = {
-    IDR: { label: 'IDR', symbol: 'Rp' },
-    USDC: { label: 'USDC', symbol: '$' },
-    SOL: { label: 'SOL', symbol: 'SOL' }
-  } as const;
+    IDR: { label: 'Rupiah (IDR)', symbol: 'Rp', placeholder: '0' },
+    USDC: { label: 'USDC', symbol: '$', placeholder: '0.00' },
+    SOL: { label: 'SOL', symbol: 'SOL', placeholder: '0.0000' }
+  };
+
+  const placeholder = currencyLabels[currency].placeholder;
 
   return (
-    <>
+    <div className="min-h-screen bg-gradient-to-br from-[#0B0E11] via-[#0F141A] to-[#11161C]">
       <Helmet>
-        <title>Beli TPC - Bergabung dengan Ekosistem TPC Global</title>
-        <meta name="description" content="Beli token TPC sekarang dengan harga presale terbaik. Proses aman, transparan, dan edukasi-only. Bergabung dengan komunitas TPC Global hari ini." />
-        <meta property="og:title" content="Beli TPC - Bergabung dengan Ekosistem TPC Global" />
-        <meta property="og:description" content="Beli token TPC sekarang dengan harga presale terbaik. Proses aman, transparan, dan edukasi-only. Bergabung dengan komunitas TPC Global hari ini." />
-        <meta property="og:url" content="https://tpcglobal.io/id/buytpc" />
-        <meta property="og:image" content="https://tpcglobal.io/og.png" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Beli TPC - Bergabung dengan Ekosistem TPC Global" />
-        <meta name="twitter:description" content="Beli token TPC sekarang dengan harga presale terbaik. Proses aman, transparan, dan edukasi-only. Bergabung dengan komunitas TPC Global hari ini." />
-        <meta name="twitter:image" content="https://tpcglobal.io/og.png" />
+        <title>Beli TPC - TPC Global</title>
+        <meta name="description" content="Beli token TPC di presale stage 1 dengan harga terbaik" />
       </Helmet>
-      <div className="min-h-screen bg-gradient-to-br from-[#0B0E11] via-[#0F141A] to-[#11161C]">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        {/* Gradient Strip */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#F0B90B]/10 via-transparent to-transparent h-1" />
-        
-        <div className="relative bg-[#1E2329]/80 backdrop-blur-sm border-b border-[#2B3139] px-4 py-6">
-          <div className="max-w-[430px] mx-auto">
-            <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#F0B90B]/20 to-[#F8D56B]/10 border border-[#F0B90B]/30 p-3 shadow-lg">
-                  <img
-                    src={tpcLogo}
-                    alt="TPC Global"
-                    className="h-10 w-10 object-contain"
-                    loading="lazy"
-                    draggable={false}
-                  />
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <h1 className="text-3xl font-bold text-white">Beli TPC</h1>
-                <Badge className="bg-[#F0B90B]/20 text-[#F0B90B] border-[#F0B90B]/30 text-xs">
-                  Verified Presale
-                </Badge>
-              </div>
-              <p className="text-[#848E9C] text-sm">
-                Bergabung dengan ekosistem TPC Global sebelum listing
-              </p>
+
+      {/* Header */}
+      <div className="bg-[#1E2329]/80 backdrop-blur-sm border-b border-[#2B3139]">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img src={tpcLogo} alt="TPC" className="h-8 w-8" />
+              <h1 className="text-xl font-bold text-white">TPC Global</h1>
             </div>
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/id')}
+              className="text-white/70 hover:text-white hover:bg-white/10"
+            >
+              Kembali
+            </Button>
           </div>
         </div>
       </div>
 
-      {/* Countdown Timer */}
-      <div className="max-w-[430px] mx-auto px-4 pb-6">
-        <CountdownCard 
-          label={label}
-          targetIso={endAt}
-        />
-      </div>
+      {/* Main Content */}
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column - Form */}
+          <div className="lg:col-span-2">
+            <Card className="bg-[#1E2329]/50 backdrop-blur-xl border border-[#1F2A33] rounded-2xl overflow-hidden">
+              <CardHeader>
+                <CardTitle className="text-white text-lg flex items-center gap-2">
+                  <Coins className="h-5 w-5 text-[#F0B90B]" />
+                  Buat Invoice
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Amount Input */}
+                <div>
+                  <label className="text-sm font-medium text-white mb-2 block">
+                    Jumlah {currencyLabels[currency].label}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder={placeholder}
+                    value={amountRaw}
+                    onChange={(e) => handleAmountChange(e.target.value)}
+                    onBlur={handleAmountBlur}
+                    className="w-full px-4 py-3 bg-[#1E2329] border border-[#2B3139] rounded-xl text-white placeholder-[#848E9C] focus:outline-none focus:ring-2 focus:ring-[#F0B90B]/40 focus:border-[#F0B90B]/50"
+                  />
+                </div>
 
-      <div className="max-w-[430px] mx-auto px-4 py-6 space-y-6">
-        {/* Presale Info Card */}
-        <Card className="bg-[#11161C]/50 backdrop-blur-xl border border-[#1F2A33] rounded-2xl overflow-hidden">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-white text-lg flex items-center gap-2">
-                <Coins className="h-5 w-5 text-[#F0B90B]" />
-                Informasi Presale
-              </CardTitle>
-              <Badge className="text-xs bg-emerald-500/20 text-emerald-400 border-emerald-400/30">
-                {presaleConfig?.stage1_started_at ? 'Tahap 1 Aktif' : 'Tahap 2 Aktif'}
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Countdown handled by CountdownCard component above */}
-            
-            <Separator className="bg-[#1F2A33]" />
-            
-            {/* Supply Info */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-[#848E9C]">Tahap 1:</span>
-                <span className="text-sm font-medium text-white">
-                  {presaleConfig ? presaleConfig.stage1_supply.toLocaleString('id-ID') : '100.000.000'} TPC — ${presaleConfig?.stage1_price_usd || '0.001'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-[#848E9C]">Tahap 2:</span>
-                <span className="text-sm font-medium text-white">
-                  {presaleConfig ? presaleConfig.stage2_supply.toLocaleString('id-ID') : '100.000.000'} TPC — ${presaleConfig?.stage2_price_usd || '0.002'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-[#848E9C]">Listing:</span>
-                <span className="text-sm font-medium text-emerald-400">
-                  ${presaleConfig?.listing_price_usd || '0.005'}
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                {/* Wallet TPC Input */}
+                <div>
+                  <label className="text-sm font-medium text-white mb-2 block">
+                    Alamat Wallet TPC
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Masukkan alamat wallet TPC Anda"
+                    value={walletTpc}
+                    onChange={(e) => setWalletTpc(e.target.value)}
+                    className="w-full px-4 py-3 bg-[#1E2329] border border-[#2B3139] rounded-xl text-white placeholder-[#848E9C] focus:outline-none focus:ring-2 focus:ring-[#F0B90B]/40 focus:border-[#F0B90B]/50"
+                  />
+                  <p className="text-xs text-[#848E9C] mt-2">
+                    <Shield className="h-3 w-3 inline mr-1" />
+                    Pastikan alamat wallet benar. Transaksi tidak bisa dibatalkan.
+                  </p>
+                  <div className="mt-2">
+                    <button
+                      type="button"
+                      onClick={() => navigate('/id/tutorial/phantom-wallet')}
+                      className="text-xs text-[#F0B90B] hover:text-[#F8D56B] transition-colors"
+                    >
+                      Belum punya wallet? Lihat tutorial Phantom →
+                    </button>
+                  </div>
+                </div>
 
-        {/* Payment Method Card */}
-        <Card className="bg-[#11161C]/50 backdrop-blur-xl border border-[#1F2A33] rounded-2xl overflow-hidden">
-          <CardHeader>
-            <CardTitle className="text-white text-lg flex items-center gap-2">
-              <ArrowRight className="h-5 w-5 text-[#F0B90B]" />
-              Pilih Metode Pembayaran
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-3">
-              {Object.entries(currencyLabels).map(([curr, info]) => (
-                <button
-                  key={curr}
-                  onClick={() => setCurrency(curr as Currency)}
-                  className={cn(
-                    "p-3 rounded-xl border transition-all duration-200 text-center",
-                    currency === curr
-                      ? "bg-[#F0B90B]/20 border-[#F0B90B]/50 text-[#F0B90B]"
-                      : "bg-[#1E2329] border-[#2B3139] text-[#848E9C] hover:border-[#F0B90B]/30 hover:text-white"
+                {/* Referral Code - NEW IMPLEMENTATION */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-semibold text-white/90">
+                      Kode Referral / Sponsor <span className="text-[#F0B90B]">*</span>
+                    </div>
+                    {isUrlReferral ? (
+                      <span className="text-[11px] text-white/50">Dari link sponsor</span>
+                    ) : null}
+                  </div>
+
+                  <input
+                    type="text"
+                    value={referral}
+                    readOnly={isUrlReferral}
+                    onChange={(e) => onReferralInputChange(e.target.value)}
+                    placeholder="Kode referral / sponsor (WAJIB)"
+                    className={cn(
+                      "w-full px-4 py-3 bg-[#1E2329] border border-[#2B3139] rounded-xl text-white placeholder-[#848E9C] uppercase focus:outline-none focus:ring-2 focus:ring-[#F0B90B]/40 focus:border-[#F0B90B]/50",
+                      isUrlReferral && "opacity-90 cursor-not-allowed bg-[#2B3139]",
+                      referralValid && "border-emerald-500/50",
+                      !referralValid && referral && "border-red-500/50"
+                    )}
+                  />
+
+                  <div className="flex items-center gap-2 text-[12px]">
+                    {referralChecking ? (
+                      <span className="text-white/60">Memeriksa kode...</span>
+                    ) : referralValid ? (
+                      <span className="text-emerald-400">Kode valid ✅</span>
+                    ) : referral ? (
+                      <span className="text-red-400">{referralError || 'Kode tidak valid.'}</span>
+                    ) : (
+                      <span className="text-white/50">Wajib diisi. Minta kode sponsor dari komunitas.</span>
+                    )}
+                  </div>
+
+                  {!isUrlReferral && (
+                    <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <div className="text-sm font-semibold text-white/90">Belum punya sponsor?</div>
+                          <div className="text-xs text-white/60">
+                            Kita siapkan rekomendasi sponsor acak. Kamu tetap bisa ganti jika punya kode sendiri.
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 flex items-center justify-between gap-3">
+                        <div className="text-sm font-mono text-[#F0B90B]">
+                          {suggestionLoading ? 'Loading...' : (suggestedReferral || '-')}
+                        </div>
+
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={useSuggestedReferral}
+                          disabled={!suggestedReferral || suggestionLoading}
+                          className="bg-[#F0B90B] hover:bg-[#F8D56B] text-white"
+                        >
+                          Gunakan rekomendasi
+                        </Button>
+                      </div>
+                    </div>
                   )}
+                </div>
+
+                {/* Agreement */}
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="agreement"
+                    checked={agreed}
+                    onCheckedChange={(checked) => setAgreed(checked as boolean)}
+                    className="mt-1"
+                  />
+                  <div className="text-sm text-[#848E9C]">
+                    Saya menyetujui <button type="button" onClick={goToTerms} className="text-[#F0B90B] hover:underline">Syarat & Ketentuan</button> dan <button type="button" onClick={goToPrivacy} className="text-[#F0B90B] hover:underline">Kebijakan Privasi</button>
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <Button
+                  onClick={handleSubmit}
+                  disabled={!isValid || isLoading}
+                  className="w-full bg-[#F0B90B] hover:bg-[#F8D56B] text-white font-semibold py-3"
                 >
-                  <div className="font-semibold">{info.label}</div>
-                  <div className="text-xs mt-1">{info.symbol}</div>
-                </button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Invoice Form Card */}
-        <Card className="bg-[#11161C]/50 backdrop-blur-xl border border-[#1F2A33] rounded-2xl overflow-hidden">
-          <CardHeader>
-            <CardTitle className="text-white text-lg flex items-center gap-2">
-              <Coins className="h-5 w-5 text-[#F0B90B]" />
-              Buat Invoice
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Amount Input */}
-            <div>
-              <label className="text-sm font-medium text-white mb-2 block">
-                Jumlah {currencyLabels[currency].label}
-              </label>
-              <input
-                type="text"
-                placeholder={placeholder}
-                value={amountRaw}
-                onChange={(e) => handleAmountChange(e.target.value)}
-                onBlur={handleAmountBlur}
-                className="w-full px-4 py-3 bg-[#1E2329] border border-[#2B3139] rounded-xl text-white placeholder-[#848E9C] focus:outline-none focus:ring-2 focus:ring-[#F0B90B]/40 focus:border-[#F0B90B]/50"
-              />
-            </div>
-
-            {/* Wallet TPC Input */}
-            <div>
-              <label className="text-sm font-medium text-white mb-2 block">
-                Alamat Wallet TPC
-              </label>
-              <input
-                type="text"
-                placeholder="Masukkan alamat wallet TPC"
-                value={walletTpc}
-                onChange={(e) => setWalletTpc(e.target.value)}
-                className="w-full px-4 py-3 bg-[#1E2329] border border-[#2B3139] rounded-xl text-white placeholder-[#848E9C] focus:outline-none focus:ring-2 focus:ring-[#F0B90B]/40 focus:border-[#F0B90B]/50"
-              />
-              {walletTpc && walletTpc.trim().length < 20 && (
-                <p className="mt-1 text-xs text-red-400">
-                  Alamat wallet TPC wajib diisi (minimal 20 karakter)
-                </p>
-              )}
-              <div className="mt-2">
-                <button
-                  type="button"
-                  onClick={() => navigate('/id/tutorial/phantom-wallet')}
-                  className="text-xs text-[#F0B90B] hover:text-[#F8D56B] transition-colors"
-                >
-                  Belum punya wallet? Lihat tutorial Phantom →
-                </button>
-              </div>
-            </div>
-
-            {/* Referral Code */}
-            <div>
-              <label className="text-sm font-medium text-white mb-2 block">
-                Kode Referral (Sponsor)
-              </label>
-
-              <input
-                type="text"
-                placeholder={sponsorLocked ? "Loading sponsor..." : "Masukkan kode referral"}
-                value={referralCode}
-                onChange={(e) => setReferralCode(sanitizeReferral(e.target.value))}
-                readOnly={sponsorLocked || !!refFromUrl}
-                className={cn(
-                  "w-full px-4 py-3 bg-[#1E2329] border border-[#2B3139] rounded-xl text-white placeholder-[#848E9C] uppercase focus:outline-none focus:ring-2 focus:ring-[#F0B90B]/40 focus:border-[#F0B90B]/50",
-                  (sponsorLocked || !!refFromUrl) && "opacity-90 cursor-not-allowed bg-[#2B3139]",
-                  sponsorSource === 'no_eligible_sponsor' && "border-red-500/50",
-                  sponsorLocked && "border-emerald-500/50"
-                )}
-              />
-
-              {/* Sponsor Source Badge */}
-              {sponsorSource && (
-                <div className="mt-2">
-                  {sponsorSource === 'assigned_from_ref' && (
-                    <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-xs">
-                      Sponsor otomatis
-                    </Badge>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Memproses...
+                    </>
+                  ) : (
+                    <>
+                      Lanjutkan Pembelian
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
                   )}
-                  {sponsorSource === 'assigned_hrw' && (
-                    <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-xs">
-                      Sponsor sistem
-                    </Badge>
-                  )}
-                  {sponsorSource === 'already_assigned' && (
-                    <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30 text-xs">
-                      Sponsor sudah ada
-                    </Badge>
-                  )}
-                  {sponsorSource === 'no_eligible_sponsor' && (
-                    <div className="text-xs text-red-400">
-                      ⚠️ Sponsor belum tersedia, hubungi admin
-                    </div>
-                  )}
-                </div>
-              )}
+                </Button>
 
-              {/* Referral Validation Status (Legacy) */}
-              {referralCode.trim() && !sponsorLocked && (
-                <div className="mt-2">
-                  {referralValid === true && sponsorInfo && (
-                    <div className="text-xs text-emerald-400">
-                      ✅ Referral valid - Sponsor: {sponsorInfo.member_code}
-                    </div>
-                  )}
-                  {referralValid === false && referralError && (
-                    <div className="text-xs text-red-400">
-                      ❌ {referralError}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {refFromUrl && (
-                <p className="mt-2 text-xs text-[#F0B90B]">
-                  Referral terisi otomatis dari link.
-                </p>
-              )}
-            </div>
-
-            {/* Summary */}
-            {(amountValue > 0) && (
-              <div className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-[#848E9C]">Jumlah {currencyLabels[currency].label}:</span>
-                  <span className="text-white font-medium">
-                    {currency === 'IDR' ? formatRupiah(amountValue) : `${amountValue} ${currency}`}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[#848E9C]">TPC yang akan didapat:</span>
-                  <span className="text-[#F0B90B] font-medium">
-                    {formatTpc(tpcAmount)} TPC
-                  </span>
-                </div>
-                {amountValue >= 1000000 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[#848E9C]">Bonus Sponsor:</span>
-                    <span className="text-emerald-400 font-medium">
-                      +{formatTpc(sponsorBonusAmount)} TPC
-                    </span>
+                {/* Helper Message */}
+                {!canProceed && (
+                  <div className="text-center text-sm text-[#848E9C]">
+                    Isi & konfirmasi kode sponsor dulu untuk melanjutkan.
                   </div>
                 )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* Pricing Information */}
-        <Card className="bg-[#11161C]/50 backdrop-blur-xl border border-[#1F2A33] rounded-2xl overflow-hidden">
-          <CardContent className="p-4 space-y-2">
-            <div className="text-xs text-[#848E9C] space-y-1">
-              <div>Kurs: 1 USDC = Rp {USD_IDR.toLocaleString('id-ID')}</div>
-              <div>Harga TPC: {TPC_PRICE_USDC} USDC</div>
-              {currency === 'SOL' && (
-                <div>
-                  {solPriceLoading ? 'Mengambil harga SOL...' : 
-                   solUsdPrice ? `Harga SOL realtime: $${solUsdPrice.toFixed(2)}` : 
-                   'Harga SOL belum tersedia'}
+          {/* Right Column - Info */}
+          <div className="space-y-6">
+            {/* Countdown Card */}
+            <CountdownCard
+              endAt={endAt}
+              label={label}
+              className="bg-[#1E2329]/50 backdrop-blur-xl border border-[#1F2A33]"
+            />
+
+            {/* Token Info */}
+            <Card className="bg-[#1E2329]/50 backdrop-blur-xl border border-[#1F2A33]">
+              <CardHeader>
+                <CardTitle className="text-white text-lg">Token Info</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-[#848E9C]">Harga Stage 1</span>
+                  <span className="text-white font-semibold">$0.01</span>
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                <div className="flex justify-between items-center">
+                  <span className="text-[#848E9C]">Total Supply Stage 1</span>
+                  <span className="text-white font-semibold">100M TPC</span>
+                </div>
+                <Separator className="bg-[#2B3139]" />
+                <div className="flex justify-between items-center">
+                  <span className="text-[#848E9C]">Listing Price</span>
+                  <span className="text-[#F0B90B] font-semibold">$0.05</span>
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* Terms & Conditions */}
-        <Card className="bg-[#11161C]/50 backdrop-blur-xl border border-[#1F2A33] rounded-2xl overflow-hidden">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <Checkbox
-                id="terms"
-                checked={agreed}
-                onCheckedChange={(checked) => setAgreed(checked === true)}
-                className="mt-0.5"
-              />
-              <label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer text-[#848E9C]">
-                Saya telah membaca dan menyetujui{' '}
-                <span
-                  role="button"
-                  tabIndex={0}
-                  onClick={(e) => { e.stopPropagation(); goToTerms(); }}
-                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && goToTerms()}
-                  className="text-[#F0B90B] font-medium hover:underline cursor-pointer"
-                >
-                  Syarat & Ketentuan
-                </span>{' '}
-                serta{' '}
-                <span
-                  role="button"
-                  tabIndex={0}
-                  onClick={(e) => { e.stopPropagation(); goToPrivacy(); }}
-                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && goToPrivacy()}
-                  className="text-[#F0B90B] font-medium hover:underline cursor-pointer"
-                >
-                  Kebijakan Privasi
-                </span>
-              </label>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Safety & Trust Card */}
-        <Card className="bg-[#11161C]/50 backdrop-blur-xl border border-[#1F2A33] rounded-2xl overflow-hidden">
-          <CardHeader>
-            <CardTitle className="text-white text-lg flex items-center gap-2">
-              <Shield className="h-5 w-5 text-emerald-400" />
-              Keamanan & Transparansi
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-4 w-4 text-emerald-400 flex-shrink-0" />
-              <span className="text-sm text-[#848E9C]">Edukasi-only, tidak ada jaminan profit</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-4 w-4 text-emerald-400 flex-shrink-0" />
-              <span className="text-sm text-[#848E9C]">Selalu verifikasi wallet resmi</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-4 w-4 text-emerald-400 flex-shrink-0" />
-              <span className="text-sm text-[#848E9C]">Jangan bagikan OTP/seed phrase</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-4 w-4 text-emerald-400 flex-shrink-0" />
-              <span className="text-sm text-[#848E9C]">Konfirmasi invoice ID sebelum bayar</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Quick Links */}
-        <div className="flex gap-2 justify-center">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate('/id/transparansi')}
-            className="bg-[#11161C]/50 border-[#1F2A33] text-[#848E9C] hover:bg-[#1F2A33] hover:text-white"
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            Transparansi
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate('/id/anti-scam')}
-            className="bg-[#11161C]/50 border-[#1F2A33] text-[#848E9C] hover:bg-[#1F2A33] hover:text-white"
-          >
-            <Shield className="h-4 w-4 mr-2" />
-            Anti-Scam
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate('/id/faq')}
-            className="bg-[#11161C]/50 border-[#1F2A33] text-[#848E9C] hover:bg-[#1F2A33] hover:text-white"
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            FAQ
-          </Button>
+            {/* Calculation Preview */}
+            {amountValue > 0 && (
+              <Card className="bg-[#1E2329]/50 backdrop-blur-xl border border-[#1F2A33]">
+                <CardHeader>
+                  <CardTitle className="text-white text-lg">Perhitungan</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#848E9C]">Jumlah {currencyLabels[currency].label}</span>
+                    <span className="text-white font-semibold">
+                      {currency === 'IDR' ? formatIdr(amountValue) : 
+                       currency === 'USDC' ? formatUsdc(amountValue) : 
+                       formatSol(amountValue)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#848E9C]">TPC yang Dapat</span>
+                    <span className="text-white font-semibold">{formatTpc(tpcAmount)}</span>
+                  </div>
+                  {sponsorBonusAmount > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-[#F0B90B]">Bonus Sponsor</span>
+                      <span className="text-[#F0B90B] font-semibold">{formatTpc(sponsorBonusAmount)}</span>
+                    </div>
+                  )}
+                  <Separator className="bg-[#2B3139]" />
+                  <div className="flex justify-between items-center">
+                    <span className="text-white font-semibold">Total TPC</span>
+                    <span className="text-[#F0B90B] font-bold text-lg">{formatTpc(totalTPC)}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
-
-        {/* Submit Button */}
-        <Button
-          onClick={handleSubmit}
-          disabled={!isValid || isLoading}
-          className="w-full h-12 bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] text-black font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:from-[#F8D56B] hover:to-[#F0B90B] transition-all duration-200"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Memproses...
-            </>
-          ) : (
-            <>
-              <Coins className="h-4 w-4 mr-2" />
-              Beli TPC Sekarang
-            </>
-          )}
-        </Button>
       </div>
     </div>
-    </>
   );
 }
