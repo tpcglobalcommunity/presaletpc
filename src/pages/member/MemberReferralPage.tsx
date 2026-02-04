@@ -19,6 +19,8 @@ interface FinancialStats {
 }
 
 export default function MemberReferralPage() {
+  console.log('[REFERRAL] page mounted');
+  
   const { user } = useAuth();
   const { toast } = useToast();
   const [referralCode, setReferralCode] = useState('');
