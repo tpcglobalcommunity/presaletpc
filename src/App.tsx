@@ -31,7 +31,7 @@ import NotFound from "@/pages/NotFound";
 
 // Public Pages (ID)
 import HomePage from "@/pages/id/HomePage";
-import LoginPage from "@/pages/id/LoginPage";
+import LoginPage from "@/pages/id/LoginPage"; // Legacy
 import BuyTPCPage from "@/pages/id/BuyTPCPage";
 import AntiScamPage from "@/pages/id/AntiScamPage";
 import EdukasiPage from "@/pages/id/EdukasiPage";
@@ -45,6 +45,7 @@ import InvoiceSuccessPage from "@/pages/id/InvoiceSuccessPage";
 // Shared Public Pages
 import TutorialPhantomWalletPage from "@/pages/public/TutorialPhantomWalletPage";
 import PublicInvoiceDetailPage from "@/pages/public/PublicInvoiceDetailPage";
+import LoginPageV2 from "@/pages/public/LoginPage"; // V2
 
 // Member Pages (Lazy Loaded)
 const MemberDashboardPage = lazy(() => import("@/pages/member/MemberDashboardPage"));
@@ -114,9 +115,19 @@ function App() {
                   path="login"
                   element={
                     <LangRoute
-                      id={<LoginPage />}
-                      en={<LoginPage />}
+                      id={<LoginPageV2 />}  // ID uses V2
+                      en={<LoginPage />}    // EN uses legacy (unchanged)
                     />
+                  }
+                />
+                
+                {/* Legacy fallback route */}
+                <Route
+                  path="login-legacy"
+                  element={
+                    <IdOnly>
+                      <LoginPage />  // Legacy login page
+                    </IdOnly>
                   }
                 />
                 
