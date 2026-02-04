@@ -37,18 +37,18 @@ DECLARE
   v_sponsor_bonus_pct integer := 0;
   v_sponsor_bonus_tpc numeric := 0;
 
-  v_invoice_id uuid;
-
   v_email text;
   v_referral text;
   v_currency text;
   v_wallet text;
 BEGIN
+  -- Normalize inputs
   v_email := lower(trim(p_email));
   v_referral := upper(trim(p_referral_code));
   v_currency := upper(trim(p_base_currency));
   v_wallet := trim(p_wallet_tpc);
 
+  -- Validate
   IF v_email IS NULL OR position('@' in v_email) = 0 THEN
     RAISE EXCEPTION 'Email tidak valid';
   END IF;
@@ -65,11 +65,13 @@ BEGIN
     RAISE EXCEPTION 'Wallet TPC wajib diisi';
   END IF;
 
+  -- Generate invoice number
   SELECT public.generate_invoice_no() INTO v_invoice_no;
   IF v_invoice_no IS NULL THEN
     RAISE EXCEPTION 'Gagal generate invoice_no';
   END IF;
 
+  -- Currency rules + calculation
   IF v_currency = 'IDR' THEN
     v_amount_idr := trunc(p_amount_input)::numeric(18,0);
     IF v_amount_idr <= 0 THEN
@@ -128,9 +130,11 @@ BEGIN
     RAISE EXCEPTION 'Jumlah TPC minimal 1';
   END IF;
 
+  -- Sponsor bonus 5%
   v_sponsor_bonus_pct := v_sponsor_pct;
   v_sponsor_bonus_tpc := floor(v_tpc_amount * 0.05);
 
+  -- Insert invoice (NO RETURNING, NO id dependency)
   INSERT INTO public.invoices (
     invoice_no,
     email,
@@ -168,17 +172,17 @@ BEGIN
     v_amount_sol,
     v_sponsor_bonus_pct,
     v_sponsor_bonus_tpc
-  )
-  RETURNING id INTO v_invoice_id;  -- ✅ FIXED (NO inv.id)
+  );
 
+  -- Return inserted row safely by invoice_no
   RETURN (
     SELECT i.*
     FROM public.invoices i
-    WHERE i.id = v_invoice_id
+    WHERE i.invoice_no = v_invoice_no
+    LIMIT 1
   );
 END;
 $$;
 
--- IMPORTANT: grant harus match signature 5 param
-GRANT EXECUTE ON FUNCTION public.create_invoice_locked(text, text, text, numeric, text)
+GRANT EXECUTE ON FUNCTION public.create_invoice_locked(text,text,text,numeric,text)
 TO anon, authenticated;
