@@ -19,7 +19,7 @@ export default function EnAuthCallbackPage() {
         }
 
         const returnTo =
-          sessionStorage.getItem("returnTo") || "/en/dashboard";
+          sessionStorage.getItem("returnTo") || "/en/member";
 
         sessionStorage.removeItem("returnTo");
 

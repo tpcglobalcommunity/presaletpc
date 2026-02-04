@@ -213,6 +213,12 @@ const App = () => {
                   element={<PublicInvoiceDetailPage />}
                 />
                 
+                {/* ✅ DASHBOARD ALIAS - Redirect to canonical member dashboard */}
+                <Route 
+                  path="dashboard" 
+                  element={<Navigate replace to="member" />} 
+                />
+                
                 {/* ✅ LEGACY EXTERNAL REDIRECTS */}
                 <Route 
                   path="invoices/:invoiceNo" 
