@@ -107,8 +107,8 @@ function App() {
                   path="login"
                   element={
                     <LangRoute
-                      id={<LoginPageV2 />}  // ID uses V2
-                      en={<LoginPage />}    // EN uses legacy (unchanged)
+                      id={<LoginPageV2 />}
+                      en={<LoginPage />}
                     />
                   }
                 />
@@ -118,7 +118,7 @@ function App() {
                   path="login-legacy"
                   element={
                     <IdOnly>
-                      <LoginPage />  // Legacy login page
+                      <LoginPage />
                     </IdOnly>
                   }
                 />
