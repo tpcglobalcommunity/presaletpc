@@ -1,3 +1,7 @@
+# allow assets to be served as files
+/assets/*  /assets/:splat  200
+
+# SPA fallback (all other routes)
 /id/*    /index.html   200
 /en/*    /index.html   200
 /*       /index.html   200
