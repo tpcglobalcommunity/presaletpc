@@ -18,27 +18,39 @@ delete from public.invoices
 where user_id <> v_super_admin;
 
 -- Withdrawals (if exists)
-delete from public.withdrawals
-where user_id <> v_super_admin;
+begin
+  delete from public.withdrawals where user_id <> v_super_admin;
+exception when others then null;
+end;
 
 -- Referral / commission tables (adjust names if needed)
-delete from public.referrals
-where user_id <> v_super_admin or sponsor_user_id <> v_super_admin;
+begin
+  delete from public.referrals where user_id <> v_super_admin or sponsor_user_id <> v_super_admin;
+exception when others then null;
+end;
 
-delete from public.commissions
-where user_id <> v_super_admin;
+begin
+  delete from public.commissions where user_id <> v_super_admin;
+exception when others then null;
+end;
 
 -- Commission ledger (if exists)
-delete from public.commission_ledger
-where user_id <> v_super_admin or source_user_id <> v_super_admin;
+begin
+  delete from public.commission_ledger where user_id <> v_super_admin or source_user_id <> v_super_admin;
+exception when others then null;
+end;
 
 -- Audit / logs
-delete from public.audit_logs
-where user_id <> v_super_admin;
+begin
+  delete from public.audit_logs where user_id <> v_super_admin;
+exception when others then null;
+end;
 
 -- Any other member-only tables (SAFE GENERIC)
-delete from public.member_settings
-where user_id <> v_super_admin;
+begin
+  delete from public.member_settings where user_id <> v_super_admin;
+exception when others then null;
+end;
 
 -- ============================================================
 -- 3. CLEAN PROFILES (KEEP SUPER ADMIN)
