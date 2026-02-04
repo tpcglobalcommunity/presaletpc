@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { PROOF_BUCKET } from '@/config/storage';
 import { generateProofFilePath } from '@/lib/storage/getProofPublicUrl';
 
-type TransferMethod = 'USDC' | 'SOL' | 'BCA' | 'OVO';
+type TransferMethod = 'USDC' | 'SOL' | 'BCA' | 'OVO' | 'DANA';
 
 interface Invoice {
   id: string;
@@ -35,26 +35,31 @@ interface Invoice {
 }
 
 const TRANSFER_INFO: Record<TransferMethod, { label: string; destination: string; hint: string }> = {
-  USDC: { 
-    label: 'USDC (Solana)', 
-    destination: 'GkXn6...p8F2q', 
-    hint: 'Network: Solana' 
+  USDC: {
+    label: 'USDC (Solana)',
+    destination: '5AeayrU2pdy6yNBeiUpTXkfMxw3VpDQGUHC6kXrBt5vw',
+    hint: 'Network: Solana'
   },
-  SOL: { 
-    label: 'SOL', 
-    destination: 'GkXn6...p8F2q', 
-    hint: 'Network: Solana' 
+  SOL: {
+    label: 'SOL',
+    destination: '5AeayrU2pdy6yNBeiUpTXkfMxw3VpDQGUHC6kXrBt5vw',
+    hint: 'Network: Solana'
   },
-  BCA: { 
-    label: 'BCA Transfer', 
-    destination: '8810xxxx4567', 
-    hint: 'a.n. PT Token Prima' 
+  BCA: {
+    label: 'BCA Transfer',
+    destination: '7892088406',
+    hint: 'a.n. ARSYAD'
   },
-  OVO: { 
-    label: 'OVO', 
-    destination: '0812xxxx5678', 
-    hint: 'a.n. TPC Official' 
+  OVO: {
+    label: 'OVO',
+    destination: '030003121537',
+    hint: 'a.n. ARSYAD'
   },
+  DANA: {
+    label: 'DANA',
+    destination: '08114147777',
+    hint: 'a.n. ARSYAD'
+  }
 };
 
 export default function InvoiceDetailPage() {
@@ -310,6 +315,10 @@ export default function InvoiceDetailPage() {
                 <span>Alamat wallet tidak valid</span>
               </div>
             )}
+            <div className="flex items-center gap-2 mt-2 text-xs text-[#848E9C]">
+              <AlertCircle className="h-4 w-4" />
+              <span>⚠️ Jangan isi Wallet TPC dengan nomor tujuan transfer</span>
+            </div>
           </div>
 
           {/* Reject Reason Display */}
