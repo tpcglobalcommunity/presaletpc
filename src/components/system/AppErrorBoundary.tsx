@@ -35,6 +35,14 @@ export default class AppErrorBoundary extends React.Component<AppErrorBoundaryPr
         componentStack: errorInfo.componentStack
       }
     });
+    
+    // Save last error to window for debugging
+    (window as any).__TPC_LAST_ERROR__ = {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack
+    };
   }
 
   handleReload = () => {

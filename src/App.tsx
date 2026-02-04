@@ -3,7 +3,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
-  BrowserRouter,
   Routes, 
   Route, 
   Navigate,
@@ -78,10 +77,9 @@ function App() {
           <AuthProvider>
             <Toaster />
             <Sonner />
-            <BrowserRouter>
-              <Routes>
-                {/* Root redirect to default language */}
-                <Route path="/" element={<Navigate replace to="/id" />} />
+            <Routes>
+              {/* Root redirect to default language */}
+              <Route path="/" element={<Navigate replace to="/id" />} />
                 
                 {/* Language shell */}
                 <Route path="/:lang" element={<MobileLayout />}>
@@ -262,7 +260,6 @@ function App() {
               {/* Global 404 */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </BrowserRouter>
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
