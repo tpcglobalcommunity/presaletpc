@@ -18,54 +18,33 @@ delete from public.invoices
 where user_id <> v_super_admin;
 
 -- Withdrawals (if exists)
-do $$
-begin
-  delete from public.withdrawals where user_id <> v_super_admin;
-exception when others then null;
-end $$;
+delete from public.withdrawals
+where user_id <> v_super_admin;
 
 -- Referral / commission tables (adjust names if needed)
-do $$
-begin
-  delete from public.referrals where user_id <> v_super_admin or sponsor_user_id <> v_super_admin;
-exception when others then null;
-end $$;
+delete from public.referrals
+where user_id <> v_super_admin or sponsor_user_id <> v_super_admin;
 
-do $$
-begin
-  delete from public.commissions where user_id <> v_super_admin;
-exception when others then null;
-end $$;
+delete from public.commissions
+where user_id <> v_super_admin;
 
 -- Commission ledger (if exists)
-do $$
-begin
-  delete from public.commission_ledger where user_id <> v_super_admin or source_user_id <> v_super_admin;
-exception when others then null;
-end $$;
+delete from public.commission_ledger
+where user_id <> v_super_admin or source_user_id <> v_super_admin;
 
 -- Audit / logs
-do $$
-begin
-  delete from public.audit_logs where user_id <> v_super_admin;
-exception when others then null;
-end $$;
+delete from public.audit_logs
+where user_id <> v_super_admin;
 
 -- Any other member-only tables (SAFE GENERIC)
-do $$
-begin
-  delete from public.member_settings where user_id <> v_super_admin;
-exception when others then null;
-end $$;
+delete from public.member_settings
+where user_id <> v_super_admin;
 
 -- ============================================================
 -- 3. CLEAN PROFILES (KEEP SUPER ADMIN)
 -- ============================================================
-do $$
-begin
-  delete from public.profiles where user_id <> v_super_admin;
-exception when others then null;
-end $$;
+delete from public.profiles
+where user_id <> v_super_admin;
 
 -- Ensure super admin role is correct
 update public.profiles
