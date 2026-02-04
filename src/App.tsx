@@ -63,7 +63,6 @@ const MemberReferralPage = lazy(() => import("@/pages/member/MemberReferralPage"
 const MemberProfilePage = lazy(() => import("@/pages/member/MemberProfilePage"));
 
 // Admin Pages (Lazy Loaded)
-const AdminDashboardPage = lazy(() => import("@/pages/admin/AdminDashboardPage"));
 const AdminInvoicesPage = lazy(() => import("@/pages/admin/AdminInvoicesPage"));
 const AdminInvoiceDetailPage = lazy(() => import("@/pages/admin/AdminInvoiceDetailPage"));
 const AdminUsersPage = lazy(() => import("@/pages/admin/AdminUsersPage"));
@@ -116,85 +115,45 @@ function App() {
                 {/* Legacy fallback route */}
                 <Route
                   path="login-legacy"
-                  element={
-                    <IdOnly>
-                      <LoginPage />
-                    </IdOnly>
-                  }
+                  element={<IdOnly><LoginPage /></IdOnly>}
                 />
                 
                 {/* PUBLIC ID ROUTES (ID-only) */}
                 <Route
                   path="buytpc"
-                  element={
-                    <IdOnly>
-                      <BuyTPCPage />
-                    </IdOnly>
-                  }
+                  element={<IdOnly><BuyTPCPage /></IdOnly>}
                 />
                 <Route
                   path="anti-scam"
-                  element={
-                    <IdOnly>
-                      <AntiScamPage />
-                    </IdOnly>
-                  }
+                  element={<IdOnly><AntiScamPage /></IdOnly>}
                 />
                 <Route
                   path="edukasi"
-                  element={
-                    <IdOnly>
-                      <EdukasiPage />
-                    </IdOnly>
-                  }
+                  element={<IdOnly><EdukasiPage /></IdOnly>}
                 />
                 <Route
                   path="faq"
-                  element={
-                    <IdOnly>
-                      <FAQPage />
-                    </IdOnly>
-                  }
+                  element={<IdOnly><FAQPage /></IdOnly>}
                 />
                 <Route
                   path="whitepaper"
-                  element={
-                    <IdOnly>
-                      <WhitepaperPage />
-                    </IdOnly>
-                  }
+                  element={<IdOnly><WhitepaperPage /></IdOnly>}
                 />
                 <Route
                   path="dao"
-                  element={
-                    <IdOnly>
-                      <DAOPage />
-                    </IdOnly>
-                  }
+                  element={<IdOnly><DAOPage /></IdOnly>}
                 />
                 <Route
                   path="transparansi"
-                  element={
-                    <IdOnly>
-                      <TransparansiPage />
-                    </IdOnly>
-                  }
+                  element={<IdOnly><TransparansiPage /></IdOnly>}
                 />
                 <Route
                   path="market"
-                  element={
-                    <IdOnly>
-                      <MarketPage />
-                    </IdOnly>
-                  }
+                  element={<IdOnly><MarketPage /></IdOnly>}
                 />
                 <Route
                   path="invoice/success"
-                  element={
-                    <IdOnly>
-                      <InvoiceSuccessPage />
-                    </IdOnly>
-                  }
+                  element={<IdOnly><InvoiceSuccessPage /></IdOnly>}
                 />
                 
                 {/* SHARED PUBLIC ROUTES */}
@@ -263,11 +222,7 @@ function App() {
                 {/* ADMIN ROUTES (ID-only) */}
                 <Route
                   path="admin"
-                  element={
-                    <IdOnly>
-                      <AdminLayoutPremium />
-                    </IdOnly>
-                  }
+                  element={<IdOnly><AdminLayoutPremium /></IdOnly>}
                 >
                   <Route index element={<Navigate replace to="invoices" />} />
                   <Route 
