@@ -159,19 +159,12 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter
-          future={{
-            v7_startTransition: true,
-            v7_relativeSplatPath: true,
-          }}
-        >
-          <AuthProvider>
-            <Routes>
-              {/* Legacy / non-lang callback redirects */}
-              <Route path="/auth/callback" element={<Navigate to="/id/auth/callback" replace />} />
-              <Route path="/auth/callback-page" element={<Navigate to="/id/auth/callback" replace />} />
+        <Routes>
+          {/* Legacy / non-lang callback redirects */}
+          <Route path="/auth/callback" element={<Navigate to="/id/auth/callback" replace />} />
+          <Route path="/auth/callback-page" element={<Navigate to="/id/auth/callback" replace />} />
 
-              {/* Root -> /id */}
+          {/* Root -> /id */}
               <Route path="/" element={<Navigate to="/id" replace />} />
 
               {/* ✅ SINGLE SOURCE OF TRUTH: Language Shell */}
@@ -621,8 +614,6 @@ const App = () => {
                 }
               />
             </Routes>
-          </AuthProvider>
-        </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
   );
