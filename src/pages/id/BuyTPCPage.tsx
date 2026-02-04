@@ -7,7 +7,8 @@ import { formatRupiah } from '@/lib/number';
 import { calculateSponsorBonus } from '@/config/pricing';
 import { formatIdr, parseIdr, formatUsdc, parseUsdc, formatSol, parseSol, formatTpc, clampDecimals } from '@/lib/formatters';
 import { getSolUsdPrice } from '@/lib/prices';
-import { calcTpc, USD_IDR, TPC_PRICE_USDC } from '@/lib/tpcPricing';
+import { calcTpc, USD_IDR, TPC_PRICE_USDC, TPC_PRICING, getTPCPriceInIDR } from '@/lib/tpcPricing';
+import { getUsdToIdrRate } from '@/lib/fx';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -72,6 +73,11 @@ export default function BuyTPCPage() {
   const [solPriceLoading, setSolPriceLoading] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [presaleConfig, setPresaleConfig] = useState<PresaleConfig | null>(null);
+  
+  // FX Rate state
+  const [usdIdrRate, setUsdIdrRate] = useState<number>(17000); // Start with fallback
+  const [rateSource, setRateSource] = useState<'realtime' | 'fallback'>('fallback');
+  const [rateUpdatedAt, setRateUpdatedAt] = useState<number>(Date.now());
 
   // Navigation helpers
   const goToTerms = () => navigate('/id/syarat-ketentuan');
@@ -176,6 +182,33 @@ export default function BuyTPCPage() {
     getCurrentUser();
   }, []);
 
+  // Fetch FX rate (non-blocking)
+  useEffect(() => {
+    let cancelled = false;
+    
+    const fetchFxRate = async () => {
+      try {
+        const result = await getUsdToIdrRate();
+        
+        if (!cancelled) {
+          setUsdIdrRate(result.rate);
+          setRateSource(result.source);
+          setRateUpdatedAt(Date.now());
+        }
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.debug('[FX] Rate fetch failed:', error);
+        }
+        // Keep fallback values if fetch fails
+      }
+    };
+    
+    // Start with fallback, then fetch realtime
+    fetchFxRate();
+    
+    return () => { cancelled = true; };
+  }, []);
+
   // Fetch presale config
   useEffect(() => {
     const fetchPresaleConfig = async () => {
@@ -184,10 +217,10 @@ export default function BuyTPCPage() {
           stage1_started_at: FALLBACK_STAGE1_STARTED_AT,
           stage1_duration_days: 30,
           stage1_supply: 100000000,
-          stage1_price_usd: 0.01,
+          stage1_price_usd: TPC_PRICING.stage1_usdc,
           stage2_supply: 50000000,
-          stage2_price_usd: 0.02,
-          listing_price_usd: 0.05,
+          stage2_price_usd: TPC_PRICING.stage2_usdc,
+          listing_price_usd: TPC_PRICING.listing_target_usdc,
         };
         setPresaleConfig(config);
       } catch (error) {
@@ -522,12 +555,35 @@ export default function BuyTPCPage() {
             {/* Token Info */}
             <Card className="bg-[#1E2329]/50 backdrop-blur-xl border border-[#1F2A33]">
               <CardHeader>
-                <CardTitle className="text-white text-lg">Token Info</CardTitle>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-white text-lg">Token Info</CardTitle>
+                  <Badge 
+                    variant={rateSource === 'realtime' ? 'default' : 'secondary'}
+                    className={cn(
+                      "text-xs px-2 py-1",
+                      rateSource === 'realtime' 
+                        ? "bg-green-500/20 text-green-400 border-green-500/30" 
+                        : "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                    )}
+                  >
+                    {rateSource === 'realtime' ? 'Realtime FX' : 'Fallback FX'}
+                  </Badge>
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-[#848E9C]">Harga Stage 1</span>
-                  <span className="text-white font-semibold">$0.01</span>
+                  <div className="text-right">
+                    <span className="text-white font-semibold">${TPC_PRICING.stage1_usdc.toFixed(3)}</span>
+                    <div className="text-[#848E9C] text-xs">≈ Rp {formatRupiah(getTPCPriceInIDR(usdIdrRate, 'stage1_usdc'))}</div>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[#848E9C]">Harga Stage 2</span>
+                  <div className="text-right">
+                    <span className="text-white font-semibold">${TPC_PRICING.stage2_usdc.toFixed(3)}</span>
+                    <div className="text-[#848E9C] text-xs">≈ Rp {formatRupiah(getTPCPriceInIDR(usdIdrRate, 'stage2_usdc'))}</div>
+                  </div>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-[#848E9C]">Total Supply Stage 1</span>
@@ -535,8 +591,11 @@ export default function BuyTPCPage() {
                 </div>
                 <Separator className="bg-[#2B3139]" />
                 <div className="flex justify-between items-center">
-                  <span className="text-[#848E9C]">Listing Price</span>
-                  <span className="text-[#F0B90B] font-semibold">$0.05</span>
+                  <span className="text-[#848E9C]">Target Listing DEX</span>
+                  <div className="text-right">
+                    <span className="text-[#F0B90B] font-semibold">${TPC_PRICING.listing_target_usdc.toFixed(3)}</span>
+                    <div className="text-[#848E9C] text-xs">≈ Rp {formatRupiah(getTPCPriceInIDR(usdIdrRate, 'listing_target_usdc'))}</div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
