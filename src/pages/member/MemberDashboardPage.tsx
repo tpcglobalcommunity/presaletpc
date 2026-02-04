@@ -239,7 +239,7 @@ export default function MemberDashboardPage() {
           </button>
 
           <button
-            onClick={() => navigate(`/${safeLang}/dashboard/invoices`)}
+            onClick={() => navigate(`/${safeLang}/member/invoices`)}
             className="w-full bg-[#1E2329] border border-[#2B3139] hover:border-[#F0B90B]/50 text-white font-medium py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors"
           >
             <FileText className="h-5 w-5" />

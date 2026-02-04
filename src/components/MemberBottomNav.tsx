@@ -1,4 +1,4 @@
-import { LayoutDashboard, History, Share2, Settings } from 'lucide-react';
+import { LayoutDashboard, History, Share2, Settings, FileText } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export function MemberBottomNav() {
@@ -8,6 +8,9 @@ export function MemberBottomNav() {
   const isActive = (path: string) => {
     if (path === '/id/dashboard') {
       return location.pathname === '/id/dashboard' || location.pathname.startsWith('/id/dashboard/invoices');
+    }
+    if (path === '/id/dashboard/invoices') {
+      return location.pathname === '/id/dashboard/invoices' || location.pathname.startsWith('/id/dashboard/invoices/');
     }
     return location.pathname === path;
   };
@@ -19,6 +22,13 @@ export function MemberBottomNav() {
       path: '/id/dashboard',
       activeColor: 'text-blue-500',
       activeBg: 'bg-blue-500/15'
+    },
+    { 
+      icon: FileText, 
+      label: 'Invoice', 
+      path: '/id/dashboard/invoices',
+      activeColor: 'text-[#F0B90B]',
+      activeBg: 'bg-[#F0B90B]/15'
     },
     { 
       icon: History, 
