@@ -12,17 +12,46 @@ export default function InvoiceLegacyRedirectPage() {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (!invoiceNo || !user) return;
+    if (!invoiceNo) {
+      navigate('/id/member/invoices', { replace: true });
+      return;
+    }
+
+    const inv = decodeURIComponent(invoiceNo).trim();
+
+    // ✅ If not logged in, force login + save return path
+    if (!user) {
+      try {
+        localStorage.setItem('tpc_return_to', `/id/member/invoices-no/${encodeURIComponent(inv)}`);
+      } catch {}
+      navigate('/id/login', { replace: true });
+      return;
+    }
+
+    let cancelled = false;
 
     const run = async () => {
-      // Lookup UUID by invoice_no (RLS should ensure only owner can see)
       const { data, error } = await supabase
         .from('invoices')
         .select('id')
-        .eq('invoice_no', invoiceNo)
+        .eq('invoice_no', inv)
         .maybeSingle();
 
-      if (error || !data?.id) {
+      if (cancelled) return;
+
+      if (error) {
+        console.error('Legacy redirect lookup error:', error);
+
+        toast({
+          title: 'Gagal membuka invoice',
+          description: 'Pastikan invoice milik akun yang sedang login.',
+          variant: 'destructive',
+        });
+        navigate('/id/member/invoices', { replace: true });
+        return;
+      }
+
+      if (!data?.id) {
         toast({ title: 'Invoice tidak ditemukan', variant: 'destructive' });
         navigate('/id/member/invoices', { replace: true });
         return;
@@ -33,6 +62,10 @@ export default function InvoiceLegacyRedirectPage() {
     };
 
     run();
+
+    return () => {
+      cancelled = true;
+    };
   }, [invoiceNo, user, navigate, toast]);
 
   return (
