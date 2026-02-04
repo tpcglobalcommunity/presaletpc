@@ -1,14 +1,14 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, Coins, Wallet, Upload, Check, Loader2, 
+import {
+  ArrowLeft, Coins, Wallet, Upload, Check, Loader2,
   Copy, AlertCircle, Clock, CheckCircle, XCircle
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatNumberID, formatRupiah } from '@/lib/number';
 import { format } from 'date-fns';
-import { id } from 'date-fns/locale';
+import { id as idLocale } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { PROOF_BUCKET } from '@/config/storage';
 import { generateProofFilePath } from '@/lib/storage/getProofPublicUrl';
@@ -35,35 +35,15 @@ interface Invoice {
 }
 
 const TRANSFER_INFO: Record<TransferMethod, { label: string; destination: string; hint: string }> = {
-  USDC: {
-    label: 'USDC (Solana)',
-    destination: '5AeayrU2pdy6yNBeiUpTXkfMxw3VpDQGUHC6kXrBt5vw',
-    hint: 'Network: Solana'
-  },
-  SOL: {
-    label: 'SOL',
-    destination: '5AeayrU2pdy6yNBeiUpTXkfMxw3VpDQGUHC6kXrBt5vw',
-    hint: 'Network: Solana'
-  },
-  BCA: {
-    label: 'BCA Transfer',
-    destination: '7892088406',
-    hint: 'a.n. ARSYAD'
-  },
-  OVO: {
-    label: 'OVO',
-    destination: '030003121537',
-    hint: 'a.n. ARSYAD'
-  },
-  DANA: {
-    label: 'DANA',
-    destination: '08114147777',
-    hint: 'a.n. ARSYAD'
-  }
+  USDC: { label: 'USDC (Solana)', destination: '5AeayrU2pdy6yNBeiUpTXkfMxw3VpDQGUHC6kXrBt5vw', hint: 'Network: Solana' },
+  SOL:  { label: 'SOL',           destination: '5AeayrU2pdy6yNBeiUpTXkfMxw3VpDQGUHC6kXrBt5vw', hint: 'Network: Solana' },
+  BCA:  { label: 'BCA Transfer',  destination: '7892088406', hint: 'a.n. ARSYAD' },
+  OVO:  { label: 'OVO',           destination: '030003121537', hint: 'a.n. ARSYAD' },
+  DANA: { label: 'DANA',          destination: '08114147777', hint: 'a.n. ARSYAD' },
 };
 
 export default function InvoiceDetailPage() {
-  const { invoiceNo } = useParams();
+  const { id } = useParams(); // ✅ HARD LOCK UUID
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -79,67 +59,7 @@ export default function InvoiceDetailPage() {
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [proofPreview, setProofPreview] = useState<string | null>(null);
 
-  // Memory leak prevention: revoke object URL when preview changes
-  useEffect(() => {
-    return () => {
-      if (proofPreview) URL.revokeObjectURL(proofPreview);
-    };
-  }, [proofPreview]);
-
-  useEffect(() => {
-    if (!invoiceNo || !user) return;
-
-    const fetchInvoice = async () => {
-      const { data, error } = await supabase
-        .from('invoices')
-        .select('*')
-        .eq('invoice_no', invoiceNo)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error fetching invoice:', error);
-        toast({ title: 'Invoice tidak ditemukan', variant: 'destructive' });
-        navigate('/id/member/invoices');
-        return;
-      }
-
-      setInvoice(data);
-      if (data?.transfer_method) setTransferMethod(data.transfer_method as TransferMethod);
-      if (data?.wallet_tpc) setWalletTPC(data.wallet_tpc);
-      setIsLoading(false);
-    };
-
-    fetchInvoice();
-  }, [invoiceNo, user, navigate, toast]);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-    if (!validTypes.includes(file.type)) {
-      toast({ title: 'Format file tidak valid', description: 'Gunakan JPG, PNG, atau PDF', variant: 'destructive' });
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ title: 'File terlalu besar', description: 'Maksimal 5MB', variant: 'destructive' });
-      return;
-    }
-
-    setProofFile(file);
-    if (file.type.startsWith('image/')) {
-      setProofPreview(URL.createObjectURL(file));
-    } else {
-      setProofPreview(null);
-    }
-  };
-
-  const isValidSolanaAddress = (address: string) => {
-    return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address);
-  };
+  const backToInvoices = () => navigate('/id/member/invoices');
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -150,33 +70,94 @@ export default function InvoiceDetailPage() {
     }
   };
 
-  const canSubmit = !!transferMethod && isValidSolanaAddress(walletTPC) && (proofFile || invoice?.proof_url);
+  useEffect(() => {
+    if (!id || !user) return;
+
+    const fetchInvoice = async () => {
+      setIsLoading(true);
+
+      const { data, error } = await supabase
+        .from('invoices')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (error || !data) {
+        console.error('Error fetching invoice:', error);
+        toast({ title: 'Invoice tidak ditemukan', variant: 'destructive' });
+        backToInvoices();
+        return;
+      }
+
+      setInvoice(data);
+      if (data.transfer_method) setTransferMethod(data.transfer_method as TransferMethod);
+      if (data.wallet_tpc) setWalletTPC(data.wallet_tpc);
+      setIsLoading(false);
+    };
+
+    fetchInvoice();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, user?.id]);
+
+  // ✅ prevent memory leak
+  useEffect(() => {
+    return () => {
+      if (proofPreview) URL.revokeObjectURL(proofPreview);
+    };
+  }, [proofPreview]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+    if (!validTypes.includes(file.type)) {
+      toast({ title: 'Format file tidak valid', description: 'Gunakan JPG, PNG, atau PDF', variant: 'destructive' });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'File terlalu besar', description: 'Maksimal 5MB', variant: 'destructive' });
+      return;
+    }
+
+    setProofFile(file);
+    if (file.type.startsWith('image/')) setProofPreview(URL.createObjectURL(file));
+    else setProofPreview(null);
+  };
+
+  const isValidSolanaAddress = (address: string) =>
+    /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address);
+
+  const walletLooksComplete = walletTPC.length >= 32;
+  const walletIsValid = walletLooksComplete && isValidSolanaAddress(walletTPC);
+
+  const canSubmit =
+    !!transferMethod &&
+    walletIsValid &&
+    (proofFile || invoice?.proof_url);
 
   const handleSubmit = async () => {
     if (!canSubmit || !invoice || !user) return;
 
     setIsSubmitting(true);
     try {
-      let proofPath = invoice.proof_url; // This column now stores path only
+      let proofPath = invoice.proof_url; // stores path only
 
-      // Upload proof if new file selected
       if (proofFile) {
         const filePath = generateProofFilePath(invoice.id, user.id, proofFile);
 
         const { error: uploadError } = await supabase.storage
           .from(PROOF_BUCKET)
-          .upload(filePath, proofFile, { 
-            upsert: true, 
-            contentType: proofFile.type 
+          .upload(filePath, proofFile, {
+            upsert: true,
+            contentType: proofFile.type,
           });
 
         if (uploadError) throw uploadError;
-
-        // Store only the path, not the full URL
         proofPath = filePath;
       }
 
-      // Update invoice
       const { error: updateError } = await supabase
         .from('invoices')
         .update({
@@ -190,13 +171,13 @@ export default function InvoiceDetailPage() {
       if (updateError) throw updateError;
 
       toast({ title: 'Konfirmasi berhasil dikirim!' });
-      navigate('/id/member/invoices');
+      backToInvoices();
     } catch (error: any) {
       console.error('Submit error:', error);
-      toast({ 
-        title: 'Gagal mengirim konfirmasi', 
-        description: error.message, 
-        variant: 'destructive' 
+      toast({
+        title: 'Gagal mengirim konfirmasi',
+        description: error.message,
+        variant: 'destructive',
       });
     } finally {
       setIsSubmitting(false);
@@ -216,9 +197,7 @@ export default function InvoiceDetailPage() {
     );
   }
 
-  if (!invoice) {
-    return null;
-  }
+  if (!invoice) return null;
 
   const isPending = invoice.status === 'PENDING_REVIEW';
   const isPaid = invoice.status === 'PAID';
@@ -227,8 +206,9 @@ export default function InvoiceDetailPage() {
     <div className="mobile-container pt-4">
       {/* Header */}
       <button
-        onClick={() => navigate('/id/member/invoices')}
+        onClick={backToInvoices}
         className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4"
+        type="button"
       >
         <ArrowLeft className="h-5 w-5" />
         <span>Kembali</span>
@@ -243,7 +223,7 @@ export default function InvoiceDetailPage() {
           <Loader2 className="h-5 w-5 text-info animate-spin" />
           <div>
             <div className="font-medium text-info">Menunggu Review</div>
-            <div className="text-xs text-muted-foreground">Admin sedang memproses pembayaran Anda</div>
+            <div className="text-xs text-muted-foreground">Admin sedang memproses pembayaran</div>
           </div>
         </div>
       )}
@@ -253,7 +233,7 @@ export default function InvoiceDetailPage() {
           <CheckCircle className="h-5 w-5 text-success" />
           <div>
             <div className="font-medium text-success">Pembayaran Berhasil</div>
-            <div className="text-xs text-muted-foreground">TPC akan dikirim ke wallet Anda</div>
+            <div className="text-xs text-muted-foreground">TPC akan dikirim ke wallet kamu</div>
           </div>
         </div>
       )}
@@ -264,10 +244,12 @@ export default function InvoiceDetailPage() {
           <span className="text-muted-foreground">Nominal</span>
           <span className="font-medium">{formatCurrency(Number(invoice.amount_input), invoice.base_currency)}</span>
         </div>
+
         <div className="flex justify-between items-center mb-4">
           <span className="text-muted-foreground">Nilai USD</span>
           <span className="font-medium">${Number(invoice.amount_usd).toFixed(2)}</span>
         </div>
+
         <div className="flex justify-between items-center pt-4 border-t border-border">
           <span className="font-semibold">TPC yang Didapat</span>
           <div className="flex items-center gap-2">
@@ -279,12 +261,14 @@ export default function InvoiceDetailPage() {
         {invoice.status === 'UNPAID' && (
           <div className="flex items-center gap-2 mt-4 text-xs text-warning">
             <Clock className="h-4 w-4" />
-            <span>Berlaku hingga {format(new Date(invoice.expires_at), 'd MMM yyyy, HH:mm', { locale: id })}</span>
+            <span>
+              Berlaku hingga {format(new Date(invoice.expires_at), 'd MMM yyyy, HH:mm', { locale: idLocale })}
+            </span>
           </div>
         )}
       </div>
 
-      {/* Reject Reason Display */}
+      {/* ✅ Reject Reason (must be OUTSIDE UNPAID block) */}
       {invoice.status === 'CANCELLED' && (
         <div className="mb-8">
           <div className="glass-card p-6 border-red-500/20 bg-red-500/5">
@@ -292,14 +276,19 @@ export default function InvoiceDetailPage() {
               <XCircle className="h-5 w-5 text-red-400" />
               <h3 className="text-lg font-semibold text-red-400">Invoice Ditolak</h3>
             </div>
-            {invoice.rejected_reason && (
-              <div className="text-sm text-red-300 mb-2">
-                <span className="font-medium">Alasan:</span> {invoice.rejected_reason}
+            {invoice.rejected_reason ? (
+              <div>
+                <p className="text-white mb-2">Alasan Penolakan:</p>
+                <p className="text-[#848E9C] bg-[#2B3139]/50 rounded p-3">{invoice.rejected_reason}</p>
+                {invoice.rejected_at && (
+                  <p className="text-[#848E9C] text-xs mt-2">
+                    Ditolak pada: {new Date(invoice.rejected_at).toLocaleString('id-ID')}
+                  </p>
+                )}
               </div>
+            ) : (
+              <p className="text-[#848E9C]">Tidak ada alasan tersimpan</p>
             )}
-            <div className="text-xs text-red-400">
-              Ditolak pada: {invoice.rejected_at ? format(new Date(invoice.rejected_at), 'd MMM yyyy, HH:mm', { locale: id }) : 'N/A'}
-            </div>
           </div>
         </div>
       )}
@@ -316,6 +305,7 @@ export default function InvoiceDetailPage() {
                   key={method}
                   onClick={() => setTransferMethod(method)}
                   className={`currency-pill ${transferMethod === method ? 'active' : ''}`}
+                  type="button"
                 >
                   <div className="font-semibold text-sm">{TRANSFER_INFO[method].label}</div>
                 </button>
@@ -323,18 +313,14 @@ export default function InvoiceDetailPage() {
             </div>
           </div>
 
-          {/* Transfer Destination */}
+          {/* Transfer Destination + Copy */}
           {transferMethod && (
             <div className="glass-card mb-6 animate-fade-in">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="text-sm text-muted-foreground mb-2">Transfer ke:</div>
-                  <div className="font-mono font-bold text-lg mb-1">
-                    {TRANSFER_INFO[transferMethod].destination}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {TRANSFER_INFO[transferMethod].hint}
-                  </div>
+                  <div className="font-mono font-bold text-lg mb-1">{TRANSFER_INFO[transferMethod].destination}</div>
+                  <div className="text-xs text-muted-foreground">{TRANSFER_INFO[transferMethod].hint}</div>
                 </div>
                 <button
                   type="button"
@@ -350,33 +336,34 @@ export default function InvoiceDetailPage() {
 
           {/* Wallet TPC Input */}
           <div className="mb-6">
-            <label className="input-label">Wallet TPC (Solana)</label>
+            <label className="input-label">Wallet TPC (Solana — Wallet Pribadi Anda)</label>
             <div className="relative">
               <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Alamat wallet Solana Anda"
+                placeholder="Alamat Phantom/Solflare (untuk menerima TPC)"
                 value={walletTPC}
                 onChange={(e) => setWalletTPC(e.target.value.trim())}
                 className="input-gold pl-12 font-mono text-sm"
               />
             </div>
-            {walletTPC.length >= 32 && !isValidSolanaAddress(walletTPC) && (
+
+            {walletLooksComplete && !walletIsValid && (
               <div className="flex items-center gap-2 mt-2 text-xs text-destructive">
                 <AlertCircle className="h-4 w-4" />
                 <span>Alamat wallet tidak valid</span>
               </div>
             )}
+
             <div className="flex items-center gap-2 mt-2 text-xs text-[#848E9C]">
               <AlertCircle className="h-4 w-4" />
               <span>⚠️ Jangan isi Wallet TPC dengan nomor tujuan transfer</span>
             </div>
           </div>
 
-          {/* Proof Upload - Disabled if cancelled */}
-          {invoice.status !== 'CANCELLED' && (
-            <div className="mb-8">
-              <label className="input-label">Bukti Transfer</label>
+          {/* Proof Upload */}
+          <div className="mb-8">
+            <label className="input-label">Bukti Transfer</label>
             <input
               ref={fileInputRef}
               type="file"
@@ -384,7 +371,7 @@ export default function InvoiceDetailPage() {
               onChange={handleFileChange}
               className="hidden"
             />
-            
+
             {proofPreview ? (
               <div className="relative">
                 <img
@@ -395,6 +382,7 @@ export default function InvoiceDetailPage() {
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   className="absolute bottom-2 right-2 bg-background/80 backdrop-blur px-3 py-1 rounded-lg text-sm"
+                  type="button"
                 >
                   Ganti
                 </button>
@@ -408,6 +396,7 @@ export default function InvoiceDetailPage() {
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   className="text-primary text-sm"
+                  type="button"
                 >
                   Ganti
                 </button>
@@ -416,6 +405,7 @@ export default function InvoiceDetailPage() {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 className="w-full border-2 border-dashed border-border rounded-xl p-8 flex flex-col items-center gap-3 hover:border-primary/50 transition-colors"
+                type="button"
               >
                 <Upload className="h-8 w-8 text-muted-foreground" />
                 <div className="text-center">
@@ -425,13 +415,13 @@ export default function InvoiceDetailPage() {
               </button>
             )}
           </div>
-            )}
 
           {/* Submit Button */}
           <button
             onClick={handleSubmit}
             disabled={!canSubmit || isSubmitting}
             className="btn-gold w-full text-lg py-5 disabled:opacity-50 disabled:cursor-not-allowed"
+            type="button"
           >
             {isSubmitting ? (
               <Loader2 className="h-6 w-6 animate-spin" />

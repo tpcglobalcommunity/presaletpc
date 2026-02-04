@@ -358,6 +358,9 @@ const App = () => {
                 {/* ✅ ALIAS LAMA: /:lang/dashboard -> /:lang/member/dashboard */}
                 <Route path="dashboard" element={<LegacyDashboardAlias />} />
                 <Route path="dashboard/*" element={<LegacyDashboardDeepAlias />} />
+                
+                {/* ✅ LEGACY INVOICES REDIRECT */}
+                <Route path="invoices" element={<Navigate to="member/invoices" replace />} />
 
                 {/* ✅ ADMIN */}
                 <Route
