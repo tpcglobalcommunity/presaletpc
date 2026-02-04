@@ -58,6 +58,7 @@ import PublicInvoiceDetailPage from "@/pages/public/PublicInvoiceDetailPage";
 const MemberDashboardPage = lazy(() => import("@/pages/member/MemberDashboardPage"));
 const MemberInvoicesPage = lazy(() => import("@/pages/member/MemberInvoicesPage"));
 const MemberInvoiceDetailPage = lazy(() => import("@/pages/member/MemberInvoiceDetailPage"));
+const InvoiceLegacyRedirectPage = lazy(() => import("@/pages/id/member/InvoiceLegacyRedirectPage"));
 const MemberReferralPage = lazy(() => import("@/pages/member/MemberReferralPage"));
 const ProfilePage = lazy(() => import("@/pages/id/member/ProfilePage"));
 const EnProfilePage = lazy(() => import("@/pages/en/member/ProfilePage"));
@@ -198,6 +199,16 @@ const App = () => {
                   path="invoice/:invoiceNo"
                   element={<PublicInvoiceDetailPage />}
                 />
+                
+                {/* ✅ LEGACY EXTERNAL REDIRECTS */}
+                <Route 
+                  path="invoices/:invoiceNo" 
+                  element={<Navigate to="../member/invoices-no/:invoiceNo" replace />} 
+                />
+                <Route 
+                  path="member/invoice/:invoiceNo" 
+                  element={<Navigate to="../invoices-no/:invoiceNo" replace />} 
+                />
                 <Route
                   path="login"
                   element={
@@ -325,6 +336,16 @@ const App = () => {
                     element={
                       <Suspense fallback={<PageLoader />}>
                         <MemberInvoiceDetailPage />
+                      </Suspense>
+                    }
+                  />
+                  
+                  {/* ✅ LEGACY COMPAT */}
+                  <Route
+                    path="invoices-no/:invoiceNo"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <InvoiceLegacyRedirectPage />
                       </Suspense>
                     }
                   />
