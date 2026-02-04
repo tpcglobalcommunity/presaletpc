@@ -63,6 +63,7 @@ const MemberReferralPage = lazy(() => import("@/pages/member/MemberReferralPage"
 const MemberProfilePage = lazy(() => import("@/pages/member/MemberProfilePage"));
 const MemberSettingsPage = lazy(() => import("@/pages/member/MemberSettingsPage"));
 const MemberWalletPage = lazy(() => import("@/pages/member/MemberWalletPage"));
+const MemberWithdrawalPage = lazy(() => import("@/pages/member/MemberWithdrawalPage"));
 
 // Admin Pages (Lazy Loaded)
 const AdminInvoicesPage = lazy(() => import("@/pages/admin/AdminInvoicesPage"));
@@ -238,6 +239,14 @@ function App() {
                     element={
                       <Suspense fallback={<PageLoader />}>
                         <MemberWalletPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="withdraw"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <MemberWithdrawalPage />
                       </Suspense>
                     }
                   />
