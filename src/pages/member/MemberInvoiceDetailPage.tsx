@@ -66,7 +66,7 @@ export default function MemberInvoiceDetailPage() {
       if (!invoiceId || !user) {
         setIsLoading(false);
         if (!invoiceId) {
-          setError('Invoice ID tidak valid');
+          setError('ID tidak valid');
         } else if (!user) {
           setError('User tidak terautentikasi');
         }
@@ -79,11 +79,16 @@ export default function MemberInvoiceDetailPage() {
           .from('invoices')
           .select('*')
           .eq('id', invoiceId)
+          .eq('user_id', user.id)
           .single();
         
         if (error) {
           console.error('Error fetching invoice:', error);
-          setError('Invoice tidak ditemukan atau akses ditolak.');
+          if (error.code === 'PGRST116') {
+            setError('Invoice tidak ditemukan.');
+          } else {
+            setError('Gagal memuat invoice.');
+          }
           return;
         }
         
