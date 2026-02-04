@@ -144,7 +144,9 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Function: get_referral_stats (overload for authenticated users)
--- Overload existing function to work without parameters for authenticated users
+-- Drop existing function and recreate with no-parameter version for authenticated users
+DROP FUNCTION IF EXISTS public.get_referral_stats();
+
 CREATE OR REPLACE FUNCTION public.get_referral_stats()
 RETURNS TABLE (
     total_downline bigint,
@@ -168,13 +170,33 @@ BEGIN
         RAISE EXCEPTION 'User profile not found';
     END IF;
     
-    -- Use the existing get_referral_stats function with the user's member code
+    -- Use recursive CTE to calculate referral stats (similar to existing logic)
     RETURN QUERY
+    WITH RECURSIVE referral_tree AS (
+        -- Base case: direct referrals
+        SELECT 
+            p.member_code,
+            p.created_at,
+            1 as level
+        FROM public.profiles p
+        WHERE p.referred_by = v_user_member_code
+        
+        UNION ALL
+        
+        -- Recursive case: referrals of referrals
+        SELECT 
+            p.member_code,
+            p.created_at,
+            rt.level + 1
+        FROM public.profiles p
+        INNER JOIN referral_tree rt ON p.referred_by = rt.member_code
+        WHERE rt.level < 10
+    )
     SELECT 
-        total_referrals::bigint as total_downline,
-        active_referrals::bigint as total_active,
-        total_levels::bigint
-    FROM public.get_referral_stats(v_user_member_code);
+        COUNT(*)::bigint as total_downline,
+        COUNT(CASE WHEN created_at > NOW() - INTERVAL '30 days' THEN 1 END)::bigint as total_active,
+        COALESCE(MAX(level), 0)::bigint as total_levels
+    FROM referral_tree;
 END;
 $$ LANGUAGE plpgsql;
 
