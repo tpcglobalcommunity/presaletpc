@@ -22,11 +22,46 @@ export default function MemberDashboardPage() {
   const { toast } = useToast();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [profile, setProfile] = useState<any>(null);
+
+  // Fetch user's own profile
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+
+    (async () => {
+      console.log('[PROFILE] Loading profile for user:', user.id);
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('user_id,email_initial,email_current,member_code,referred_by')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (cancelled) return;
+
+      if (error) {
+        console.error('[PROFILE] load failed', error);
+        return;
+      }
+
+      console.log('[PROFILE] Loaded profile:', { user_id: data?.user_id, member_code: data?.member_code, email_current: data?.email_current });
+      setProfile(data);
+    })();
+
+    return () => { cancelled = true; };
+  }, [user?.id]);
 
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
-        const { data, error } = await supabase.rpc('member_list_invoices');
+        // For now, use direct query since RPC might not exist
+        const { data, error } = await supabase
+          .from('invoices')
+          .select('id,invoice_no,status,tpc_amount,created_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(10);
         
         if (error) {
           console.error('Error fetching invoices:', error);
@@ -93,8 +128,11 @@ export default function MemberDashboardPage() {
             </div>
             <button
               onClick={() => {
-                navigator.clipboard.writeText(user?.user_metadata?.referral_code || '');
-                toast({ title: 'Kode referral disalin!' });
+                const referralCode = profile?.member_code || '-';
+                if (referralCode !== '-') {
+                  navigator.clipboard.writeText(referralCode);
+                  toast({ title: 'Kode referral disalin!' });
+                }
               }}
               className="text-[#F0B90B] text-sm hover:text-[#F8D56B] transition-colors"
             >
@@ -102,7 +140,7 @@ export default function MemberDashboardPage() {
             </button>
           </div>
           <div className="text-white font-mono text-sm bg-black/30 rounded p-2">
-            {user?.user_metadata?.referral_code || 'TPC-GLOBAL'}
+            {profile?.member_code || '-'}
           </div>
           <div className="text-[#848E9C] text-xs mt-2">
             Bagikan kode ini untuk dapatkan bonus sponsor 5%

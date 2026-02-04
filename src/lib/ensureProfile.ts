@@ -27,9 +27,9 @@ export async function ensureProfile(userId: string): Promise<void> {
       }
     }
     
-    console.log("[PROFILE] Profile upserted successfully");
+    console.log("[PROFILE] Profile upserted successfully for user:", userId);
   } catch (error) {
-    console.error("[PROFILE] Failed to ensure profile:", error);
+    console.error("[PROFILE] Failed to ensure profile for user:", userId, "error:", error);
     // Don't throw error to avoid blocking auth flow, just log it
   }
 }

@@ -10,7 +10,7 @@ import {
   useParams,
 } from "react-router-dom";
 import { lazy, Suspense, useEffect } from "react";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import PageLoader from "@/components/PageLoader";
 
 // WWW to non-www redirect guard
@@ -143,11 +143,16 @@ function LangRoute({
 }
 
 const App = () => {
+  const { user, isAdmin } = useAuth();
+  
   // Router sanity check
   useEffect(() => {
     console.log("[AUTH] Profile ensured");
-    console.log("[AUTH] Admin access granted");
-  }, []);
+    console.log("[AUTH] Admin access:", isAdmin);
+    if (isAdmin) {
+      console.log("[AUTH] Admin access granted");
+    }
+  }, [isAdmin]);
 
   return (
     <QueryClientProvider client={queryClient}>
