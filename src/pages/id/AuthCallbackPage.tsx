@@ -8,57 +8,54 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     let isMounted = true;
 
+    const safeReturnTo = (raw: string | null) => {
+      if (!raw) return null;
+      const v = raw.trim();
+      if (!v.startsWith("/")) return null;
+      if (v.includes("://")) return null;
+      if (!(v.startsWith("/id/") || v.startsWith("/en/"))) return null;
+      return v;
+    };
+
     const handleAuth = async () => {
       try {
-        console.log("[AUTH CALLBACK] Starting session check...");
         const { data, error } = await supabase.auth.getSession();
-        
-        console.log("[AUTH SESSION]", data);
-        console.log("[AUTH CALLBACK] Session result:", { 
-          hasSession: !!data.session, 
-          hasError: !!error,
-          error: error?.message,
-          sessionUser: data.session?.user?.email
-        });
 
         if (error || !data.session) {
-          console.error("[AUTH CALLBACK] No session found, redirecting to login");
           navigate("/id/login", { replace: true });
           return;
         }
 
         // Apply pending sponsor after login
-        const LS_KEY = 'tpc_pending_sponsor_code';
-        const code = (localStorage.getItem(LS_KEY) || '').trim().toUpperCase();
-        
+        const LS_KEY = "tpc_pending_sponsor_code";
+        const code = (localStorage.getItem(LS_KEY) || "").trim().toUpperCase();
+
         if (code) {
           try {
-            const { data: sponsorData, error: sponsorError } = await supabase.rpc('apply_pending_sponsor', { 
-              p_referral_code: code 
+            const { error: sponsorError } = await supabase.rpc("apply_pending_sponsor", {
+              p_referral_code: code,
             });
-            
+
             if (sponsorError) {
-              console.warn('[AUTH CALLBACK] Failed to apply sponsor:', sponsorError.message);
-            } else {
-              console.log('[AUTH CALLBACK] Sponsor applied:', sponsorData);
+              console.warn("[AUTH CALLBACK] Failed to apply sponsor:", sponsorError.message);
             }
           } catch (sponsorErr) {
-            console.warn('[AUTH CALLBACK] Sponsor apply error:', sponsorErr);
-            // Don't block login if sponsor apply fails
+            console.warn("[AUTH CALLBACK] Sponsor apply error:", sponsorErr);
+          } finally {
+            localStorage.removeItem(LS_KEY);
           }
         }
 
-        console.log("[AUTH CALLBACK] Session found, checking return URL");
-        
         // ✅ Honor tpc_return_to for invoice success flow
-        const returnTo = localStorage.getItem('tpc_return_to');
+        const returnToRaw = localStorage.getItem("tpc_return_to");
+        const returnTo = safeReturnTo(returnToRaw);
+
         if (returnTo) {
-          localStorage.removeItem('tpc_return_to');
-          console.log("[AUTH CALLBACK] Redirecting to return URL:", returnTo);
+          localStorage.removeItem("tpc_return_to");
           navigate(returnTo, { replace: true });
         } else {
-          console.log("[AUTH CALLBACK] No return URL, redirecting to member dashboard");
-          navigate("/id/member/dashboard", { replace: true });
+          // ✅ member namespace hard lock
+          navigate("/id/member", { replace: true });
         }
       } catch (err) {
         console.error("[AUTH CALLBACK] Fatal error:", err);
