@@ -53,6 +53,11 @@ import PrivacyPolicyPage from "@/pages/legal/PrivacyPolicyPage";
 // Note: English pages reuse Indonesian components, so no separate imports needed
 import PublicInvoiceDetailPage from "@/pages/public/PublicInvoiceDetailPage";
 
+// Public V2 Pages (Safe Migration Testing)
+import HomePageV2 from "@/pages/public/HomePage";
+import LoginPageV2 from "@/pages/public/LoginPage";
+import AntiScamPageV2 from "@/pages/public/AntiScamPage";
+
 // Member Pages (New Member Area)
 const MemberDashboardPage = lazy(() => import("@/pages/member/MemberDashboardPage"));
 const MemberInvoicesPage = lazy(() => import("@/pages/member/MemberInvoicesPage"));
@@ -146,6 +151,11 @@ const App = () => {
                     />
                   }
                 />
+                
+                {/* Public V2 Routes (Safe Migration Testing) */}
+                <Route path="home-v2" element={<HomePageV2 />} />
+                <Route path="login-v2" element={<LoginPageV2 />} />
+                <Route path="anti-scam-v2" element={<AntiScamPageV2 />} />
                 
                 {/* Legacy alias routes (STATIC ONLY, NO WILDCARD PARSING) */}
                 <Route 
