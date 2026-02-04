@@ -79,6 +79,13 @@ export default function InvoiceDetailPage() {
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [proofPreview, setProofPreview] = useState<string | null>(null);
 
+  // Memory leak prevention: revoke object URL when preview changes
+  useEffect(() => {
+    return () => {
+      if (proofPreview) URL.revokeObjectURL(proofPreview);
+    };
+  }, [proofPreview]);
+
   useEffect(() => {
     if (!invoiceNo || !user) return;
 
@@ -92,7 +99,7 @@ export default function InvoiceDetailPage() {
       if (error) {
         console.error('Error fetching invoice:', error);
         toast({ title: 'Invoice tidak ditemukan', variant: 'destructive' });
-        navigate('/id/dashboard');
+        navigate('/id/member/invoices');
         return;
       }
 
@@ -134,7 +141,16 @@ export default function InvoiceDetailPage() {
     return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address);
   };
 
-  const canSubmit = transferMethod && walletTPC && isValidSolanaAddress(walletTPC) && (proofFile || invoice?.proof_url);
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({ title: 'Berhasil disalin' });
+    } catch {
+      toast({ title: 'Gagal menyalin', variant: 'destructive' });
+    }
+  };
+
+  const canSubmit = !!transferMethod && isValidSolanaAddress(walletTPC) && (proofFile || invoice?.proof_url);
 
   const handleSubmit = async () => {
     if (!canSubmit || !invoice || !user) return;
@@ -174,7 +190,7 @@ export default function InvoiceDetailPage() {
       if (updateError) throw updateError;
 
       toast({ title: 'Konfirmasi berhasil dikirim!' });
-      navigate('/id/dashboard');
+      navigate('/id/member/invoices');
     } catch (error: any) {
       console.error('Submit error:', error);
       toast({ 
@@ -211,7 +227,7 @@ export default function InvoiceDetailPage() {
     <div className="mobile-container pt-4">
       {/* Header */}
       <button
-        onClick={() => navigate('/id/dashboard')}
+        onClick={() => navigate('/id/member/invoices')}
         className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4"
       >
         <ArrowLeft className="h-5 w-5" />
@@ -268,6 +284,26 @@ export default function InvoiceDetailPage() {
         )}
       </div>
 
+      {/* Reject Reason Display */}
+      {invoice.status === 'CANCELLED' && (
+        <div className="mb-8">
+          <div className="glass-card p-6 border-red-500/20 bg-red-500/5">
+            <div className="flex items-center gap-3 mb-3">
+              <XCircle className="h-5 w-5 text-red-400" />
+              <h3 className="text-lg font-semibold text-red-400">Invoice Ditolak</h3>
+            </div>
+            {invoice.rejected_reason && (
+              <div className="text-sm text-red-300 mb-2">
+                <span className="font-medium">Alasan:</span> {invoice.rejected_reason}
+              </div>
+            )}
+            <div className="text-xs text-red-400">
+              Ditolak pada: {invoice.rejected_at ? format(new Date(invoice.rejected_at), 'd MMM yyyy, HH:mm', { locale: id }) : 'N/A'}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Only show form if UNPAID */}
       {invoice.status === 'UNPAID' && (
         <>
@@ -290,9 +326,25 @@ export default function InvoiceDetailPage() {
           {/* Transfer Destination */}
           {transferMethod && (
             <div className="glass-card mb-6 animate-fade-in">
-              <div className="text-sm text-muted-foreground mb-2">Transfer ke:</div>
-              <div className="font-mono font-bold text-lg mb-1">{TRANSFER_INFO[transferMethod].destination}</div>
-              <div className="text-xs text-muted-foreground">{TRANSFER_INFO[transferMethod].hint}</div>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-sm text-muted-foreground mb-2">Transfer ke:</div>
+                  <div className="font-mono font-bold text-lg mb-1">
+                    {TRANSFER_INFO[transferMethod].destination}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {TRANSFER_INFO[transferMethod].hint}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(TRANSFER_INFO[transferMethod].destination)}
+                  className="shrink-0 inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm hover:border-primary/50"
+                >
+                  <Copy className="h-4 w-4" />
+                  Copy
+                </button>
+              </div>
             </div>
           )}
 
@@ -309,7 +361,7 @@ export default function InvoiceDetailPage() {
                 className="input-gold pl-12 font-mono text-sm"
               />
             </div>
-            {walletTPC && !isValidSolanaAddress(walletTPC) && (
+            {walletTPC.length >= 32 && !isValidSolanaAddress(walletTPC) && (
               <div className="flex items-center gap-2 mt-2 text-xs text-destructive">
                 <AlertCircle className="h-4 w-4" />
                 <span>Alamat wallet tidak valid</span>
@@ -320,31 +372,6 @@ export default function InvoiceDetailPage() {
               <span>⚠️ Jangan isi Wallet TPC dengan nomor tujuan transfer</span>
             </div>
           </div>
-
-          {/* Reject Reason Display */}
-          {invoice.status === 'CANCELLED' && (
-            <div className="mb-8">
-              <div className="glass-card p-6 border-red-500/20 bg-red-500/5">
-                <div className="flex items-center gap-3 mb-3">
-                  <XCircle className="h-5 w-5 text-red-400" />
-                  <h3 className="text-lg font-semibold text-red-400">Invoice Ditolak</h3>
-                </div>
-                {invoice.rejected_reason ? (
-                  <div>
-                    <p className="text-white mb-2">Alasan Penolakan:</p>
-                    <p className="text-[#848E9C] bg-[#2B3139]/50 rounded p-3">{invoice.rejected_reason}</p>
-                    {invoice.rejected_at && (
-                      <p className="text-[#848E9C] text-xs mt-2">
-                        Ditolak pada: {new Date(invoice.rejected_at).toLocaleString('id-ID')}
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-[#848E9C]">Tidak ada alasan tersimpan</p>
-                )}
-              </div>
-            </div>
-          )}
 
           {/* Proof Upload - Disabled if cancelled */}
           {invoice.status !== 'CANCELLED' && (
