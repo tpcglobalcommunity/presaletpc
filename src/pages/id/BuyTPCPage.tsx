@@ -100,6 +100,15 @@ export default function BuyTPCPage() {
   const goToTerms = () => navigate('/id/syarat-ketentuan');
   const goToPrivacy = () => navigate('/id/kebijakan-privasi');
 
+  // Helper: normalize amount for submission
+  const normalizeAmountForSubmit = (curr: Currency, v: number) => {
+    if (!Number.isFinite(v) || v <= 0) return 0;
+    if (curr === 'IDR') return Math.trunc(v);           // integer
+    if (curr === 'USDC') return Number(v.toFixed(2));  // max 2 decimals
+    if (curr === 'SOL') return Number(v.toFixed(4));   // max 4 decimals
+    return v;
+  };
+
   // Initialize pending sponsor
   useEffect(() => {
     console.log('[ACTIVE_PAGE] BuyTPCPage ACTIVE: src/pages/id/BuyTPCPage.tsx');
@@ -391,7 +400,7 @@ export default function BuyTPCPage() {
     
     // Check wallet TPC
     if (!walletTpc || walletTpc.trim().length < 32) {
-      reasons.push("Alamat Wallet TPC wajib diisi (contoh: Phantom Wallet).");
+      reasons.push("Alamat wallet TPC wajib diisi (minimal 32 karakter).");
     }
     
     // Check USD amount
@@ -432,7 +441,10 @@ export default function BuyTPCPage() {
   const sponsorBonusAmount = typeof sponsorBonus === 'number' ? sponsorBonus : sponsorBonus?.bonus_amount || 0;
   const totalTPC = tpcAmount + sponsorBonusAmount;
 
-  const isValid = amountValue > 0 && walletTpc.trim().length >= 20 && agreed && userEmail !== null && sponsorCode && !sponsorLoading && !sponsorError;
+  const amountSubmit = useMemo(() => normalizeAmountForSubmit(currency, amountValue), [currency, amountValue]);
+  const walletOk = walletTpc.trim().length >= 32;
+
+  const isValid = amountSubmit > 0 && walletOk && agreed && !!userEmail && !!sponsorCode && !sponsorLoading && !sponsorError;
 
   const handleContinue = async () => {
     setSubmitAttempted(true);
@@ -466,16 +478,22 @@ export default function BuyTPCPage() {
         p_email: userEmail.toLowerCase().trim(),
         p_referral_code: referralClean,
         p_base_currency: currency,
-        p_amount_input: normalizeForSubmit(currency, amountValue),
+        p_amount_input: amountSubmit,
         p_wallet_tpc: walletTpc.trim()
       });
 
       if (error) {
         console.error('Invoice creation error:', error);
         
-        // Specific error handling for IDR decimal issues
-        if (currency === 'IDR' && error.message?.includes('desimal')) {
+        // Human-friendly error messages
+        if (error.message?.includes('Wallet TPC wajib diisi')) {
+          setSubmitError('Wallet TPC wajib diisi (minimal 32 karakter).');
+        } else if (currency === 'IDR' && error.message?.includes('Nominal IDR')) {
           setSubmitError('Nominal IDR harus tanpa desimal. Contoh: 10.000.000');
+        } else if (currency === 'USDC' && error.message?.includes('2 angka desimal')) {
+          setSubmitError('USDC maksimal 2 angka desimal. Contoh: 1000.00');
+        } else if (currency === 'SOL' && error.message?.includes('4 angka desimal')) {
+          setSubmitError('SOL maksimal 4 angka desimal. Contoh: 0.0010');
         } else {
           setSubmitError(error.message || 'Gagal membuat invoice. Coba lagi beberapa saat.');
         }
