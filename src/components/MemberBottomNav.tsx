@@ -6,8 +6,8 @@ export function MemberBottomNav() {
   const location = useLocation();
 
   const isActive = (path: string) => {
-    if (path === '/id/member') {
-      return location.pathname === '/id/member' || location.pathname.startsWith('/id/member/dashboard');
+    if (path === '/id/member/dashboard') {
+      return location.pathname === '/id/member/dashboard';
     }
     if (path === '/id/member/invoices') {
       return location.pathname === '/id/member/invoices' || location.pathname.startsWith('/id/member/invoices/');
@@ -19,16 +19,9 @@ export function MemberBottomNav() {
     { 
       icon: LayoutDashboard, 
       label: 'Dashboard', 
-      path: '/id/member',
+      path: '/id/member/dashboard',
       activeColor: 'text-blue-500',
       activeBg: 'bg-blue-500/15'
-    },
-    { 
-      icon: Wallet, 
-      label: 'Wallet', 
-      path: '/id/member/wallet',
-      activeColor: 'text-[#F0B90B]',
-      activeBg: 'bg-[#F0B90B]/15'
     },
     { 
       icon: FileText, 
@@ -36,6 +29,13 @@ export function MemberBottomNav() {
       path: '/id/member/invoices',
       activeColor: 'text-green-500',
       activeBg: 'bg-green-500/15'
+    },
+    { 
+      icon: Wallet, 
+      label: 'Wallet', 
+      path: '/id/member/wallet',
+      activeColor: 'text-[#F0B90B]',
+      activeBg: 'bg-[#F0B90B]/15'
     },
     { 
       icon: Share2, 

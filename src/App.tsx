@@ -190,6 +190,14 @@ function App() {
                     index
                     element={
                       <Suspense fallback={<PageLoader />}>
+                        <Navigate replace to="invoices" />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="dashboard"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
                         <MemberDashboardPage />
                       </Suspense>
                     }
