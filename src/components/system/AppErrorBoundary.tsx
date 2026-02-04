@@ -4,6 +4,7 @@ interface AppErrorBoundaryState {
   hasError: boolean;
   errorMessage?: string;
   errorStack?: string;
+  componentStack?: string;
 }
 
 interface AppErrorBoundaryProps {
@@ -17,31 +18,39 @@ export default class AppErrorBoundary extends React.Component<AppErrorBoundaryPr
   }
 
   static getDerivedStateFromError(error: Error): AppErrorBoundaryState {
+    const normalized =
+      error instanceof Error ? error : new Error(typeof error === "string" ? error : JSON.stringify(error));
+    
     return {
       hasError: true,
-      errorMessage: error.message,
-      errorStack: error.stack
+      errorMessage: normalized.message,
+      errorStack: normalized.stack
     };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('[APP_ERROR_BOUNDARY] Caught error:', {
-      error: {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      },
-      errorInfo: {
-        componentStack: errorInfo.componentStack
-      }
+    const normalized =
+      error instanceof Error ? error : new Error(typeof error === "string" ? error : JSON.stringify(error));
+    
+    console.error("[APP_ERROR_BOUNDARY] name:", normalized.name);
+    console.error("[APP_ERROR_BOUNDARY] message:", normalized.message);
+    console.error("[APP_ERROR_BOUNDARY] stack:", normalized.stack);
+    console.error("[APP_ERROR_BOUNDARY] componentStack:", errorInfo?.componentStack);
+    
+    // Update state with componentStack
+    this.setState({
+      hasError: true,
+      errorMessage: normalized.message,
+      errorStack: normalized.stack,
+      componentStack: errorInfo?.componentStack || ""
     });
     
     // Save last error to window for debugging
     (window as any).__TPC_LAST_ERROR__ = {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
-      componentStack: errorInfo.componentStack
+      name: normalized.name,
+      message: normalized.message,
+      stack: normalized.stack,
+      componentStack: errorInfo?.componentStack || ""
     };
   }
 
@@ -72,10 +81,22 @@ export default class AppErrorBoundary extends React.Component<AppErrorBoundaryPr
               Terjadi Kesalahan
             </h1>
             
+            {/* Error Name */}
+            {this.state.errorMessage && (
+              <div className="mb-3">
+                <p className="text-slate-300 text-sm mb-1">Name:</p>
+                <div className="bg-slate-900 rounded p-2 border border-slate-700">
+                  <code className="text-yellow-400 text-xs break-all">
+                    {this.state.errorMessage.includes(':') ? this.state.errorMessage.split(':')[0] : 'Error'}
+                  </code>
+                </div>
+              </div>
+            )}
+            
             {/* Error Message */}
             {this.state.errorMessage && (
               <div className="mb-4">
-                <p className="text-slate-300 text-sm mb-2">Error Message:</p>
+                <p className="text-slate-300 text-sm mb-1">Message:</p>
                 <div className="bg-slate-900 rounded p-3 border border-slate-700">
                   <code className="text-red-400 text-xs break-all">
                     {this.truncateString(this.state.errorMessage, 500)}
@@ -84,17 +105,15 @@ export default class AppErrorBoundary extends React.Component<AppErrorBoundaryPr
               </div>
             )}
             
-            {/* Stack Trace (truncated) */}
-            {this.state.errorStack && (
-              <div className="mb-6">
-                <p className="text-slate-300 text-sm mb-2">Stack Trace:</p>
-                <div className="bg-slate-900 rounded p-3 border border-slate-700 max-h-32 overflow-y-auto">
-                  <pre className="text-slate-400 text-xs">
-                    {this.truncateString(this.state.errorStack, 1000)}
-                  </pre>
-                </div>
+            {/* Component Stack */}
+            <div className="mb-6">
+              <p className="text-slate-300 text-sm mb-1">Component Stack:</p>
+              <div className="bg-slate-900 rounded p-3 border border-slate-700 max-h-32 overflow-y-auto">
+                <pre className="text-slate-400 text-xs">
+                  {this.state.componentStack ? this.truncateString(this.state.componentStack, 1000) : 'No component stack available'}
+                </pre>
               </div>
-            )}
+            </div>
             
             {/* Action Buttons */}
             <div className="space-y-3">
