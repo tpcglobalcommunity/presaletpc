@@ -60,12 +60,12 @@ function LangRoute({
   id,
   en,
 }: {
-  id: React.ReactNode;
-  en: React.ReactNode;
+  id: JSX.Element;
+  en: JSX.Element;
 }) {
   const params = useParams();
-  const lang = params?.lang === "en" ? "en" : "id";
-  return lang === "en" ? en : id;
+  const safeLang = params?.lang === "en" ? "en" : "id";
+  return safeLang === "en" ? en : id;
 }
 
 // IdOnly wrapper for ID-only pages
