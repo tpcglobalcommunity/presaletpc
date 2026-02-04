@@ -22,6 +22,11 @@ export default function MemberDashboardPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
+  const [stats, setStats] = useState({
+    totalInvoice: 0,
+    totalTPCBought: 0,
+    totalBonusReferral: 0,
+  });
 
   // DEV log to confirm active page
   if (import.meta.env.DEV) {
@@ -106,6 +111,22 @@ export default function MemberDashboardPage() {
     if (lastInvoicesUserIdRef.current === uid) return;
     lastInvoicesUserIdRef.current = uid;
 
+    const fetchStats = async () => {
+      const { data, error } = await supabase.rpc('member_get_dashboard_stats');
+
+      if (error) {
+        console.error('Error fetching dashboard stats:', error);
+        return;
+      }
+
+      const row = Array.isArray(data) ? data[0] : data;
+      setStats({
+        totalInvoice: Number(row?.total_invoice ?? 0),
+        totalTPCBought: Number(row?.total_tpc_bought ?? 0),
+        totalBonusReferral: Number(row?.total_referral_bonus_tpc ?? 0),
+      });
+    };
+
     const fetchInvoices = async () => {
       if (invoicesFetchingRef.current) return;
       invoicesFetchingRef.current = true;
@@ -150,14 +171,8 @@ export default function MemberDashboardPage() {
     };
 
     fetchInvoices();
+    fetchStats();
   }, [user?.id]);
-
-  // Calculate stats
-  const totalInvoices = invoices.length;
-  const totalTPC = invoices
-    .filter(inv => inv.status === 'PAID')
-    .reduce((sum, inv) => sum + inv.tpc_amount, 0);
-  const referralBonus = 0; // Coming soon
 
   if (isLoading) {
     return (
@@ -223,7 +238,7 @@ export default function MemberDashboardPage() {
               <FileText className="h-4 w-4 text-[#848E9C]" />
               <span className="text-[#848E9C] text-xs">Total Invoice</span>
             </div>
-            <div className="text-white text-xl font-bold">{totalInvoices}</div>
+            <div className="text-white text-xl font-bold">{stats.totalInvoice}</div>
           </div>
 
           <div className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4">
@@ -231,7 +246,7 @@ export default function MemberDashboardPage() {
               <Coins className="h-4 w-4 text-[#F0B90B]" />
               <span className="text-[#848E9C] text-xs">TPC Dibeli</span>
             </div>
-            <div className="text-white text-xl font-bold">{formatNumberID(totalTPC)}</div>
+            <div className="text-white text-xl font-bold">{formatNumberID(stats.totalTPCBought)}</div>
           </div>
 
           <div className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4 col-span-2">
@@ -239,7 +254,7 @@ export default function MemberDashboardPage() {
               <TrendingUp className="h-4 w-4 text-[#F0B90B]" />
               <span className="text-[#848E9C] text-xs">Bonus Referral</span>
             </div>
-            <div className="text-white text-xl font-bold">{formatNumberID(referralBonus)}</div>
+            <div className="text-white text-xl font-bold">{formatNumberID(stats.totalBonusReferral)}</div>
             <div className="text-[#848E9C] text-xs mt-1">Coming soon</div>
           </div>
         </div>
