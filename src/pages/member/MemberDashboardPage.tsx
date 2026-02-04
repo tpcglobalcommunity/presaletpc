@@ -1,298 +1,138 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Coins, FileText, Users, User, ArrowRight, TrendingUp, Shield } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { formatNumberID } from '@/lib/number';
-import { useToast } from '@/hooks/use-toast';
-
-interface Invoice {
-  invoice_no: string;
-  status: string;
-  tpc_amount: number;
-  created_at: string;
-}
+import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Coins, FileText, Users, ArrowRight, Shield, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function MemberDashboardPage() {
-  const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const { lang } = useParams();
-  const safeLang = lang === 'en' ? 'en' : 'id';
-  const { toast } = useToast();
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [profile, setProfile] = useState<any>(null);
-  const [stats, setStats] = useState({
-    totalInvoice: 0,
-    totalTPCBought: 0,
-    totalBonusReferral: 0,
-  });
+  const { user } = useAuth();
+  
+  const safeLang = lang === "en" ? "en" : "id";
 
-  // DEV log to confirm active page
-  if (import.meta.env.DEV) {
-    console.log('[PAGE]', 'Member Dashboard ACTIVE:', 'src/pages/member/MemberDashboardPage.tsx');
-  }
-
-  // Navigate to invoice list with safety check
-  const navigateToInvoices = () => {
-    try {
-      navigate(`/${safeLang}/member/invoices`);
-    } catch (error) {
-      console.error('[NAVIGATION_ERROR] Failed to navigate to invoices:', error);
-      toast({
-        title: "Error Navigasi",
-        description: "Halaman invoice belum tersedia. Silakan coba lagi.",
-        variant: "destructive"
-      });
-    }
+  const handleBuyTPC = () => {
+    navigate(`/${safeLang}/buytpc`);
   };
-  const fetchingRef = useRef(false);
-  const lastUserIdRef = useRef<string | null>(null);
-  const invoicesFetchingRef = useRef(false);
-  const lastInvoicesUserIdRef = useRef<string | null>(null);
 
-  // Optimized profile loader
-  const loadProfile = useCallback(async (uid: string) => {
-    if (fetchingRef.current) return;
-    fetchingRef.current = true;
+  const handleInvoices = () => {
+    navigate(`/${safeLang}/member/invoices`);
+  };
 
-    try {
-      if (import.meta.env.DEV) {
-        console.log('[PROFILE] Loading profile for user:', uid);
-      }
-      
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('user_id,email_initial,email_current,member_code,created_at')
-        .eq('user_id', uid)
-        .maybeSingle();
-
-      if (error) {
-        console.error('[PROFILE] load failed', error);
-        return;
-      }
-
-      // Only update state if data actually changed
-      setProfile(prev => {
-        if (JSON.stringify(prev) === JSON.stringify(data)) {
-          return prev;
-        }
-        
-        if (import.meta.env.DEV) {
-          console.log('[PROFILE] Loaded profile:', { user_id: data?.user_id, member_code: data?.member_code, email_current: data?.email_current });
-        }
-        
-        return data;
-      });
-    } finally {
-      fetchingRef.current = false;
-    }
-  }, []);
-
-  // Fetch user's own profile (optimized)
-  useEffect(() => {
-    const uid = user?.id;
-    if (!uid) return;
-
-    if (lastUserIdRef.current === uid) return;
-    lastUserIdRef.current = uid;
-
-    loadProfile(uid);
-  }, [user?.id, loadProfile]);
-
-  useEffect(() => {
-    const uid = user?.id;
-    if (!uid) {
-      setInvoices([]);
-      setIsLoading(false);
-      return;
-    }
-
-    if (lastInvoicesUserIdRef.current === uid) return;
-    lastInvoicesUserIdRef.current = uid;
-
-    const fetchStats = async () => {
-      const { data, error } = await supabase.rpc('member_get_dashboard_stats');
-
-      if (error) {
-        console.error('Error fetching dashboard stats:', error);
-        return;
-      }
-
-      // Handle JSON response
-      const statsData = typeof data === 'string' ? JSON.parse(data) : data;
-      setStats({
-        totalInvoice: Number(statsData?.total_invoice ?? 0),
-        totalTPCBought: Number(statsData?.total_tpc ?? 0),
-        totalBonusReferral: Number(statsData?.total_referral_bonus ?? 0),
-      });
-    };
-
-    const fetchInvoices = async () => {
-      if (invoicesFetchingRef.current) return;
-      invoicesFetchingRef.current = true;
-
-      try {
-        setIsLoading(true);
-
-        const { data, error } = await supabase
-          .from('invoices')
-          .select('invoice_no,status,tpc_amount,created_at')
-          .eq('user_id', uid)
-          .order('created_at', { ascending: false })
-          .limit(10);
-
-        if (error) {
-          if (import.meta.env.DEV) console.error('Error fetching invoices:', error);
-          toast({ title: 'Gagal memuat data', variant: 'destructive' });
-          return;
-        }
-
-        const next = data || [];
-        setInvoices(prev => {
-          // minimal compare to avoid spam re-render
-          if (prev.length === next.length) {
-            const same = prev.every((p, i) =>
-              p.invoice_no === next[i]?.invoice_no &&
-              p.status === next[i]?.status &&
-              p.tpc_amount === next[i]?.tpc_amount &&
-              p.created_at === next[i]?.created_at
-            );
-            if (same) return prev;
-          }
-          return next;
-        });
-      } catch (e) {
-        if (import.meta.env.DEV) console.error('Error:', e);
-        toast({ title: 'Terjadi kesalahan', variant: 'destructive' });
-      } finally {
-        setIsLoading(false);
-        invoicesFetchingRef.current = false;
-      }
-    };
-
-    fetchInvoices();
-    fetchStats();
-  }, [user?.id]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#0B0E11] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F0B90B]"></div>
-      </div>
-    );
-  }
+  const handleReferrals = () => {
+    navigate(`/${safeLang}/member/referrals`);
+  };
 
   return (
-    <div className="min-h-screen bg-[#0B0E11] pb-28">
-      {/* Header */}
-      <div className="bg-[#1E2329] border-b border-[#2B3139] px-4 py-3">
-        <h1 className="text-white font-semibold text-lg">Dashboard</h1>
-      </div>
+    <div className="mobile-container pt-6 pb-28 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="px-4 space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold text-white">Dashboard Member</h1>
+          <p className="text-slate-400">
+            {user?.email || "-"}
+          </p>
+        </div>
 
-      <div className="p-4 space-y-4">
-        {/* User Info Card */}
-        <div className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-[#F0B90B] flex items-center justify-center">
-              <User className="h-5 w-5 text-black" />
+        {/* Primary Action Cards */}
+        <div className="grid grid-cols-1 gap-4">
+          {/* Buy TPC Card */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm hover:bg-white/10 transition-all duration-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-yellow-500/20 rounded-xl flex items-center justify-center">
+                  <Coins className="w-6 h-6 text-yellow-500" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Beli TPC</h3>
+                  <p className="text-sm text-slate-400">Beli token TPC sekarang</p>
+                </div>
+              </div>
+              <Button
+                onClick={handleBuyTPC}
+                className="bg-yellow-500 hover:bg-yellow-600 text-black font-medium"
+                size="sm"
+              >
+                <ArrowRight className="w-4 h-4" />
+              </Button>
             </div>
+          </div>
+
+          {/* Invoice Card */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm hover:bg-white/10 transition-all duration-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-blue-500" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Invoice Saya</h3>
+                  <p className="text-sm text-slate-400">Lihat riwayat pembelian</p>
+                </div>
+              </div>
+              <Button
+                onClick={handleInvoices}
+                variant="outline"
+                className="border-white/20 text-white hover:bg-white/10"
+                size="sm"
+              >
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Referral Card */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm hover:bg-white/10 transition-all duration-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
+                  <Users className="w-6 h-6 text-green-500" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Referral</h3>
+                  <p className="text-sm text-slate-400">Kelola referral Anda</p>
+                </div>
+              </div>
+              <Button
+                onClick={handleReferrals}
+                variant="outline"
+                className="border-white/20 text-white hover:bg-white/10"
+                size="sm"
+              >
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Status Section */}
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
+          <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+            <Shield className="w-5 h-5 mr-2 text-yellow-500" />
+            Status Akun
+          </h2>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Status</span>
+              <span className="text-green-500 font-medium">Aktif</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Saldo TPC</span>
+              <span className="text-slate-300 text-sm">Akan tampil setelah sinkronisasi wallet</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Info Banner */}
+        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-2xl p-6 backdrop-blur-sm">
+          <div className="flex items-start space-x-3">
+            <TrendingUp className="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" />
             <div>
-              <div className="text-[#848E9C] text-xs">Email</div>
-              <div className="text-white text-sm font-medium">{user?.email}</div>
+              <h3 className="text-white font-medium mb-2">Penting</h3>
+              <p className="text-slate-300 text-sm leading-relaxed">
+                Edukasi saja, bukan saran finansial. Risiko ditanggung masing-masing.
+              </p>
             </div>
           </div>
-        </div>
-
-        {/* Referral Code Card */}
-        <div className="bg-gradient-to-br from-[#F0B90B]/20 to-[#F8D56B]/10 border border-[#F0B90B]/30 rounded-xl p-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-[#F0B90B]" />
-              <span className="text-white font-medium">Kode Referral</span>
-            </div>
-            <button
-              onClick={() => {
-                const referralCode = profile?.member_code || '-';
-                if (referralCode !== '-') {
-                  navigator.clipboard.writeText(referralCode);
-                  toast({ title: 'Kode referral disalin!' });
-                }
-              }}
-              className="text-[#F0B90B] text-sm hover:text-[#F8D56B] transition-colors"
-            >
-              Salin
-            </button>
-          </div>
-          <div className="text-white font-mono text-sm bg-black/30 rounded p-2">
-            {profile?.member_code || '-'}
-          </div>
-          <div className="text-[#848E9C] text-xs mt-2">
-            Bagikan kode ini untuk dapatkan bonus sponsor 5%
-          </div>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <FileText className="h-4 w-4 text-[#848E9C]" />
-              <span className="text-[#848E9C] text-xs">Total Invoice</span>
-            </div>
-            <div className="text-white text-xl font-bold">{stats.totalInvoice}</div>
-          </div>
-
-          <div className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Coins className="h-4 w-4 text-[#F0B90B]" />
-              <span className="text-[#848E9C] text-xs">TPC Dibeli</span>
-            </div>
-            <div className="text-white text-xl font-bold">{formatNumberID(stats.totalTPCBought)}</div>
-          </div>
-
-          <div className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4 col-span-2">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-4 w-4 text-[#F0B90B]" />
-              <span className="text-[#848E9C] text-xs">Bonus Referral</span>
-            </div>
-            <div className="text-white text-xl font-bold">{formatNumberID(stats.totalBonusReferral)}</div>
-            <div className="text-[#848E9C] text-xs mt-1">Coming soon</div>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="space-y-3">
-          <button
-            onClick={() => navigate(`/${safeLang}/buytpc`)}
-            className="w-full bg-[#F0B90B] hover:bg-[#F8D56B] text-black font-medium py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors"
-          >
-            <Coins className="h-5 w-5" />
-            Beli TPC
-            <ArrowRight className="h-4 w-4" />
-          </button>
-
-          <button
-            onClick={navigateToInvoices}
-            className="w-full bg-[#F0B90B] hover:bg-[#F8D56B] text-black font-semibold py-4 px-6 rounded-xl flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02] shadow-lg"
-          >
-            <FileText className="h-6 w-6" />
-            <span className="text-lg">
-              {invoices.length === 0 ? 'Buat Invoice' : 'Lihat Invoice'}
-            </span>
-            <ArrowRight className="h-5 w-5" />
-          </button>
-
-          {isAdmin && (
-            <button
-              onClick={() => navigate(`/${safeLang}/admin`)}
-              className="w-full mt-4 flex items-center justify-center gap-2 rounded-xl
-                         bg-gradient-to-r from-yellow-400 to-yellow-500
-                         text-black font-semibold py-3 shadow-lg"
-            >
-              <Shield className="w-5 h-5" />
-              Admin Panel
-            </button>
-          )}
         </div>
       </div>
     </div>
