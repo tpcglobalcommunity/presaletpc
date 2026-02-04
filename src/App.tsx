@@ -333,6 +333,13 @@ const App = () => {
                 />
 
                 {/* ✅ FINAL MEMBER AREA (SINGLE NAMESPACE) */}
+                
+                {/* ✅ MEMBER DASHBOARD ALIAS - Explicit redirect */}
+                <Route 
+                  path="member/dashboard" 
+                  element={<Navigate replace to="member" />} 
+                />
+                
                 <Route path="member" element={
                   <RouteErrorBoundary>
                     <Suspense fallback={<FullScreenLoader />}>
