@@ -57,6 +57,7 @@ import PublicInvoiceDetailPage from "@/pages/public/PublicInvoiceDetailPage";
 // Legacy Redirect Pages
 const LegacyDashboardRedirectPage = lazy(() => import("@/pages/LegacyDashboardRedirectPage"));
 const LegacyDashboardPathRedirectPage = lazy(() => import("@/pages/LegacyDashboardPathRedirectPage"));
+const RootDashboardRedirectPage = lazy(() => import("@/pages/RootDashboardRedirectPage"));
 
 // Member Pages (New Member Area)
 const MemberDashboardPage = lazy(() => import("@/pages/member/MemberDashboardPage"));
@@ -137,9 +138,27 @@ const App = () => {
           <Route path="/auth/callback-page" element={<Navigate to="/id/auth/callback" replace />} />
 
           {/* Root -> /id */}
-              <Route path="/" element={<Navigate to="/id" replace />} />
+          <Route path="/" element={<Navigate to="/id" replace />} />
 
-              {/* ✅ SINGLE SOURCE OF TRUTH: Language Shell */}
+          {/* ✅ ROOT-LEVEL LEGACY DASHBOARD REDIRECTS - MUST BE BEFORE :lang */}
+          <Route 
+            path="/dashboard" 
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <RootDashboardRedirectPage />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/dashboard/*" 
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <RootDashboardRedirectPage />
+              </Suspense>
+            } 
+          />
+
+          {/* ✅ SINGLE SOURCE OF TRUTH: Language Shell */}
               <Route path="/:lang" element={
                 <RouteErrorBoundary>
                   <MobileLayout />
@@ -187,26 +206,6 @@ const App = () => {
                       en={<InvoiceSuccessPage />}
                     />
                   }
-                />
-                
-                {/* ✅ LEGACY DASHBOARD REDIRECT - MUST BE BEFORE PARAMETERIZED ROUTES */}
-                <Route 
-                  path="dashboard" 
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <LegacyDashboardRedirectPage />
-                    </Suspense>
-                  } 
-                />
-                
-                {/* ✅ LEGACY DASHBOARD PATH REDIRECTS */}
-                <Route 
-                  path="dashboard/*" 
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <LegacyDashboardPathRedirectPage />
-                    </Suspense>
-                  } 
                 />
                 
                 <Route
