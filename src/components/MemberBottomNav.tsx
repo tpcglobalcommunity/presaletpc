@@ -54,7 +54,7 @@ export function MemberBottomNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/50 safe-area-pb">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-[#1E2329] via-[#1E2329]/95 to-[#1E2329]/90 backdrop-blur-xl border-t border-[#2B3139]/50 safe-area-pb">
       <div className="flex items-center justify-around py-2 max-w-lg mx-auto">
         {navItems.map((item) => {
           const active = isActive(item.path);
@@ -68,7 +68,7 @@ export function MemberBottomNav() {
               <div 
                 className={`absolute inset-0 rounded-2xl transition-all duration-300 ${
                   active 
-                    ? `${item.activeBg} scale-100` 
+                    ? `${item.activeBg} scale-100 shadow-lg` 
                     : 'scale-0 bg-transparent group-hover:scale-100 group-hover:bg-muted/50'
                 }`}
               />
@@ -76,9 +76,9 @@ export function MemberBottomNav() {
               {/* Icon Container */}
               <div className="relative z-10 mb-1.5">
                 <div 
-                  className={`p-2 rounded-xl transition-all duration-300 ${
+                  className={`p-2.5 rounded-xl transition-all duration-300 ${
                     active 
-                      ? `${item.activeBg} ${item.activeColor} scale-110` 
+                      ? `${item.activeBg} ${item.activeColor} scale-110 shadow-md` 
                       : 'text-muted-foreground group-hover:text-foreground group-hover:scale-105'
                   }`}
                 >
@@ -91,7 +91,7 @@ export function MemberBottomNav() {
                 
                 {/* Active Dot Indicator */}
                 {active && (
-                  <div className={`absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${item.activeColor.replace('text-', 'bg-')}`} />
+                  <div className={`absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full ${item.activeColor.replace('text-', 'bg-')} shadow-sm`} />
                 )}
               </div>
               
@@ -99,7 +99,7 @@ export function MemberBottomNav() {
               <span 
                 className={`relative z-10 text-[11px] font-medium transition-all duration-300 ${
                   active 
-                    ? item.activeColor
+                    ? `${item.activeColor} font-semibold`
                     : 'text-muted-foreground group-hover:text-foreground'
                 }`}
               >
