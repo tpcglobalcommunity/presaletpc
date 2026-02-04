@@ -56,6 +56,16 @@ const MemberInvoiceDetailPage = lazy(() => import("@/pages/member/MemberInvoiceD
 const MemberReferralPage = lazy(() => import("@/pages/member/MemberReferralPage"));
 const MemberProfilePage = lazy(() => import("@/pages/member/MemberProfilePage"));
 
+// Admin Pages (Lazy Loaded)
+const AdminDashboardPage = lazy(() => import("@/pages/admin/AdminDashboardPage"));
+const AdminInvoicesPage = lazy(() => import("@/pages/admin/AdminInvoicesPage"));
+const AdminInvoiceDetailPage = lazy(() => import("@/pages/admin/AdminInvoiceDetailPage"));
+const AdminUsersPage = lazy(() => import("@/pages/admin/AdminUsersPage"));
+const AdminReferralsPage = lazy(() => import("@/pages/admin/AdminReferralsPage"));
+
+// Admin Layout
+import { AdminLayoutPremium } from "@/components/AdminLayoutPremium";
+
 // LangIndexPage
 function LangIndexPage() {
   const params = useParams();
@@ -244,6 +254,50 @@ function App() {
                         <MemberProfilePage />
                       </Suspense>
                     }
+                  />
+                </Route>
+                
+                {/* ADMIN ROUTES (ID-only) */}
+                <Route
+                  path="admin"
+                  element={
+                    <IdOnly>
+                      <AdminLayoutPremium />
+                    </IdOnly>
+                  }
+                >
+                  <Route index element={<Navigate replace to="invoices" />} />
+                  <Route 
+                    path="invoices" 
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <AdminInvoicesPage />
+                      </Suspense>
+                    } 
+                  />
+                  <Route 
+                    path="invoices/:id" 
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <AdminInvoiceDetailPage />
+                      </Suspense>
+                    } 
+                  />
+                  <Route 
+                    path="users" 
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <AdminUsersPage />
+                      </Suspense>
+                    } 
+                  />
+                  <Route 
+                    path="referrals" 
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <AdminReferralsPage />
+                      </Suspense>
+                    } 
                   />
                 </Route>
                 
