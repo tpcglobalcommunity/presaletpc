@@ -4,10 +4,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-  useParams,
+  Routes, 
+  Route, 
+  Navigate, 
+  useParams
 } from "react-router-dom";
 import { lazy, Suspense, useEffect } from "react";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -58,6 +58,14 @@ import PublicInvoiceDetailPage from "@/pages/public/PublicInvoiceDetailPage";
 const LegacyDashboardRedirectPage = lazy(() => import("@/pages/LegacyDashboardRedirectPage"));
 const LegacyDashboardPathRedirectPage = lazy(() => import("@/pages/LegacyDashboardPathRedirectPage"));
 const RootDashboardRedirectPage = lazy(() => import("@/pages/RootDashboardRedirectPage"));
+
+// Dashboard Alias Redirect Component
+function DashboardAliasRedirect() {
+  const params = useParams();
+  const rest = params["*"] || "";
+  const to = rest ? `member/${rest}` : "member";
+  return <Navigate replace to={to} />;
+}
 
 // Member Pages (New Member Area)
 const MemberDashboardPage = lazy(() => import("@/pages/member/MemberDashboardPage"));
@@ -217,6 +225,12 @@ const App = () => {
                 <Route 
                   path="dashboard" 
                   element={<Navigate replace to="member" />} 
+                />
+                
+                {/* ✅ DASHBOARD NESTED ALIAS - Redirect /:lang/dashboard/* to /:lang/member/* */}
+                <Route 
+                  path="dashboard/*" 
+                  element={<DashboardAliasRedirect />} 
                 />
                 
                 {/* ✅ LEGACY EXTERNAL REDIRECTS */}
