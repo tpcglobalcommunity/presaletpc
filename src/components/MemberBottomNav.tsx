@@ -6,11 +6,11 @@ export function MemberBottomNav() {
   const location = useLocation();
 
   const isActive = (path: string) => {
-    if (path === '/id/dashboard') {
-      return location.pathname === '/id/dashboard' || location.pathname.startsWith('/id/dashboard/invoices');
+    if (path === '/id/member') {
+      return location.pathname === '/id/member' || location.pathname.startsWith('/id/member/dashboard');
     }
-    if (path === '/id/dashboard/invoices') {
-      return location.pathname === '/id/dashboard/invoices' || location.pathname.startsWith('/id/dashboard/invoices/');
+    if (path === '/id/member/invoices') {
+      return location.pathname === '/id/member/invoices' || location.pathname.startsWith('/id/member/invoices/');
     }
     return location.pathname === path;
   };
@@ -19,35 +19,35 @@ export function MemberBottomNav() {
     { 
       icon: LayoutDashboard, 
       label: 'Dashboard', 
-      path: '/id/dashboard',
+      path: '/id/member',
       activeColor: 'text-blue-500',
       activeBg: 'bg-blue-500/15'
     },
     { 
       icon: FileText, 
       label: 'Invoice', 
-      path: '/id/dashboard/invoices',
+      path: '/id/member/invoices',
       activeColor: 'text-[#F0B90B]',
       activeBg: 'bg-[#F0B90B]/15'
     },
     { 
       icon: History, 
       label: 'Riwayat', 
-      path: '/id/dashboard/history',
+      path: '/id/member/invoices',
       activeColor: 'text-green-500',
       activeBg: 'bg-green-500/15'
     },
     { 
       icon: Share2, 
       label: 'Referral', 
-      path: '/id/dashboard/referral',
+      path: '/id/member/referrals',
       activeColor: 'text-purple-500',
       activeBg: 'bg-purple-500/15'
     },
     { 
       icon: Settings, 
       label: 'Pengaturan', 
-      path: '/id/dashboard/settings',
+      path: '/id/member/settings',
       activeColor: 'text-orange-500',
       activeBg: 'bg-orange-500/15'
     },

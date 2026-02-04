@@ -60,6 +60,7 @@ const MemberInvoicesPage = lazy(() => import("@/pages/member/MemberInvoicesPage"
 const MemberInvoiceDetailPage = lazy(() => import("@/pages/member/MemberInvoiceDetailPage"));
 const InvoiceLegacyRedirectPage = lazy(() => import("@/pages/id/member/InvoiceLegacyRedirectPage"));
 const MemberReferralPage = lazy(() => import("@/pages/member/MemberReferralPage"));
+const MemberSettingsPage = lazy(() => import("@/pages/id/dashboard/SettingsPage"));
 const ProfilePage = lazy(() => import("@/pages/id/member/ProfilePage"));
 const EnProfilePage = lazy(() => import("@/pages/en/member/ProfilePage"));
 
@@ -198,16 +199,6 @@ const App = () => {
                 <Route
                   path="invoice/:invoiceNo"
                   element={<PublicInvoiceDetailPage />}
-                />
-                
-                {/* ✅ LEGACY DASHBOARD REDIRECT */}
-                <Route 
-                  path="dashboard" 
-                  element={<Navigate to="member" replace />} 
-                />
-                <Route 
-                  path="dashboard/*" 
-                  element={<Navigate to="member" replace />} 
                 />
                 
                 {/* ✅ LEGACY EXTERNAL REDIRECTS */}
@@ -384,11 +375,19 @@ const App = () => {
                       </Suspense>
                     }
                   />
+                  <Route
+                    path="settings"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <MemberSettingsPage />
+                      </Suspense>
+                    }
+                  />
                 </Route>
 
-                {/* ✅ ALIAS LAMA: /:lang/dashboard -> /:lang/member/dashboard */}
-                <Route path="dashboard" element={<LegacyDashboardAlias />} />
-                <Route path="dashboard/*" element={<LegacyDashboardDeepAlias />} />
+                {/* ✅ LEGACY DASHBOARD REDIRECT */}
+                <Route path="dashboard" element={<Navigate to="member" replace />} />
+                <Route path="dashboard/*" element={<Navigate to="member" replace />} />
                 
                 {/* ✅ LEGACY INVOICES REDIRECT */}
                 <Route path="invoices" element={<Navigate to="member/invoices" replace />} />
