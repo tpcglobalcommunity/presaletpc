@@ -54,6 +54,9 @@ import PublicInvoiceDetailPage from "@/pages/public/PublicInvoiceDetailPage";
 // English Public Pages (Static Imports - NO LAZY)
 // Note: English pages reuse Indonesian components, so no separate imports needed
 
+// Legacy Redirect Pages
+const LegacyDashboardRedirectPage = lazy(() => import("@/pages/LegacyDashboardRedirectPage"));
+
 // Member Pages (New Member Area)
 const MemberDashboardPage = lazy(() => import("@/pages/member/MemberDashboardPage"));
 const MemberInvoicesPage = lazy(() => import("@/pages/member/MemberInvoicesPage"));
@@ -377,8 +380,15 @@ const App = () => {
                   />
                 </Route>
 
-                {/* ✅ GUARD AGAINST OLD DASHBOARD URLS */}
-                <Route path="dashboard/*" element={<NotFound />} />
+                {/* ✅ LEGACY DASHBOARD REDIRECT */}
+                <Route 
+                  path="dashboard" 
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <LegacyDashboardRedirectPage />
+                    </Suspense>
+                  } 
+                />
 
                 {/* ✅ ADMIN */}
                 <Route
