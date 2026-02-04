@@ -261,25 +261,23 @@ export default function MemberReferralPage() {
 
           <Card className="bg-[#1E2329] border-[#2B3139]">
             <CardHeader className="pb-3">
-              <CardTitle className="text-[#848E9C] text-base">Kode Referral</CardTitle>
+              <CardTitle className="text-[#848E9C] text-base">Kode Sponsor</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-[#10B981]/20 rounded-lg">
-                  <Copy className="h-6 w-6 text-[#10B981]" />
+                <div className="p-3 bg-[#F0B90B]/20 rounded-lg">
+                  <Users className="h-6 w-6 text-[#F0B90B]" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-xl font-bold text-white">{referralCode}</p>
-                  <p className="text-xs text-[#848E9C]">Kode unik kamu</p>
+                  <input
+                    type="text"
+                    value={referralCode}
+                    readOnly
+                    placeholder="SPONSOR AKAN DITENTUKAN OTOMATIS"
+                    className="w-full px-3 py-2 bg-[#0B0E11] border border-[#2B3139] rounded text-white text-sm"
+                  />
+                  <p className="text-xs text-[#848E9C] mt-1">Sponsor kamu</p>
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleCopyReferralCode}
-                  className="border-[#2B3139] text-[#848E9C] hover:text-white"
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
               </div>
             </CardContent>
           </Card>
