@@ -14,6 +14,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import RouteErrorBoundary from "@/components/RouteErrorBoundary";
 import FullScreenLoader from "@/components/FullScreenLoader";
 import PageLoader from "@/components/PageLoader";
+import AppErrorBoundary from "@/components/AppErrorBoundary";
 
 // WWW to non-www redirect guard
 if (typeof window !== "undefined" && window.location.hostname === "www.tpcglobal.io") {
@@ -63,14 +64,14 @@ function LangRoute({
   en: React.ReactNode;
 }) {
   const params = useParams();
-  const lang = params.lang === "en" ? "en" : "id";
+  const lang = params?.lang === "en" ? "en" : "id";
   return lang === "en" ? en : id;
 }
 
 // IdOnly wrapper for ID-only pages
 function IdOnly({ children }: { children: React.ReactNode }) {
   const params = useParams();
-  const lang = params.lang === "en" ? "en" : "id";
+  const lang = params?.lang === "en" ? "en" : "id";
   if (lang !== "id") {
     return <Navigate to="/en/login" replace />;
   }
@@ -80,7 +81,7 @@ function IdOnly({ children }: { children: React.ReactNode }) {
 // LangIndexPage
 function LangIndexPage() {
   const params = useParams();
-  const lang = params.lang === "en" ? "en" : "id";
+  const lang = params?.lang === "en" ? "en" : "id";
   // Index /id atau /en render home sesuai bahasa
   if (lang === "en") {
     return <Navigate to="/en/login" replace />; // EN redirect ke login
@@ -92,18 +93,19 @@ const queryClient = new QueryClient();
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              {/* Root redirect to default language */}
-              <Route path="/" element={<Navigate replace to="/id" />} />
-              
-              {/* Language shell */}
-              <Route path="/:lang" element={<MobileLayout />}>
+    <AppErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <AuthProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                {/* Root redirect to default language */}
+                <Route path="/" element={<Navigate replace to="/id" />} />
+                
+                {/* Language shell */}
+                <Route path="/:lang" element={<MobileLayout />}>
                 {/* Index route */}
                 <Route index element={<LangIndexPage />} />
                 
@@ -285,6 +287,7 @@ function App() {
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
+    </AppErrorBoundary>
   );
 }
 
