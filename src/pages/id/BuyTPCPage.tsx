@@ -9,6 +9,8 @@ import { formatIdr, parseIdr, formatUsdc, parseUsdc, formatSol, parseSol, format
 import { getSolUsdPrice } from '@/lib/prices';
 import { calcTpc, USD_IDR, TPC_PRICE_USDC, TPC_PRICING, getTPCPriceInIDR } from '@/lib/tpcPricing';
 import { getUsdToIdrRate } from '@/lib/fx';
+import { getSolToUsdPrice } from '@/lib/cryptoPrice';
+import { parseCurrencyInput, formatCurrencyInput, getCurrencyPlaceholder, getCurrencyHint, type Currency as MoneyCurrency } from '@/lib/money';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +21,7 @@ import { cn } from '@/lib/utils';
 import CountdownCard from '@/components/CountdownCard';
 import tpcLogo from '@/assets/tpc.png';
 
-type Currency = "IDR" | "USDC" | "SOL";
+type Currency = MoneyCurrency;
 
 interface PresaleConfig {
   stage1_started_at: number;
@@ -69,8 +71,6 @@ export default function BuyTPCPage() {
   const [walletTpc, setWalletTpc] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [solUsdPrice, setSolUsdPrice] = useState<number | null>(null);
-  const [solPriceLoading, setSolPriceLoading] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [presaleConfig, setPresaleConfig] = useState<PresaleConfig | null>(null);
   
@@ -78,6 +78,15 @@ export default function BuyTPCPage() {
   const [usdIdrRate, setUsdIdrRate] = useState<number>(17000); // Start with fallback
   const [rateSource, setRateSource] = useState<'realtime' | 'fallback'>('fallback');
   const [rateUpdatedAt, setRateUpdatedAt] = useState<number>(Date.now());
+  
+  // SOL Price state
+  const [solUsdPrice, setSolUsdPrice] = useState<number>(100); // Start with fallback
+  const [solSource, setSolSource] = useState<'realtime' | 'fallback'>('fallback');
+  const [solPriceLoading, setSolPriceLoading] = useState(false);
+  
+  // Calculation state
+  const [amountUsd, setAmountUsd] = useState<number>(0);
+  const [tpcAmount, setTpcAmount] = useState<number>(0);
 
   // Navigation helpers
   const goToTerms = () => navigate('/id/syarat-ketentuan');
@@ -209,6 +218,37 @@ export default function BuyTPCPage() {
     return () => { cancelled = true; };
   }, []);
 
+  // Fetch SOL price (non-blocking)
+  useEffect(() => {
+    let cancelled = false;
+    
+    const fetchSolPrice = async () => {
+      try {
+        setSolPriceLoading(true);
+        const result = await getSolToUsdPrice();
+        
+        if (!cancelled) {
+          setSolUsdPrice(result.price);
+          setSolSource(result.source);
+        }
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.debug('[SOL] Price fetch failed:', error);
+        }
+        // Keep fallback values if fetch fails
+      } finally {
+        if (!cancelled) {
+          setSolPriceLoading(false);
+        }
+      }
+    };
+    
+    // Start with fallback, then fetch realtime
+    fetchSolPrice();
+    
+    return () => { cancelled = true; };
+  }, []);
+
   // Fetch presale config
   useEffect(() => {
     const fetchPresaleConfig = async () => {
@@ -231,51 +271,65 @@ export default function BuyTPCPage() {
     fetchPresaleConfig();
   }, []);
 
-  // Fetch SOL price
+  // Calculate USD and TPC amounts when inputs change
   useEffect(() => {
-    const fetchSolPrice = async () => {
-      try {
-        setSolPriceLoading(true);
-        const price = await getSolUsdPrice();
-        setSolUsdPrice(price);
-      } catch (error) {
-        console.error('Failed to fetch SOL price:', error);
-      } finally {
-        setSolPriceLoading(false);
-      }
-    };
+    let usd = 0;
+    
+    // Calculate USD based on currency
+    switch (currency) {
+      case 'USDC':
+        usd = amountValue;
+        break;
+      case 'IDR':
+        usd = amountValue / usdIdrRate;
+        break;
+      case 'SOL':
+        usd = amountValue * solUsdPrice;
+        break;
+    }
+    
+    setAmountUsd(usd);
+    
+    // Calculate TPC amount (using stage 1 price)
+    const tpc = usd / TPC_PRICING.stage1_usdc;
+    setTpcAmount(tpc);
+  }, [amountValue, currency, usdIdrRate, solUsdPrice]);
 
-    fetchSolPrice();
-  }, []);
+  // Handle currency switching while preserving USD value
+  useEffect(() => {
+    if (amountUsd === 0) return;
+    
+    let newValue = 0;
+    
+    switch (currency) {
+      case 'USDC':
+        newValue = amountUsd;
+        break;
+      case 'IDR':
+        newValue = amountUsd * usdIdrRate;
+        break;
+      case 'SOL':
+        newValue = amountUsd / solUsdPrice;
+        break;
+    }
+    
+    setAmountValue(newValue);
+    setAmountRaw(formatCurrencyInput(newValue, currency));
+  }, [currency]); // Only run when currency changes
 
   // Currency-specific input handlers
   const handleAmountChange = (value: string) => {
-    if (currency === 'IDR') {
-      const v = parseIdr(value);
-      setAmountValue(v);
-      setAmountRaw(formatIdr(v));  // OK to format live for IDR
-    } else if (currency === 'USDC') {
-      const cleaned = value.replace(/,/g, '');
-      const clamped = clampDecimals(cleaned, 2);
-      setAmountRaw(clamped);       // keep user typing smooth
-      setAmountValue(parseUsdc(clamped));
-    } else if (currency === 'SOL') {
-      const clamped = clampDecimals(value, 4);
-      setAmountRaw(clamped);
-      setAmountValue(parseSol(clamped));
-    }
+    setAmountRaw(value);
+    const parsedValue = parseCurrencyInput(value, currency);
+    setAmountValue(parsedValue);
   };
 
   const handleAmountBlur = () => {
-    if (currency === 'USDC') {
-      setAmountRaw(formatUsdc(amountValue));
-    } else if (currency === 'SOL') {
-      setAmountRaw(formatSol(amountValue));
-    }
+    const formattedValue = formatCurrencyInput(amountValue, currency);
+    setAmountRaw(formattedValue);
   };
 
   // Calculate derived values
-  const tpcAmount = calcTpc(currency, amountValue, solUsdPrice);
   const sponsorBonus = amountValue >= 1000000 ? calculateSponsorBonus(amountValue) : 0;
   const sponsorBonusAmount = typeof sponsorBonus === 'number' ? sponsorBonus : sponsorBonus?.bonus_amount || 0;
   const totalTPC = tpcAmount + sponsorBonusAmount;
@@ -365,12 +419,13 @@ export default function BuyTPCPage() {
 
   // UI helpers
   const currencyLabels = {
-    IDR: { label: 'Rupiah (IDR)', symbol: 'Rp', placeholder: '0' },
-    USDC: { label: 'USDC', symbol: '$', placeholder: '0.00' },
-    SOL: { label: 'SOL', symbol: 'SOL', placeholder: '0.0000' }
+    IDR: { label: 'Rupiah (IDR)', symbol: 'Rp' },
+    USDC: { label: 'USDC', symbol: '$' },
+    SOL: { label: 'SOL', symbol: 'SOL' }
   };
 
-  const placeholder = currencyLabels[currency].placeholder;
+  const placeholder = getCurrencyPlaceholder(currency);
+  const hint = getCurrencyHint(currency);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0B0E11] via-[#0F141A] to-[#11161C]">
@@ -424,6 +479,9 @@ export default function BuyTPCPage() {
                     onBlur={handleAmountBlur}
                     className="w-full px-4 py-3 bg-[#1E2329] border border-[#2B3139] rounded-xl text-white placeholder-[#848E9C] focus:outline-none focus:ring-2 focus:ring-[#F0B90B]/40 focus:border-[#F0B90B]/50"
                   />
+                  <p className="text-xs text-[#848E9C] mt-2">
+                    {hint}
+                  </p>
                 </div>
 
                 {/* Wallet TPC Input */}
@@ -608,16 +666,23 @@ export default function BuyTPCPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-[#848E9C]">Jumlah {currencyLabels[currency].label}</span>
+                    <span className="text-[#848E9C]">Jumlah Input</span>
                     <span className="text-white font-semibold">
-                      {currency === 'IDR' ? formatIdr(amountValue) : 
-                       currency === 'USDC' ? formatUsdc(amountValue) : 
-                       formatSol(amountValue)}
+                      {formatCurrencyInput(amountValue, currency)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[#848E9C]">TPC yang Dapat</span>
-                    <span className="text-white font-semibold">{formatTpc(tpcAmount)}</span>
+                    <span className="text-[#848E9C]">Estimasi USD</span>
+                    <span className="text-white font-semibold">
+                      ${amountUsd.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#848E9C]">TPC yang didapat</span>
+                    <span className="text-white font-semibold">
+                      {amountUsd <= 0 || isNaN(tpcAmount) ? '0' : 
+                       tpcAmount >= 1000 ? tpcAmount.toFixed(2) : tpcAmount.toFixed(4)}
+                    </span>
                   </div>
                   {sponsorBonusAmount > 0 && (
                     <div className="flex justify-between items-center">
@@ -629,6 +694,32 @@ export default function BuyTPCPage() {
                   <div className="flex justify-between items-center">
                     <span className="text-white font-semibold">Total TPC</span>
                     <span className="text-[#F0B90B] font-bold text-lg">{formatTpc(totalTPC)}</span>
+                  </div>
+                  
+                  {/* Price source badges */}
+                  <div className="flex gap-2 pt-2">
+                    <Badge 
+                      variant={rateSource === 'realtime' ? 'default' : 'secondary'}
+                      className={cn(
+                        "text-xs px-2 py-1",
+                        rateSource === 'realtime' 
+                          ? "bg-green-500/20 text-green-400 border-green-500/30" 
+                          : "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                      )}
+                    >
+                      FX: {rateSource === 'realtime' ? 'Realtime FX' : 'Fallback FX'}
+                    </Badge>
+                    <Badge 
+                      variant={solSource === 'realtime' ? 'default' : 'secondary'}
+                      className={cn(
+                        "text-xs px-2 py-1",
+                        solSource === 'realtime' 
+                          ? "bg-green-500/20 text-green-400 border-green-500/30" 
+                          : "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                      )}
+                    >
+                      SOL: {solSource === 'realtime' ? 'Realtime SOL' : 'Fallback SOL'}
+                    </Badge>
                   </div>
                 </CardContent>
               </Card>
