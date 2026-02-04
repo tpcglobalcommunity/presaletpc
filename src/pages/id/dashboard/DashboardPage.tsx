@@ -47,12 +47,16 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
 
     const fetchInvoices = async () => {
       const { data, error } = await supabase
         .from('invoices')
-        .select('*')
+        .select('id, invoice_no, email, base_currency, amount_input, tpc_amount, status, created_at, expires_at')
+        .eq('user_id', user.id)
         .in('status', ['UNPAID', 'PENDING_REVIEW'])
         .order('created_at', { ascending: false });
 
@@ -66,9 +70,9 @@ export default function DashboardPage() {
 
     fetchInvoices();
 
-    // Subscribe to realtime changes
+    // Subscribe to realtime changes (user-specific)
     const channel = supabase
-      .channel('invoices-changes')
+      .channel(`invoices-changes-${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -119,7 +123,7 @@ export default function DashboardPage() {
       icon: History, 
       label: 'Riwayat', 
       desc: 'Semua transaksi',
-      path: '/id/dashboard/history',
+      path: '/id/member/invoices',
       color: 'bg-green-500/20 text-green-500'
     },
     { 
@@ -133,7 +137,7 @@ export default function DashboardPage() {
       icon: Settings, 
       label: 'Pengaturan', 
       desc: 'Profil & akun',
-      path: '/id/dashboard/settings',
+      path: '/id/member/settings',
       color: 'bg-orange-500/20 text-orange-500'
     },
     { 
@@ -248,7 +252,7 @@ export default function DashboardPage() {
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Invoice Aktif</h2>
           {invoices.length > 0 && (
             <button 
-              onClick={() => navigate('/id/dashboard/history')}
+              onClick={() => navigate('/id/member/invoices')}
               className="text-xs text-primary flex items-center gap-1 hover:underline"
             >
               Lihat Semua
@@ -376,14 +380,14 @@ export default function DashboardPage() {
                     {/* Action Buttons */}
                     <div className="flex gap-2">
                       <button
-                        onClick={() => navigate(`/id/dashboard/invoices/${invoice.invoice_no}`)}
+                        onClick={() => navigate(`/id/member/invoices/${invoice.id}`)}
                         className="flex-1 py-2.5 px-3 rounded-xl bg-muted hover:bg-muted/80 text-sm font-medium transition-colors"
                       >
                         Detail
                       </button>
                       {invoice.status === 'UNPAID' && (
                         <button
-                          onClick={() => navigate(`/id/dashboard/invoices/${invoice.invoice_no}`)}
+                          onClick={() => navigate(`/id/member/invoices/${invoice.id}`)}
                           className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-medium transition-colors ${
                             isExpiringSoon
                               ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
@@ -400,7 +404,7 @@ export default function DashboardPage() {
 
             {invoices.length > 3 && (
               <button
-                onClick={() => navigate('/id/dashboard/history')}
+                onClick={() => navigate('/id/member/invoices')}
                 className="w-full py-3 text-sm text-primary flex items-center justify-center gap-1 hover:underline border border-dashed border-primary/30 rounded-xl hover:bg-primary/5 transition-colors"
               >
                 Lihat {invoices.length - 3} invoice lainnya
@@ -424,7 +428,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <button
-            onClick={() => navigate('/id/dashboard/referral')}
+            onClick={() => navigate('/id/member/referrals')}
             className="text-yellow-500 hover:text-yellow-400"
           >
             <ChevronRight className="h-5 w-5" />

@@ -47,9 +47,12 @@ export default function MemberInvoicesPage() {
   const [activeTab, setActiveTab] = useState<'ALL'|'PAID'|'PENDING_REVIEW'|'UNPAID'|'CANCELLED'>('ALL');
 
   // Filter invoices based on active tab
-  const filteredInvoices = activeTab === 'ALL' 
-    ? invoices 
-    : invoices.filter(i => i.status === activeTab);
+  const filteredInvoices =
+    activeTab === 'ALL'
+      ? invoices
+      : activeTab === 'CANCELLED'
+        ? invoices.filter(i => i.status === 'CANCELLED' || i.status === 'EXPIRED')
+        : invoices.filter(i => i.status === activeTab);
 
   // Calculate counts safely
   const counts = {
@@ -57,17 +60,22 @@ export default function MemberInvoicesPage() {
     PAID: (invoices ?? []).filter(i => i.status === 'PAID').length,
     PENDING_REVIEW: (invoices ?? []).filter(i => i.status === 'PENDING_REVIEW').length,
     UNPAID: (invoices ?? []).filter(i => i.status === 'UNPAID').length,
-    CANCELLED: (invoices ?? []).filter(i => i.status === 'CANCELLED').length
+    CANCELLED: (invoices ?? []).filter(i => i.status === 'CANCELLED' || i.status === 'EXPIRED').length
   };
 
   useEffect(() => {
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
+
     const fetchInvoices = async () => {
-      if (!user) return;
       
       try {
         const { data, error } = await supabase
           .from('invoices')
-          .select('*')
+          .select('id, invoice_no, status, amount_input, base_currency, amount_usd, tpc_amount, created_at, expires_at')
+          .eq('user_id', user.id)
           .order('created_at', { ascending: false });
         
         if (error) {
@@ -198,7 +206,7 @@ export default function MemberInvoicesPage() {
             
             return (
               <div
-                key={invoice.invoice_no}
+                key={invoice.id}
                 onClick={() => navigate(`/id/member/invoices/${invoice.id}`)}
                 className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4 cursor-pointer hover:border-[#F0B90B]/50 transition-colors"
               >
@@ -225,10 +233,13 @@ export default function MemberInvoicesPage() {
                   <div>
                     <div className="text-[#848E9C] text-xs mb-1">Nominal</div>
                     <div className="text-white font-medium">
-                      {invoice.base_currency === 'IDR' 
+                      {invoice.base_currency === 'IDR'
                         ? formatRupiah(invoice.amount_input)
-                        : `$${invoice.amount_usd?.toFixed(2)}`
-                      }
+                        : formatNumberID(invoice.amount_input) + ' ' + invoice.base_currency
+                    }
+                    </div>
+                    <div className="text-[#848E9C] text-xs mt-1">
+                      ≈ {Number(invoice.amount_usd || 0).toFixed(2)}
                     </div>
                   </div>
                   <div>
