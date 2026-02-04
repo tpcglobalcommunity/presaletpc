@@ -14,7 +14,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import RouteErrorBoundary from "@/components/RouteErrorBoundary";
 import FullScreenLoader from "@/components/FullScreenLoader";
 import PageLoader from "@/components/PageLoader";
-import AppErrorBoundary from "@/components/AppErrorBoundary";
+import AppErrorBoundary from "@/components/system/AppErrorBoundary";
 
 // WWW to non-www redirect guard
 if (typeof window !== "undefined" && window.location.hostname === "www.tpcglobal.io") {
