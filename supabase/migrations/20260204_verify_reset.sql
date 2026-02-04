@@ -123,16 +123,3 @@ from (
   select 'member_settings' as table_name, count(*) as row_count from public.member_settings
 ) table_counts
 order by table_name;
-
--- ============================================================
--- 6. POST-RESET LOCK (REKOMENDASI KERAS)
--- ============================================================
-
--- Nonaktifkan registrasi sementara
--- Admin-only access mode
--- Soft-launch mode
--- Maintenance banner
--- Monitoring checklist
--- Recovery plan siapkan perlu
-
--- ============================================================
