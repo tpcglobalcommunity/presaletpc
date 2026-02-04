@@ -40,6 +40,9 @@ function sanitizeReferral(raw: string) {
 }
 
 export default function BuyTPCPage() {
+  console.log('[ACTIVE_PAGE] BuyTPCPage @ FILE_PATH_HERE');
+  console.log('[ACTIVE_PAGE] BuyTPCPage @ src/pages/id/BuyTPCPage.tsx');
+  
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
