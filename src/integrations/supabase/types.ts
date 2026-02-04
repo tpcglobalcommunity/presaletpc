@@ -297,6 +297,13 @@ export type Database = {
           joined_at: string;
         }>;
       };
+      get_my_sponsor: {
+        Args: never;
+        Returns: Array<{
+          sponsor_user_id: string;
+          sponsor_code: string;
+        }>;
+      };
       get_all_referrals_admin: {
         Args: never;
         Returns: Array<{

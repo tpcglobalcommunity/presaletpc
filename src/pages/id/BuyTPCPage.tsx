@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Coins, ArrowRight, Loader2, Shield, CheckCircle, ExternalLink } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
@@ -65,6 +65,9 @@ export default function BuyTPCPage() {
   const [referralError, setReferralError] = useState('');
   const [sponsorInfo, setSponsorInfo] = useState<{ member_code: string; id: string } | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [sponsorLocked, setSponsorLocked] = useState(false);
+  const [sponsorSource, setSponsorSource] = useState<string>('');
+  const sponsorEnsured = useRef(false);
 
   useEffect(() => {
     const sp = new URLSearchParams(location.search);
@@ -153,15 +156,65 @@ export default function BuyTPCPage() {
     fetchPresaleConfig();
   }, []);
 
-  // Get current user
+  // Get current user and ensure sponsor assignment
   useEffect(() => {
-    const getCurrentUser = async () => {
+    const ensureSponsorAssignment = async () => {
+      if (sponsorEnsured.current) return; // Only run once per session
+      
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserEmail(user.email || null);
+      if (!user) return;
+      
+      setUserEmail(user.email || null);
+
+      try {
+        // Get ref from URL
+        const params = new URLSearchParams(window.location.search);
+        const refCode = params.get("ref");
+
+        // Assign sponsor (server-side)
+        const { data: assigned, error: assignErr } = await supabase.rpc('assign_sponsor', { 
+          p_ref_code: refCode ?? null 
+        });
+
+        if (assignErr) {
+          console.error('Sponsor assignment error:', assignErr);
+        }
+
+        // Fetch sponsor from DB
+        const { data: sponsorRow, error: sponsorErr } = await supabase.rpc('get_my_sponsor');
+        const sponsor = Array.isArray(sponsorRow) ? sponsorRow[0] : sponsorRow;
+
+        if (sponsorErr) {
+          console.error('Sponsor fetch error:', sponsorErr);
+          return;
+        }
+
+        if (sponsor && sponsor.sponsor_code) {
+          setReferralCode(sponsor.sponsor_code);
+          setSponsorLocked(true);
+          
+          // Set sponsor source from assignment reason
+          const reason = assigned?.[0]?.reason || 'assigned_hrw';
+          setSponsorSource(reason);
+          
+          sponsorEnsured.current = true;
+          console.log('[SPONSOR] Ensured:', {
+            sponsorCode: sponsor.sponsor_code,
+            source: reason,
+            locked: true
+          });
+        } else {
+          // No sponsor available
+          setSponsorSource('no_eligible_sponsor');
+          sponsorEnsured.current = true;
+        }
+      } catch (error) {
+        console.error('Sponsor ensure error:', error);
+        sponsorEnsured.current = true; // Don't retry on error
       }
     };
-    getCurrentUser();
+
+    ensureSponsorAssignment();
   }, []);
 
   // Referral validation with debounce
@@ -249,7 +302,7 @@ async function validateSponsor(codeRaw: string) {
   const sponsorBonusAmount = typeof sponsorBonus === 'number' ? sponsorBonus : sponsorBonus?.bonus_amount || 0;
   const totalTPC = tpcAmount + sponsorBonusAmount;
 
-  const isValid = amountValue > 0 && walletTpc.trim().length >= 20 && (referralValid === true || referralValid === null) && agreed && userEmail !== null;
+  const isValid = amountValue > 0 && walletTpc.trim().length >= 20 && agreed && userEmail !== null;
 
   const handleSubmit = async () => {
     if (!isValid || isLoading) return;
@@ -263,9 +316,28 @@ async function validateSponsor(codeRaw: string) {
       return;
     }
 
+    // Hard block: Ensure sponsor is assigned
+    if (!referralCode) {
+      toast({
+        title: "Error",
+        description: "Kode referral tidak boleh kosong. Sistem sedang menentukan sponsor, coba refresh atau hubungi admin.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (sponsorSource === 'no_eligible_sponsor') {
+      toast({
+        title: "Error", 
+        description: "Sponsor belum tersedia. Hubungi admin untuk bantuan.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
-      // Assign sponsor using HRW algorithm
+      // Assign sponsor using HRW algorithm (double-check)
       const referralClean = referralCode ? sanitizeReferral(referralCode) : null;
       
       const { data: sponsorData, error: sponsorError } = await supabase.rpc('assign_sponsor', {
@@ -573,20 +645,46 @@ async function validateSponsor(codeRaw: string) {
 
               <input
                 type="text"
-                placeholder="Masukkan kode referral"
+                placeholder={sponsorLocked ? "Loading sponsor..." : "Masukkan kode referral"}
                 value={referralCode}
                 onChange={(e) => setReferralCode(sanitizeReferral(e.target.value))}
-                readOnly={!!refFromUrl}  // ✅ kalau dari URL, user tidak perlu isi lagi
+                readOnly={sponsorLocked || !!refFromUrl}
                 className={cn(
                   "w-full px-4 py-3 bg-[#1E2329] border border-[#2B3139] rounded-xl text-white placeholder-[#848E9C] uppercase focus:outline-none focus:ring-2 focus:ring-[#F0B90B]/40 focus:border-[#F0B90B]/50",
-                  refFromUrl && "opacity-90 cursor-not-allowed",
-                  referralValid === false && "border-red-500/50",
-                  referralValid === true && "border-emerald-500/50"
+                  (sponsorLocked || !!refFromUrl) && "opacity-90 cursor-not-allowed bg-[#2B3139]",
+                  sponsorSource === 'no_eligible_sponsor' && "border-red-500/50",
+                  sponsorLocked && "border-emerald-500/50"
                 )}
               />
 
-              {/* Referral Validation Status */}
-              {referralCode.trim() && (
+              {/* Sponsor Source Badge */}
+              {sponsorSource && (
+                <div className="mt-2">
+                  {sponsorSource === 'assigned_from_ref' && (
+                    <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-xs">
+                      Sponsor otomatis
+                    </Badge>
+                  )}
+                  {sponsorSource === 'assigned_hrw' && (
+                    <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-xs">
+                      Sponsor sistem
+                    </Badge>
+                  )}
+                  {sponsorSource === 'already_assigned' && (
+                    <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30 text-xs">
+                      Sponsor sudah ada
+                    </Badge>
+                  )}
+                  {sponsorSource === 'no_eligible_sponsor' && (
+                    <div className="text-xs text-red-400">
+                      ⚠️ Sponsor belum tersedia, hubungi admin
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Referral Validation Status (Legacy) */}
+              {referralCode.trim() && !sponsorLocked && (
                 <div className="mt-2">
                   {referralValid === true && sponsorInfo && (
                     <div className="text-xs text-emerald-400">
