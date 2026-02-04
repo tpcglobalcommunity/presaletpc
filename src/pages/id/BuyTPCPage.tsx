@@ -40,10 +40,6 @@ function sanitizeReferral(raw: string) {
 }
 
 export default function BuyTPCPage() {
-  console.log('[ACTIVE_PAGE] BuyTPCPage ACTIVE: src/pages/id/BuyTPCPage.tsx');
-  console.log('[ACTIVE_PAGE] BuyTPCPage @ FILE_PATH_HERE');
-  console.log('[ACTIVE_PAGE] BuyTPCPage @ src/pages/id/BuyTPCPage.tsx');
-  
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -82,38 +78,72 @@ export default function BuyTPCPage() {
 
   // Initialize pending sponsor
   useEffect(() => {
+    console.log('[ACTIVE_PAGE] BuyTPCPage ACTIVE: src/pages/id/BuyTPCPage.tsx');
+    console.log('[ACTIVE_PAGE] BuyTPCPage @ FILE_PATH_HERE');
+    console.log('[ACTIVE_PAGE] BuyTPCPage @ src/pages/id/BuyTPCPage.tsx');
+    
     let cancelled = false;
 
     async function initSponsor() {
+      console.log('[SPONSOR] init start');
+
+      setSponsorLoading(true);
+      setSponsorError('');
+
+      const params = new URLSearchParams(window.location.search);
+      const refFromUrl = (params.get('ref') || '').trim().toUpperCase();
+
       if (refFromUrl) {
+        console.log('[SPONSOR] from URL:', refFromUrl);
         localStorage.setItem(LS_KEY, refFromUrl);
-        setSponsorCode(refFromUrl);
+        if (!cancelled) {
+          setSponsorCode(refFromUrl);
+          setSponsorLoading(false);
+        }
         return;
       }
 
       const existing = (localStorage.getItem(LS_KEY) || '').trim().toUpperCase();
       if (existing) {
-        setSponsorCode(existing);
+        console.log('[SPONSOR] from localStorage:', existing);
+        if (!cancelled) {
+          setSponsorCode(existing);
+          setSponsorLoading(false);
+        }
         return;
       }
 
-      setSponsorLoading(true);
-      const { data } = await supabase.rpc('get_random_referral_code' as any);
+      console.log('[SPONSOR] fetching random sponsor via RPC...');
+      const { data, error } = await supabase.rpc('get_random_referral_code');
+
       if (cancelled) return;
 
-      const code = (data || '').toString().trim().toUpperCase();
-      if (code) {
-        localStorage.setItem(LS_KEY, code);
-        setSponsorCode(code);
-      } else {
-        setSponsorError('Sponsor otomatis gagal ditentukan. Refresh halaman.');
+      if (error) {
+        console.error('[SPONSOR] RPC error:', error.message);
+        setSponsorError('Gagal menentukan sponsor otomatis. Silakan refresh halaman.');
+        setSponsorLoading(false);
+        return;
       }
+
+      const code = (data || '').toString().trim().toUpperCase();
+
+      if (!code) {
+        console.error('[SPONSOR] RPC returned empty');
+        setSponsorError('Sponsor otomatis belum tersedia. Silakan refresh atau coba lagi nanti.');
+        setSponsorLoading(false);
+        return;
+      }
+
+      console.log('[SPONSOR] random sponsor result:', code);
+      localStorage.setItem(LS_KEY, code);
+      setSponsorCode(code);
       setSponsorLoading(false);
     }
 
     initSponsor();
+
     return () => { cancelled = true; };
-  }, [refFromUrl]);
+  }, []);
 
   // Get current user
   useEffect(() => {
@@ -206,6 +236,15 @@ export default function BuyTPCPage() {
       toast({
         title: "Error",
         description: "Harus login untuk membeli TPC",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (sponsorLoading || !sponsorCode) {
+      toast({
+        title: "Error",
+        description: 'Sponsor belum siap. Tunggu sebentar...',
         variant: "destructive",
       });
       return;
@@ -376,21 +415,19 @@ export default function BuyTPCPage() {
 
                   <input
                     type="text"
-                    value={sponsorLoading ? 'Loading...' : sponsorCode}
+                    value={sponsorCode}
                     readOnly
-                    placeholder="Sponsor akan ditentukan otomatis"
+                    placeholder="SPONSOR AKAN DITENTUKAN OTOMATIS"
                     className="w-full px-4 py-3 bg-[#1E2329] border border-[#2B3139] rounded-xl text-white placeholder-[#848E9C] uppercase opacity-90 cursor-not-allowed"
                   />
 
-                  <div className="flex items-center gap-2 text-[12px]">
-                    {sponsorLoading ? (
-                      <span className="text-white/60">Menentukan sponsor...</span>
-                    ) : sponsorCode ? (
-                      <span className="text-emerald-400">Sponsor ditentukan ✅</span>
-                    ) : (
-                      <span className="text-white/50">Menunggu penentuan sponsor...</span>
-                    )}
-                  </div>
+                  {sponsorLoading && (
+                    <div className="text-xs text-white/60 mt-2">Menentukan sponsor...</div>
+                  )}
+
+                  {!sponsorLoading && sponsorError && (
+                    <div className="text-xs text-red-400 mt-2">{sponsorError}</div>
+                  )}
 
                   <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-3">
                     <div className="flex items-center justify-between gap-3">
