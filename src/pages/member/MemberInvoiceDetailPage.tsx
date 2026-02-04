@@ -64,6 +64,15 @@ export default function MemberInvoiceDetailPage() {
   const [walletAddress, setWalletAddress] = useState('');
   const [uploadingFile, setUploadingFile] = useState(false);
 
+  const [paymentSettings, setPaymentSettings] = useState({
+    idrBankName: 'BCA',
+    idrAccountNo: '7892088406',
+    idrAccountName: 'ARSYAD',
+    solAddress: '5AeayrU2pdy6yNBeiUpTXkfMxw3VpDQGUHC6kXrBt5vw',
+    usdcChain: 'Solana (SPL)',
+    usdcAddress: '5AeayrU2pdy6yNBeiUpTXkfMxw3VpDQGUHC6kXrBt5vw'
+  });
+
   const fetchInvoice = async () => {
     if (!invoiceNo) {
       setIsLoading(false);
@@ -316,46 +325,80 @@ export default function MemberInvoiceDetailPage() {
           </div>
         </div>
 
-        {/* Payment Destination Card - Only show for UNPAID or PENDING_REVIEW */}
-        {(invoice.status === 'UNPAID' || invoice.status === 'PENDING_REVIEW') && (() => {
-          const destination = getDestination(invoice.base_currency);
-          return (
-            <div className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4">
-              <h3 className="text-white font-semibold mb-1">{destination.title}</h3>
-              {destination.subtitle && (
-                <p className="text-[#848E9C] text-sm mb-4">{destination.subtitle}</p>
-              )}
-              
-              <div className="space-y-3">
-                {destination.lines.map((line, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div>
-                      <div className="text-[#848E9C] text-xs">{line.label}</div>
-                      <div className="text-white font-mono text-sm">{line.value}</div>
-                    </div>
-                    {line.copy && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleCopy(line.value, `line-${index}`)}
-                        className="text-[#F0B90B] hover:text-[#F0B90B]/80 hover:bg-[#F0B90B]/10"
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
+                {/* Tujuan Pembayaran */}
+        <div className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4">
+          <h3 className="text-white font-semibold mb-4">Tujuan Pembayaran</h3>
+          
+          {invoice.base_currency === 'IDR' && (
+            <div className="space-y-3">
+              <div>
+                <div className="text-[#848E9C] text-xs mb-1">Bank</div>
+                <div className="text-white font-medium">{paymentSettings.idrBankName}</div>
               </div>
-              
-              {destination.note && (
-                <div className="mt-4 pt-3 border-t border-[#2B3139]">
-                  <p className="text-[#848E9C] text-xs">{destination.note}</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-[#848E9C] text-xs mb-1">Nomor Rekening</div>
+                  <div className="text-white font-mono text-sm">{paymentSettings.idrAccountNo}</div>
                 </div>
-              )}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleCopy(paymentSettings.idrAccountNo, 'idr-account')}
+                  className="text-[#F0B90B] hover:text-[#F0B90B]/80 hover:bg-[#F0B90B]/10"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+              <div>
+                <div className="text-[#848E9C] text-xs mb-1">Nama Penerima</div>
+                <div className="text-white font-medium">{paymentSettings.idrAccountName}</div>
+              </div>
             </div>
-          );
-        })()}
+          )}
+
+          {invoice.base_currency === 'SOL' && (
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-[#848E9C] text-xs mb-1">Solana Address</div>
+                <div className="text-white font-mono text-sm">{paymentSettings.solAddress}</div>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => handleCopy(paymentSettings.solAddress, 'sol-address')}
+                className="text-[#F0B90B] hover:text-[#F0B90B]/80 hover:bg-[#F0B90B]/10"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+
+          {invoice.base_currency === 'USDC' && (
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-[#848E9C] text-xs mb-1">USDC ({paymentSettings.usdcChain})</div>
+                <div className="text-white font-mono text-sm">{paymentSettings.usdcAddress}</div>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => handleCopy(paymentSettings.usdcAddress, 'usdc-address')}
+                className="text-[#F0B90B] hover:text-[#F0B90B]/80 hover:bg-[#F0B90B]/10"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+
+          {!paymentSettings.idrBankName && !paymentSettings.solAddress && !paymentSettings.usdcAddress && (
+            <div className="text-[#848E9C] text-sm">
+              Tujuan pembayaran belum dikonfigurasi. Hubungi admin.
+            </div>
+          )}
+        </div>
 
         {/* Payment Proof Upload - Only show for UNPAID */}
         {invoice.status === 'UNPAID' && (
