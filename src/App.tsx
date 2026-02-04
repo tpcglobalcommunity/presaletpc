@@ -91,11 +91,11 @@ function LangCallbackPageRedirect() {
 function LangIndexPage() {
   const params = useParams();
   const lang = params.lang === "en" ? "en" : "id";
-  // Index /id atau /en tetap render home sesuai bahasa
+  // Index /id atau /en render home sesuai bahasa
   if (lang === "en") {
-    return <HomePage />;
+    return <HomePage />; // EN tetap behavior sekarang
   }
-  return <HomePage />;
+  return <HomePageV2 />; // ID cutover ke v2
 }
 
 function LangRoute({
@@ -156,6 +156,9 @@ const App = () => {
                 <Route path="home-v2" element={<HomePageV2 />} />
                 <Route path="login-v2" element={<LoginPageV2 />} />
                 <Route path="anti-scam-v2" element={<AntiScamPageV2 />} />
+                
+                {/* Legacy fallback routes */}
+                <Route path="home-legacy" element={<HomePage />} />
                 
                 {/* Legacy alias routes (STATIC ONLY, NO WILDCARD PARSING) */}
                 <Route 
