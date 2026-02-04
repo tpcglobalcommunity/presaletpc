@@ -389,6 +389,11 @@ export default function BuyTPCPage() {
       reasons.push("Masukkan jumlah pembelian.");
     }
     
+    // Check wallet TPC
+    if (!walletTpc || walletTpc.trim().length < 32) {
+      reasons.push("Alamat Wallet TPC wajib diisi (contoh: Phantom Wallet).");
+    }
+    
     // Check USD amount
     if (!isFiniteNumber(amountUsd) || amountUsd <= 0) {
       reasons.push("Jumlah USD tidak valid.");
@@ -416,10 +421,11 @@ export default function BuyTPCPage() {
     return {
       termsOk: agreed,
       amountOk: isFiniteNumber(amountValue) && amountValue > 0,
+      walletOk: walletTpc && walletTpc.trim().length >= 32,
       minUsdOk: isFiniteNumber(amountUsd) && amountUsd >= ORDER_RULES.MIN_USD_ORDER,
       minTpcOk: isFiniteNumber(tpcAmount) && tpcAmount >= ORDER_RULES.MIN_TPC_ORDER,
     };
-  }, [agreed, amountValue, amountUsd, tpcAmount]);
+  }, [agreed, amountValue, amountUsd, tpcAmount, walletTpc]);
 
   // Calculate derived values
   const sponsorBonus = amountValue >= 1000000 ? calculateSponsorBonus(amountValue) : 0;
@@ -460,7 +466,8 @@ export default function BuyTPCPage() {
         p_email: userEmail.toLowerCase().trim(),
         p_referral_code: referralClean,
         p_base_currency: currency,
-        p_amount_input: normalizeForSubmit(currency, amountValue)
+        p_amount_input: normalizeForSubmit(currency, amountValue),
+        p_wallet_tpc: walletTpc.trim()
       });
 
       if (error) {
@@ -779,6 +786,16 @@ export default function BuyTPCPage() {
                           )}
                           <span className={`text-sm ${validationChecklist.amountOk ? 'text-green-400' : 'text-red-400'}`}>
                             Jumlah input valid
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {validationChecklist.walletOk ? (
+                            <CheckCircle className="h-4 w-4 text-green-400" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-red-400" />
+                          )}
+                          <span className={`text-sm ${validationChecklist.walletOk ? 'text-green-400' : 'text-red-400'}`}>
+                            Alamat Wallet TPC terisi
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
