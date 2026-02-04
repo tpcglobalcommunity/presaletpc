@@ -1,9 +1,10 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function EnAuthCallbackPage() {
   const navigate = useNavigate();
+  const { lang } = useParams();
 
   useEffect(() => {
     let isMounted = true;
@@ -18,8 +19,8 @@ export default function EnAuthCallbackPage() {
           return;
         }
 
-        const returnTo =
-          sessionStorage.getItem("returnTo") || "/en/member";
+        const fallback = `/${lang || "id"}/member`;
+        const returnTo = sessionStorage.getItem("returnTo") || fallback;
 
         sessionStorage.removeItem("returnTo");
 

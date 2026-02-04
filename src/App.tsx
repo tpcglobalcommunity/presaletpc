@@ -338,14 +338,13 @@ const App = () => {
                       </Suspense>
                     }
                   />
+                  
+                  {/* alias legacy, redirect ke canonical */}
                   <Route
                     path="dashboard"
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <MemberDashboardPage />
-                      </Suspense>
-                    }
+                    element={<Navigate replace to="." />}
                   />
+                  
                   <Route
                     path="invoices"
                     element={

@@ -5,9 +5,9 @@ const NotFound = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Don't log valid dashboard alias routes as 404 errors
-    const isValidDashboardAlias = /^\/(id|en)\/dashboard(\/.*)?$/.test(location.pathname);
-    if (!isValidDashboardAlias) {
+    // Don't log valid dashboard alias routes as 404 errors (generic for all langs)
+    const isDashboardAlias = /^\/[^/]+\/dashboard(\/.*)?$/.test(location.pathname);
+    if (!isDashboardAlias) {
       console.error("404 Error: User attempted to access non-existent route:", location.pathname);
     }
   }, [location.pathname]);
