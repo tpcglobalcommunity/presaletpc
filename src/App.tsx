@@ -201,6 +201,14 @@ const App = () => {
                   element={<PublicInvoiceDetailPage />}
                 />
                 
+                {/* ================= LEGACY DASHBOARD -> MEMBER (HARD LOCK) ================= */}
+                <Route path="dashboard" element={<Navigate to="../member/dashboard" replace />} />
+                <Route path="dashboard/member" element={<Navigate to="../member/dashboard" replace />} />
+                <Route path="dashboard/history" element={<Navigate to="../member/invoices" replace />} />
+                <Route path="dashboard/settings" element={<Navigate to="../member/settings" replace />} />
+                <Route path="dashboard/referral" element={<Navigate to="../member/referrals" replace />} />
+                <Route path="dashboard/invoices/:invoiceNo" element={<InvoiceLegacyRedirectPage />} />
+                
                 {/* ✅ LEGACY EXTERNAL REDIRECTS */}
                 <Route 
                   path="invoices/:invoiceNo" 
@@ -385,14 +393,6 @@ const App = () => {
                   />
                 </Route>
 
-                {/* ================= LEGACY MEMBER REDIRECT (HARD LOCK) ================= */}
-                <Route path="dashboard" element={<Navigate to="../member/dashboard" replace />} />
-                <Route path="dashboard/member" element={<Navigate to="../member/dashboard" replace />} />
-                <Route path="dashboard/history" element={<Navigate to="../member/invoices" replace />} />
-                <Route path="dashboard/settings" element={<Navigate to="../member/settings" replace />} />
-                <Route path="dashboard/referral" element={<Navigate to="../member/referrals" replace />} />
-                <Route path="dashboard/invoices/:invoiceNo" element={<InvoiceLegacyRedirectPage />} />
-                
                 {/* ✅ LEGACY INVOICES REDIRECT */}
                 <Route path="invoices" element={<Navigate to="member/invoices" replace />} />
 
