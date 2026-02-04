@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getDestination } from '@/config/paymentDestinations';
+import { ErrorCard, LoadingCard } from '@/components/member/MemberUIStates';
 
 interface Invoice {
   id: string;
@@ -47,12 +48,13 @@ const transferMethods = {
 };
 
 export default function MemberInvoiceDetailPage() {
-  const { id } = useParams();
+  const { id: invoiceId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState('');
@@ -61,46 +63,52 @@ export default function MemberInvoiceDetailPage() {
 
   useEffect(() => {
     const fetchInvoice = async () => {
-      if (!id || !user) return;
+      if (!invoiceId || !user) {
+        setIsLoading(false);
+        if (!invoiceId) {
+          setError('Invoice ID tidak valid');
+        } else if (!user) {
+          setError('User tidak terautentikasi');
+        }
+        return;
+      }
       
       try {
+        setError(null);
         const { data, error } = await supabase
           .from('invoices')
           .select('*')
-          .eq('id', id)
+          .eq('id', invoiceId)
           .single();
         
         if (error) {
           console.error('Error fetching invoice:', error);
-          toast({ title: 'Invoice tidak ditemukan', variant: 'destructive' });
-          navigate('/id/member/invoices');
+          setError('Invoice tidak ditemukan atau akses ditolak.');
           return;
         }
         
         if (!data) {
-          toast({ title: 'Invoice tidak ditemukan', variant: 'destructive' });
-          navigate('/id/member/invoices');
+          setError('Invoice tidak ditemukan.');
           return;
         }
         
         // Security check: ensure user owns this invoice
         if (data.email !== user.email) {
-          toast({ title: 'Akses ditolak', variant: 'destructive' });
-          navigate('/id/member/invoices');
+          setError('Akses ditolak.');
           return;
         }
         
         setInvoice(data);
       } catch (error) {
         console.error('Error:', error);
-        toast({ title: 'Terjadi kesalahan', variant: 'destructive' });
+        setError('Terjadi kesalahan yang tidak terduga.');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchInvoice();
-  }, [id, navigate, toast]);
+  }, [invoiceId, user, navigate, toast]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -181,13 +189,52 @@ export default function MemberInvoiceDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0B0E11] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F0B90B]"></div>
+      <div className="mobile-container pt-6 pb-28 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="px-4">
+          <h1 className="text-2xl font-bold text-white mb-6">Detail Invoice</h1>
+          <LoadingCard message="Memuat detail invoice..." />
+        </div>
       </div>
     );
   }
 
-  if (!invoice) return null;
+  if (error) {
+    return (
+      <div className="mobile-container pt-6 pb-28 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="px-4">
+          <h1 className="text-2xl font-bold text-white mb-6">Detail Invoice</h1>
+          <ErrorCard 
+            title="Gagal Memuat Invoice" 
+            message={error}
+            onRetry={() => {
+              setIsLoading(true);
+              setError(null);
+              // Re-trigger fetch by setting a dummy state
+              setTimeout(() => {
+                window.location.reload();
+              }, 100);
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (!invoice) {
+    return (
+      <div className="mobile-container pt-6 pb-28 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="px-4">
+          <h1 className="text-2xl font-bold text-white mb-6">Detail Invoice</h1>
+          <ErrorCard 
+            title="Invoice Tidak Ditemukan" 
+            message="Invoice yang Anda cari tidak tersedia."
+            onRetry={() => navigate('/id/member/invoices')}
+            retryText="Kembali ke Daftar Invoice"
+          />
+        </div>
+      </div>
+    );
+  }
 
   const statusConfig = getStatusConfig(invoice.status);
   const Icon = statusConfig.icon;

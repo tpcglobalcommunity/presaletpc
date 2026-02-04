@@ -19,8 +19,6 @@ interface FinancialStats {
 }
 
 export default function MemberReferralPage() {
-  console.log('[REFERRAL] page mounted');
-  
   const { user } = useAuth();
   const { toast } = useToast();
   const LS_KEY = 'tpc_pending_sponsor_code';
@@ -29,21 +27,19 @@ export default function MemberReferralPage() {
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [financialStats, setFinancialStats] = useState<FinancialStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   const referralLink = `${window.location.origin}/id/buytpc?ref=${referralCode}`;
 
   // Auto sponsor initialization
   useEffect(() => {
-    console.log('[REFERRAL] init auto sponsor');
-
     const fromUrl = new URLSearchParams(window.location.search)
       .get('ref')
       ?.trim()
-      .toUpperCase();
+      ?.toUpperCase();
 
     if (fromUrl) {
-      console.log('[REFERRAL] from URL:', fromUrl);
       localStorage.setItem(LS_KEY, fromUrl);
       setReferralCode(fromUrl);
       return;
@@ -51,24 +47,26 @@ export default function MemberReferralPage() {
 
     const existing = localStorage.getItem(LS_KEY);
     if (existing) {
-      console.log('[REFERRAL] from localStorage:', existing);
       setReferralCode(existing);
       return;
     }
 
     (async () => {
-      console.log('[REFERRAL] fetching random sponsor...');
-      const { data, error } = await supabase.rpc('get_random_referral_code' as any);
-
-      if (error || !data) {
-        console.error('[REFERRAL] random sponsor failed', error);
-        return;
+      try {
+        const { data, error } = await supabase.rpc('get_random_referral_code');
+        
+        if (error) {
+          console.error('Error getting random sponsor:', error);
+          return;
+        }
+        
+        if (data) {
+          localStorage.setItem(LS_KEY, data);
+          setReferralCode(data);
+        }
+      } catch (error) {
+        console.error('Error:', error);
       }
-
-      console.log('[REFERRAL] random sponsor result:', data);
-      const sponsorCode = typeof data === 'string' ? data : String(data);
-      localStorage.setItem(LS_KEY, sponsorCode);
-      setReferralCode(sponsorCode);
     })();
   }, []);
 

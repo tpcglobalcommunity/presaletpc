@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { formatRupiah, formatNumberID } from '@/lib/number';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ErrorCard, LoadingCard, EmptyStateCard } from '@/components/member/MemberUIStates';
 
 interface Invoice {
   id: string;
@@ -44,6 +45,7 @@ export default function MemberInvoicesPage() {
   const { toast } = useToast();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'ALL'|'PAID'|'PENDING_REVIEW'|'UNPAID'|'CANCELLED'>('ALL');
 
   // Filter invoices based on active tab
@@ -63,45 +65,67 @@ export default function MemberInvoicesPage() {
     CANCELLED: (invoices ?? []).filter(i => i.status === 'CANCELLED' || i.status === 'EXPIRED').length
   };
 
-  useEffect(() => {
+  const fetchInvoices = async () => {
     if (!user) {
       setIsLoading(false);
+      setError('User tidak terautentikasi');
       return;
     }
 
-    const fetchInvoices = async () => {
+    try {
+      setError(null);
+      const { data, error } = await supabase
+        .from('invoices')
+        .select('id, invoice_no, status, amount_input, base_currency, amount_usd, tpc_amount, created_at, expires_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
       
-      try {
-        const { data, error } = await supabase
-          .from('invoices')
-          .select('id, invoice_no, status, amount_input, base_currency, amount_usd, tpc_amount, created_at, expires_at')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-        
-        if (error) {
-          console.error('Error fetching invoices:', error);
-          toast({ title: 'Gagal memuat data', variant: 'destructive' });
-          return;
-        }
-        
-        setInvoices(data || []);
-      } catch (error) {
-        console.error('Error:', error);
-        toast({ title: 'Terjadi kesalahan', variant: 'destructive' });
-      } finally {
-        setIsLoading(false);
+      if (error) {
+        console.error('Error fetching invoices:', error);
+        setError('Akses ditolak atau data tidak ditemukan.');
+        return;
       }
-    };
-
-    if (user) {
-      fetchInvoices();
+      
+      setInvoices(data || []);
+    } catch (error) {
+      console.error('Error:', error);
+      setError('Terjadi kesalahan yang tidak terduga.');
+    } finally {
+      setIsLoading(false);
     }
-  }, [user, toast]);
+  };
+
+  useEffect(() => {
+    fetchInvoices();
+  }, [user]);
+
+  const handleRetry = () => {
+    setIsLoading(true);
+    fetchInvoices();
+  };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0B0E11] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F0B90B]"></div>
+      <div className="mobile-container pt-6 pb-28 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="px-4">
+          <h1 className="text-2xl font-bold text-white mb-6">Invoice Saya</h1>
+          <LoadingCard message="Memuat data invoice..." />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mobile-container pt-6 pb-28 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="px-4">
+          <h1 className="text-2xl font-bold text-white mb-6">Invoice Saya</h1>
+          <ErrorCard 
+            title="Gagal Memuat Invoice" 
+            message={error}
+            onRetry={handleRetry}
+          />
+        </div>
       </div>
     );
   }
@@ -178,27 +202,11 @@ export default function MemberInvoicesPage() {
 
       <div className="p-4 space-y-4">
         {filteredInvoices.length === 0 ? (
-          <div className="text-center py-12">
-            <FileText className="h-12 w-12 text-[#848E9C] mx-auto mb-4" />
-            <p className="text-[#848E9C] font-medium">
-              {activeTab === 'ALL' && 'Belum ada invoice'}
-              {activeTab === 'PAID' && 'Belum ada invoice lunas'}
-              {activeTab === 'PENDING_REVIEW' && 'Belum ada invoice yang direview'}
-              {activeTab === 'UNPAID' && 'Tidak ada invoice belum bayar'}
-              {activeTab === 'CANCELLED' && 'Tidak ada invoice ditolak'}
-            </p>
-            {activeTab === 'ALL' && (
-              <>
-                <p className="text-[#848E9C] text-sm mt-1">Beli TPC untuk membuat invoice pertama</p>
-                <button
-                  onClick={() => navigate('/id/buytpc')}
-                  className="mt-4 bg-[#F0B90B] hover:bg-[#F8D56B] text-black font-medium py-2 px-4 rounded-lg transition-colors"
-                >
-                  Beli TPC Sekarang
-                </button>
-              </>
-            )}
-          </div>
+          <EmptyStateCard
+            title="Tidak Ada Invoice"
+            message={`Belum ada invoice dengan status "${TAB_LABELS[activeTab]}".`}
+            icon={<FileText className="h-12 w-12 text-slate-600" />}
+          />
         ) : (
           filteredInvoices.map((invoice) => {
             const statusConfig = getStatusConfig(invoice.status);
