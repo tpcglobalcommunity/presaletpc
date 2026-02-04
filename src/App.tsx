@@ -15,6 +15,8 @@ import RouteErrorBoundary from "@/components/RouteErrorBoundary";
 import FullScreenLoader from "@/components/FullScreenLoader";
 import PageLoader from "@/components/PageLoader";
 import AppErrorBoundary from "@/components/system/AppErrorBoundary";
+import LangRoute from "@/components/system/LangRoute";
+import IdOnly from "@/components/system/IdOnly";
 
 // WWW to non-www redirect guard
 if (typeof window !== "undefined" && window.location.hostname === "www.tpcglobal.io") {
@@ -54,29 +56,6 @@ const MemberInvoicesPage = lazy(() => import("@/pages/member/MemberInvoicesPage"
 const MemberInvoiceDetailPage = lazy(() => import("@/pages/member/MemberInvoiceDetailPage"));
 const MemberReferralPage = lazy(() => import("@/pages/member/MemberReferralPage"));
 const MemberProfilePage = lazy(() => import("@/pages/member/MemberProfilePage"));
-
-// LangRoute helper
-function LangRoute({
-  id,
-  en,
-}: {
-  id: JSX.Element;
-  en: JSX.Element;
-}) {
-  const params = useParams();
-  const safeLang = params?.lang === "en" ? "en" : "id";
-  return safeLang === "en" ? en : id;
-}
-
-// IdOnly wrapper for ID-only pages
-function IdOnly({ children }: { children: React.ReactNode }) {
-  const params = useParams();
-  const lang = params?.lang === "en" ? "en" : "id";
-  if (lang !== "id") {
-    return <Navigate to="/en/login" replace />;
-  }
-  return <>{children}</>;
-}
 
 // LangIndexPage
 function LangIndexPage() {
