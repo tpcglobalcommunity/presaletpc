@@ -215,7 +215,7 @@ export default function MemberInvoicesPage() {
             return (
               <div
                 key={invoice.id}
-                onClick={() => navigate(`/id/member/invoices/${invoice.id}`)}
+                onClick={() => navigate(`/id/member/invoices/${invoice.invoice_no}`)}
                 className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4 cursor-pointer hover:border-[#F0B90B]/50 transition-colors"
               >
                 <div className="flex items-start justify-between mb-3">

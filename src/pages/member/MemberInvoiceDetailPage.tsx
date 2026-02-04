@@ -9,11 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-const isValidUuid = (uuid: string) => {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(uuid);
-};
-
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getDestination } from '@/config/paymentDestinations';
 import { ErrorCard, LoadingCard } from '@/components/member/MemberUIStates';
@@ -55,7 +50,7 @@ const transferMethods = {
 };
 
 export default function MemberInvoiceDetailPage() {
-  const { id } = useParams();
+  const { invoiceNo } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -69,9 +64,9 @@ export default function MemberInvoiceDetailPage() {
   const [uploadingFile, setUploadingFile] = useState(false);
 
   const fetchInvoice = async () => {
-    if (!id || !isValidUuid(id)) {
+    if (!invoiceNo) {
       setIsLoading(false);
-      setError('ID tidak valid');
+      setError('Invoice tidak valid');
       return;
     }
     
@@ -86,7 +81,7 @@ export default function MemberInvoiceDetailPage() {
       const { data, error } = await supabase
         .from('invoices')
         .select('*')
-        .eq('id', id)
+        .eq('invoice_no', invoiceNo)
         .eq('user_id', user.id)
         .maybeSingle();
       
@@ -97,12 +92,6 @@ export default function MemberInvoiceDetailPage() {
       }
       
       if (!data) {
-        setError('Invoice tidak ditemukan.');
-        return;
-      }
-      
-      // Security check: ensure user owns this invoice
-      if (data.email !== user.email) {
         setError('Invoice tidak ditemukan.');
         return;
       }
@@ -118,17 +107,28 @@ export default function MemberInvoiceDetailPage() {
 
   useEffect(() => {
     fetchInvoice();
-  }, [id, user, navigate, toast]);
+  }, [invoiceNo, user, navigate, toast]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !invoice || !user) return;
+
+    // Check if invoice status allows upload
+    if (invoice.status !== 'UNPAID') {
+      toast({ 
+        title: 'Tidak Dapat Upload', 
+        description: 'Bukti pembayaran hanya dapat diunggah untuk invoice yang belum dibayar.',
+        variant: 'destructive' 
+      });
+      return;
+    }
 
     setUploadingFile(true);
     try {
       const fileName = `${Date.now()}-${file.name}`;
       const filePath = `${user.id}/${invoice.id}/${fileName}`;
 
+      // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('invoice-proofs')
         .upload(filePath, file);
@@ -137,11 +137,35 @@ export default function MemberInvoiceDetailPage() {
         throw uploadError;
       }
 
-      return filePath;
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('invoice-proofs')
+        .getPublicUrl(filePath);
+
+      // Update invoice with proof_url
+      const { error: updateError } = await supabase
+        .from('invoices')
+        .update({ proof_url: publicUrl })
+        .eq('id', invoice.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      // Refresh invoice data
+      await fetchInvoice();
+      
+      toast({ 
+        title: 'Upload Berhasil!', 
+        description: 'Bukti pembayaran berhasil diunggah.' 
+      });
     } catch (error) {
       console.error('Upload error:', error);
-      toast({ title: 'Gagal upload file', variant: 'destructive' });
-      return null;
+      toast({ 
+        title: 'Gagal Upload', 
+        description: 'Terjadi kesalahan saat mengunggah bukti pembayaran.',
+        variant: 'destructive' 
+      });
     } finally {
       setUploadingFile(false);
     }
@@ -337,47 +361,8 @@ export default function MemberInvoiceDetailPage() {
           <div className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4">
             <h3 className="text-white font-semibold mb-4">Upload Bukti Pembayaran</h3>
             
-            <form onSubmit={handleSubmitProof} className="space-y-4">
-              {/* Transfer Method */}
-              <div>
-                <label className="text-[#848E9C] text-sm mb-2 block">Metode Transfer</label>
-                <Select value={selectedMethod} onValueChange={setSelectedMethod}>
-                  <SelectTrigger className="bg-[#2B3139] border-[#3A3F47] text-white">
-                    <SelectValue placeholder="Pilih metode transfer" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#1E2329] border-[#2B3139]">
-                    {Object.entries(transferMethods).map(([key, method]) => (
-                      <SelectItem key={key} value={key} className="text-white">
-                        {method.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Transfer Destination */}
-              {selectedMethod && transferMethods[selectedMethod] && (
-                <div className="bg-[#2B3139]/50 rounded-lg p-3 border border-[#F0B90B]/20">
-                  <div className="text-[#848E9C] text-xs mb-1">Transfer ke:</div>
-                  <div className="text-white font-mono text-sm">{transferMethods[selectedMethod].account}</div>
-                  <div className="text-[#848E9C] text-xs mt-1">{transferMethods[selectedMethod].holder}</div>
-                </div>
-              )}
-
-              {/* TPC Wallet Address */}
-              <div>
-                <label className="text-[#848E9C] text-sm mb-2 block">Alamat Wallet TPC (Solana)</label>
-                <Input
-                  type="text"
-                  value={walletAddress}
-                  onChange={(e) => setWalletAddress(e.target.value)}
-                  placeholder="Masukkan alamat wallet Solana Anda"
-                  className="bg-[#2B3139] border-[#3A3F47] text-white placeholder-[#848E9C]"
-                  required
-                />
-              </div>
-
-              {/* File Upload */}
+            {/* File Upload */}
+            <div className="space-y-4">
               <div>
                 <label className="text-[#848E9C] text-sm mb-2 block">Bukti Pembayaran</label>
                 <div className="border-2 border-dashed border-[#3A3F47] rounded-lg p-4">
@@ -387,41 +372,52 @@ export default function MemberInvoiceDetailPage() {
                     accept="image/*,.pdf"
                     onChange={handleFileUpload}
                     className="hidden"
+                    disabled={uploadingFile}
                   />
                   <label
                     htmlFor="proof-file"
-                    className="flex flex-col items-center justify-center cursor-pointer"
+                    className={`flex flex-col items-center justify-center cursor-pointer ${uploadingFile ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
-                    <Upload className="h-8 w-8 text-[#848E9C] mb-2" />
-                    <span className="text-[#848E9C] text-sm">Klik untuk upload bukti</span>
-                    <span className="text-[#848E9C] text-xs">JPG, PNG, PDF max 5MB</span>
+                    {uploadingFile ? (
+                      <>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F0B90B] mb-2"></div>
+                        <span className="text-[#848E9C] text-sm">Mengupload...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-8 w-8 text-[#848E9C] mb-2" />
+                        <span className="text-[#848E9C] text-sm">Klik untuk upload bukti</span>
+                        <span className="text-[#848E9C] text-xs">JPG, PNG, PDF max 5MB</span>
+                      </>
+                    )}
                   </label>
                 </div>
               </div>
-
-              <Button
-                type="submit"
-                disabled={isSubmitting || uploadingFile || !selectedMethod || !walletAddress}
-                className="w-full bg-[#F0B90B] hover:bg-[#F8D56B] text-black font-medium"
-              >
-                {isSubmitting ? 'Mengirim...' : 'Kirim Bukti Pembayaran'}
-              </Button>
-            </form>
+            </div>
           </div>
         )}
 
-        {/* Proof Preview - Show for non-UNPAID status */}
-        {invoice.status !== 'UNPAID' && invoice.proof_url && (
+        {/* Proof Display - Show if proof exists */}
+        {invoice.proof_url && (
           <div className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4">
             <h3 className="text-white font-semibold mb-4">Bukti Pembayaran</h3>
-            <div className="bg-[#2B3139]/30 rounded-xl p-4">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[#848E9C] text-sm">File terupload</span>
-                <button className="text-[#F0B90B] hover:text-[#F8D56B] text-sm">
+            <div className="space-y-3">
+              <div className="bg-[#2B3139]/50 rounded-lg p-3">
+                <a 
+                  href={invoice.proof_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between text-[#F0B90B] hover:text-[#F8D56B] transition-colors"
+                >
+                  <span className="text-sm">Lihat Bukti Pembayaran</span>
                   <ExternalLink className="h-4 w-4" />
-                </button>
+                </a>
               </div>
-              <div className="text-white text-sm">Bukti pembayaran telah diupload</div>
+              {invoice.status === 'UNPAID' && (
+                <div className="text-[#848E9C] text-xs">
+                  Bukti pembayaran sedang dalam proses verifikasi. Anda akan menerima notifikasi setelah pembayaran dikonfirmasi.
+                </div>
+              )}
             </div>
           </div>
         )}

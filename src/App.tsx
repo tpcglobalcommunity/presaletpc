@@ -234,7 +234,7 @@ function App() {
                     }
                   />
                   <Route
-                    path="invoices/:id"
+                    path="invoices/:invoiceNo"
                     element={
                       <Suspense fallback={<PageLoader />}>
                         <MemberInvoiceDetailPage />
