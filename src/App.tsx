@@ -29,40 +29,30 @@ import AuthCallbackPage from "@/pages/auth/AuthCallbackPage";
 
 // Guards
 import { RequireAdmin } from "@/components/guards/RequireAdmin";
+import RouteErrorBoundary from "@/components/RouteErrorBoundary";
+import FullScreenLoader from "@/components/FullScreenLoader";
 
-// Public Pages (Lazy Loaded)
-const HomePage = lazy(() => import("@/pages/id/HomePage"));
-const MarketPage = lazy(() => import("@/pages/id/MarketPage"));
-const BuyTPCPage = lazy(() => import("@/pages/id/BuyTPCPage"));
-const InvoiceSuccessPage = lazy(() => import("@/pages/id/InvoiceSuccessPage"));
-const LoginPage = lazy(() => import("@/pages/id/LoginPage"));
-const TransparansiPage = lazy(() => import("@/pages/id/TransparansiPage"));
-const AntiScamPage = lazy(() => import("@/pages/id/AntiScamPage"));
-const EdukasiPage = lazy(() => import("@/pages/id/EdukasiPage"));
-const WhitepaperPage = lazy(() => import("@/pages/id/WhitepaperPage"));
-const DAOPage = lazy(() => import("@/pages/id/DAOPage"));
-const FAQPage = lazy(() => import("@/pages/id/FAQPage"));
-const VerifiedCoordinatorsPage = lazy(() => import("@/pages/chapters/VerifiedCoordinatorsPage"));
-const ChaptersSopPage = lazy(() => import("@/pages/chapters/ChaptersSopPage"));
-const TermsConditionsPage = lazy(() => import("@/pages/legal/TermsConditionsPage"));
-const PrivacyPolicyPage = lazy(() => import("@/pages/legal/PrivacyPolicyPage"));
-const TutorialPhantomWalletPage = lazy(() => import("@/pages/public/TutorialPhantomWalletPage"));
-const PublicInvoiceDetailPage = lazy(() => import("@/pages/public/PublicInvoiceDetailPage"));
+// Public Pages (Static Imports - NO LAZY)
+import HomePage from "@/pages/id/HomePage";
+import MarketPage from "@/pages/id/MarketPage";
+import BuyTPCPage from "@/pages/id/BuyTPCPage";
+import InvoiceSuccessPage from "@/pages/id/InvoiceSuccessPage";
+import LoginPage from "@/pages/id/LoginPage";
+import TransparansiPage from "@/pages/id/TransparansiPage";
+import AntiScamPage from "@/pages/id/AntiScamPage";
+import EdukasiPage from "@/pages/id/EdukasiPage";
+import WhitepaperPage from "@/pages/id/WhitepaperPage";
+import DAOPage from "@/pages/id/DAOPage";
+import FAQPage from "@/pages/id/FAQPage";
+import VerifiedCoordinatorsPage from "@/pages/chapters/VerifiedCoordinatorsPage";
+import ChaptersSopPage from "@/pages/chapters/ChaptersSopPage";
+import TermsConditionsPage from "@/pages/legal/TermsConditionsPage";
+import PrivacyPolicyPage from "@/pages/legal/PrivacyPolicyPage";
+import TutorialPhantomWalletPage from "@/pages/public/TutorialPhantomWalletPage";
+import PublicInvoiceDetailPage from "@/pages/public/PublicInvoiceDetailPage";
 
-// English Public Pages (Lazy Loaded) — tetap mengikuti struktur kamu sekarang
-const EnHomePage = lazy(() => import("@/pages/id/HomePage"));
-const EnMarketPage = lazy(() => import("@/pages/id/MarketPage"));
-const EnBuyTPCPage = lazy(() => import("@/pages/id/BuyTPCPage"));
-const EnInvoiceSuccessPage = lazy(() => import("@/pages/id/InvoiceSuccessPage"));
-const EnLoginPage = lazy(() => import("@/pages/id/LoginPage"));
-const EnTransparansiPage = lazy(() => import("@/pages/id/TransparansiPage"));
-const EnAntiScamPage = lazy(() => import("@/pages/id/AntiScamPage"));
-const EnEdukasiPage = lazy(() => import("@/pages/id/EdukasiPage"));
-const EnWhitepaperPage = lazy(() => import("@/pages/id/WhitepaperPage"));
-const EnDAOPage = lazy(() => import("@/pages/id/DAOPage"));
-const EnFAQPage = lazy(() => import("@/pages/id/FAQPage"));
-const EnTermsConditionsPage = lazy(() => import("@/pages/legal/TermsConditionsPage"));
-const EnPrivacyPolicyPage = lazy(() => import("@/pages/legal/PrivacyPolicyPage"));
+// English Public Pages (Static Imports - NO LAZY)
+// Note: English pages reuse Indonesian components, so no separate imports needed
 
 // Member Pages (New Member Area)
 const MemberDashboardPage = lazy(() => import("@/pages/member/MemberDashboardPage"));
@@ -85,10 +75,6 @@ const AdminNotificationsPageNew = lazy(() => import("@/pages/admin/AdminNotifica
 const MessageTemplatesPage = lazy(() => import("@/pages/admin/MessageTemplatesPageNew"));
 
 const NotFound = lazy(() => import("./pages/NotFound"));
-
-// Preload functions for key routes
-export const preloadBuyTPC = () => import("@/pages/id/BuyTPCPage");
-export const preloadMarket = () => import("@/pages/id/MarketPage");
 
 const queryClient = new QueryClient();
 
@@ -114,21 +100,13 @@ function LegacyDashboardDeepAlias() {
   return <Navigate to={`/${safe}/member/dashboard`} replace />;
 }
 
-function LangIndex() {
+function LangIndexPage() {
   const safe = useSafeLang();
   // Index /id atau /en tetap render home sesuai bahasa
   if (safe === "en") {
-    return (
-      <Suspense fallback={<PageLoader />}>
-        <EnHomePage />
-      </Suspense>
-    );
+    return <HomePage />;
   }
-  return (
-    <Suspense fallback={<PageLoader />}>
-      <HomePage />
-    </Suspense>
-  );
+  return <HomePage />;
 }
 
 function LangRoute({
@@ -168,9 +146,13 @@ const App = () => {
               <Route path="/" element={<Navigate to="/id" replace />} />
 
               {/* ✅ SINGLE SOURCE OF TRUTH: Language Shell */}
-              <Route path="/:lang" element={<MobileLayout />}>
+              <Route path="/:lang" element={
+                <RouteErrorBoundary>
+                  <MobileLayout />
+                </RouteErrorBoundary>
+              }>
                 {/* Index: Home */}
-                <Route index element={<LangIndex />} />
+                <Route index element={<LangIndexPage />} />
 
                 {/* Auth callback (canonical) */}
                 <Route
@@ -189,16 +171,8 @@ const App = () => {
                   path="market"
                   element={
                     <LangRoute
-                      id={
-                        <Suspense fallback={<PageLoader />}>
-                          <MarketPage />
-                        </Suspense>
-                      }
-                      en={
-                        <Suspense fallback={<PageLoader />}>
-                          <EnMarketPage />
-                        </Suspense>
-                      }
+                      id={<MarketPage />}
+                      en={<MarketPage />}
                     />
                   }
                 />
@@ -206,16 +180,8 @@ const App = () => {
                   path="buytpc"
                   element={
                     <LangRoute
-                      id={
-                        <Suspense fallback={<PageLoader />}>
-                          <BuyTPCPage />
-                        </Suspense>
-                      }
-                      en={
-                        <Suspense fallback={<PageLoader />}>
-                          <EnBuyTPCPage />
-                        </Suspense>
-                      }
+                      id={<BuyTPCPage />}
+                      en={<BuyTPCPage />}
                     />
                   }
                 />
@@ -223,41 +189,21 @@ const App = () => {
                   path="buytpc/success"
                   element={
                     <LangRoute
-                      id={
-                        <Suspense fallback={<PageLoader />}>
-                          <InvoiceSuccessPage />
-                        </Suspense>
-                      }
-                      en={
-                        <Suspense fallback={<PageLoader />}>
-                          <EnInvoiceSuccessPage />
-                        </Suspense>
-                      }
+                      id={<InvoiceSuccessPage />}
+                      en={<InvoiceSuccessPage />}
                     />
                   }
                 />
                 <Route
                   path="invoice/:invoiceNo"
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <PublicInvoiceDetailPage />
-                    </Suspense>
-                  }
+                  element={<PublicInvoiceDetailPage />}
                 />
                 <Route
                   path="login"
                   element={
                     <LangRoute
-                      id={
-                        <Suspense fallback={<PageLoader />}>
-                          <LoginPage />
-                        </Suspense>
-                      }
-                      en={
-                        <Suspense fallback={<PageLoader />}>
-                          <EnLoginPage />
-                        </Suspense>
-                      }
+                      id={<LoginPage />}
+                      en={<LoginPage />}
                     />
                   }
                 />
@@ -265,16 +211,8 @@ const App = () => {
                   path="transparansi"
                   element={
                     <LangRoute
-                      id={
-                        <Suspense fallback={<PageLoader />}>
-                          <TransparansiPage />
-                        </Suspense>
-                      }
-                      en={
-                        <Suspense fallback={<PageLoader />}>
-                          <EnTransparansiPage />
-                        </Suspense>
-                      }
+                      id={<TransparansiPage />}
+                      en={<TransparansiPage />}
                     />
                   }
                 />
@@ -282,41 +220,21 @@ const App = () => {
                   path="anti-scam"
                   element={
                     <LangRoute
-                      id={
-                        <Suspense fallback={<PageLoader />}>
-                          <AntiScamPage />
-                        </Suspense>
-                      }
-                      en={
-                        <Suspense fallback={<PageLoader />}>
-                          <EnAntiScamPage />
-                        </Suspense>
-                      }
+                      id={<AntiScamPage />}
+                      en={<AntiScamPage />}
                     />
                   }
                 />
                 <Route
                   path="tutorial/phantom-wallet"
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <TutorialPhantomWalletPage />
-                    </Suspense>
-                  }
+                  element={<TutorialPhantomWalletPage />}
                 />
                 <Route
                   path="edukasi"
                   element={
                     <LangRoute
-                      id={
-                        <Suspense fallback={<PageLoader />}>
-                          <EdukasiPage />
-                        </Suspense>
-                      }
-                      en={
-                        <Suspense fallback={<PageLoader />}>
-                          <EnEdukasiPage />
-                        </Suspense>
-                      }
+                      id={<EdukasiPage />}
+                      en={<EdukasiPage />}
                     />
                   }
                 />
@@ -324,16 +242,8 @@ const App = () => {
                   path="whitepaper"
                   element={
                     <LangRoute
-                      id={
-                        <Suspense fallback={<PageLoader />}>
-                          <WhitepaperPage />
-                        </Suspense>
-                      }
-                      en={
-                        <Suspense fallback={<PageLoader />}>
-                          <EnWhitepaperPage />
-                        </Suspense>
-                      }
+                      id={<WhitepaperPage />}
+                      en={<WhitepaperPage />}
                     />
                   }
                 />
@@ -341,16 +251,8 @@ const App = () => {
                   path="dao"
                   element={
                     <LangRoute
-                      id={
-                        <Suspense fallback={<PageLoader />}>
-                          <DAOPage />
-                        </Suspense>
-                      }
-                      en={
-                        <Suspense fallback={<PageLoader />}>
-                          <EnDAOPage />
-                        </Suspense>
-                      }
+                      id={<DAOPage />}
+                      en={<DAOPage />}
                     />
                   }
                 />
@@ -358,49 +260,25 @@ const App = () => {
                   path="faq"
                   element={
                     <LangRoute
-                      id={
-                        <Suspense fallback={<PageLoader />}>
-                          <FAQPage />
-                        </Suspense>
-                      }
-                      en={
-                        <Suspense fallback={<PageLoader />}>
-                          <EnFAQPage />
-                        </Suspense>
-                      }
+                      id={<FAQPage />}
+                      en={<FAQPage />}
                     />
                   }
                 />
                 <Route
                   path="verified-coordinators"
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <VerifiedCoordinatorsPage />
-                    </Suspense>
-                  }
+                  element={<VerifiedCoordinatorsPage />}
                 />
                 <Route
                   path="chapters"
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <ChaptersSopPage />
-                    </Suspense>
-                  }
+                  element={<ChaptersSopPage />}
                 />
                 <Route
                   path="syarat-ketentuan"
                   element={
                     <LangRoute
-                      id={
-                        <Suspense fallback={<PageLoader />}>
-                          <TermsConditionsPage />
-                        </Suspense>
-                      }
-                      en={
-                        <Suspense fallback={<PageLoader />}>
-                          <EnTermsConditionsPage />
-                        </Suspense>
-                      }
+                      id={<TermsConditionsPage />}
+                      en={<TermsConditionsPage />}
                     />
                   }
                 />
@@ -408,22 +286,20 @@ const App = () => {
                   path="kebijakan-privasi"
                   element={
                     <LangRoute
-                      id={
-                        <Suspense fallback={<PageLoader />}>
-                          <PrivacyPolicyPage />
-                        </Suspense>
-                      }
-                      en={
-                        <Suspense fallback={<PageLoader />}>
-                          <EnPrivacyPolicyPage />
-                        </Suspense>
-                      }
+                      id={<PrivacyPolicyPage />}
+                      en={<PrivacyPolicyPage />}
                     />
                   }
                 />
 
                 {/* ✅ FINAL MEMBER AREA (SINGLE NAMESPACE) */}
-                <Route path="member" element={<MemberLayout />}>
+                <Route path="member" element={
+                  <RouteErrorBoundary>
+                    <Suspense fallback={<FullScreenLoader />}>
+                      <MemberLayout />
+                    </Suspense>
+                  </RouteErrorBoundary>
+                }>
                   <Route
                     index
                     element={<Navigate to="dashboard" replace />}
@@ -488,7 +364,11 @@ const App = () => {
                   path="admin"
                   element={
                     <RequireAdmin>
-                      <AdminLayoutPremium />
+                      <RouteErrorBoundary>
+                        <Suspense fallback={<FullScreenLoader />}>
+                          <AdminLayoutPremium />
+                        </Suspense>
+                      </RouteErrorBoundary>
                     </RequireAdmin>
                   }
                 >
