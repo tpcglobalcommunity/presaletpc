@@ -23,7 +23,24 @@ export default function MemberDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
 
-  // Refs to prevent duplicate fetches
+  // DEV log to confirm active page
+  if (import.meta.env.DEV) {
+    console.log('[PAGE]', 'Member Dashboard ACTIVE:', 'src/pages/member/MemberDashboardPage.tsx');
+  }
+
+  // Navigate to invoice list with safety check
+  const navigateToInvoices = () => {
+    try {
+      navigate(`/${safeLang}/member/invoices`);
+    } catch (error) {
+      console.error('[NAVIGATION_ERROR] Failed to navigate to invoices:', error);
+      toast({
+        title: "Error Navigasi",
+        description: "Halaman invoice belum tersedia. Silakan coba lagi.",
+        variant: "destructive"
+      });
+    }
+  };
   const fetchingRef = useRef(false);
   const lastUserIdRef = useRef<string | null>(null);
   const invoicesFetchingRef = useRef(false);
@@ -151,7 +168,7 @@ export default function MemberDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0E11] pb-20">
+    <div className="min-h-screen bg-[#0B0E11] pb-28">
       {/* Header */}
       <div className="bg-[#1E2329] border-b border-[#2B3139] px-4 py-3">
         <h1 className="text-white font-semibold text-lg">Dashboard</h1>
@@ -239,12 +256,14 @@ export default function MemberDashboardPage() {
           </button>
 
           <button
-            onClick={() => navigate(`/${safeLang}/member/invoices`)}
-            className="w-full bg-[#1E2329] border border-[#2B3139] hover:border-[#F0B90B]/50 text-white font-medium py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors"
+            onClick={navigateToInvoices}
+            className="w-full bg-[#F0B90B] hover:bg-[#F8D56B] text-black font-semibold py-4 px-6 rounded-xl flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02] shadow-lg"
           >
-            <FileText className="h-5 w-5" />
-            Lihat Invoice
-            <ArrowRight className="h-4 w-4" />
+            <FileText className="h-6 w-6" />
+            <span className="text-lg">
+              {invoices.length === 0 ? 'Buat Invoice' : 'Lihat Invoice'}
+            </span>
+            <ArrowRight className="h-5 w-5" />
           </button>
 
           {isAdmin && (

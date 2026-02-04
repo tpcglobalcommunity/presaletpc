@@ -106,12 +106,10 @@ export default function ProfilePage() {
           <div className="bg-card border border-border rounded-lg p-6 text-center">
             <h2 className="text-xl font-semibold mb-2">Error</h2>
             <p className="text-muted-foreground">{error || "Profil tidak ditemukan"}</p>
-            <Button 
-              onClick={() => navigate("/id/dashboard")}
-              className="mt-4"
-            >
-              Kembali ke Dashboard
-            </Button>
+            <button
+              onClick={() => navigate('/id/member/settings')}
+              className="w-full bg-[#1E2329] border border-[#2B3139] hover:border-[#F0B90B]/50 text-white font-medium py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors"
+            ></button>
           </div>
         </div>
       </div>

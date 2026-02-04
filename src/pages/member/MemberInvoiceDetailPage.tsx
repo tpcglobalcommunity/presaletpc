@@ -184,7 +184,7 @@ export default function MemberInvoiceDetailPage() {
       {/* Header */}
       <div className="bg-[#1E2329] border-b border-[#2B3139] px-4 py-3">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/id/dashboard/invoices')} className="text-[#848E9C]">
+          <button onClick={() => navigate('/id/member/invoices')} className="text-[#848E9C]">
             <ArrowLeft className="h-5 w-5" />
           </button>
           <h1 className="text-white font-semibold text-lg">Detail Invoice</h1>
