@@ -442,7 +442,8 @@ export default function BuyTPCPage() {
   const totalTPC = tpcAmount + sponsorBonusAmount;
 
   const amountSubmit = useMemo(() => normalizeAmountForSubmit(currency, amountValue), [currency, amountValue]);
-  const walletOk = walletTpc.trim().length >= 32;
+  const walletClean = walletTpc.trim();
+  const walletOk = walletClean.length >= 32;
 
   const isValid = amountSubmit > 0 && walletOk && agreed && !!userEmail && !!sponsorCode && !sponsorLoading && !sponsorError;
 
@@ -479,7 +480,7 @@ export default function BuyTPCPage() {
         p_referral_code: referralClean,
         p_base_currency: currency,
         p_amount_input: amountSubmit,
-        p_wallet_tpc: walletTpc.trim()
+        p_wallet_tpc: walletClean
       });
 
       if (error) {
