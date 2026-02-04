@@ -187,6 +187,17 @@ const App = () => {
                     />
                   }
                 />
+                
+                {/* ✅ LEGACY DASHBOARD REDIRECT - MUST BE BEFORE PARAMETERIZED ROUTES */}
+                <Route 
+                  path="dashboard" 
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <LegacyDashboardRedirectPage />
+                    </Suspense>
+                  } 
+                />
+                
                 <Route
                   path="invoice/:invoiceNo"
                   element={<PublicInvoiceDetailPage />}
@@ -379,16 +390,6 @@ const App = () => {
                     }
                   />
                 </Route>
-
-                {/* ✅ LEGACY DASHBOARD REDIRECT */}
-                <Route 
-                  path="dashboard" 
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <LegacyDashboardRedirectPage />
-                    </Suspense>
-                  } 
-                />
 
                 {/* ✅ ADMIN */}
                 <Route
