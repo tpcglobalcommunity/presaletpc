@@ -85,7 +85,7 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <button 
-                  onClick={() => navigate('/id/dashboard')}
+                  onClick={() => navigate('/id/member/dashboard')}
                   className="flex items-center gap-2 text-[#848E9C] hover:text-white transition-colors"
                 >
                   <ArrowLeft className="h-5 w-5" />

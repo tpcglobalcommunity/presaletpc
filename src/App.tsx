@@ -90,18 +90,6 @@ function LangCallbackPageRedirect() {
   return <Navigate to={`/${safe}/auth/callback`} replace />;
 }
 
-function LegacyDashboardAlias() {
-  // Alias lama: /:lang/dashboard -> /:lang/member/dashboard
-  const safe = useSafeLang();
-  return <Navigate to={`/${safe}/member/dashboard`} replace />;
-}
-
-function LegacyDashboardDeepAlias() {
-  // Alias lama: /:lang/dashboard/... -> /:lang/member/dashboard (biar gak “nyasar”)
-  const safe = useSafeLang();
-  return <Navigate to={`/${safe}/member/dashboard`} replace />;
-}
-
 function LangIndexPage() {
   const safe = useSafeLang();
   // Index /id atau /en tetap render home sesuai bahasa
@@ -200,14 +188,6 @@ const App = () => {
                   path="invoice/:invoiceNo"
                   element={<PublicInvoiceDetailPage />}
                 />
-                
-                {/* ================= LEGACY DASHBOARD -> MEMBER (HARD LOCK) ================= */}
-                <Route path="dashboard" element={<Navigate to="member/dashboard" replace />} />
-                <Route path="dashboard/member" element={<Navigate to="member/dashboard" replace />} />
-                <Route path="dashboard/history" element={<Navigate to="member/invoices" replace />} />
-                <Route path="dashboard/settings" element={<Navigate to="member/settings" replace />} />
-                <Route path="dashboard/referral" element={<Navigate to="member/referrals" replace />} />
-                <Route path="dashboard/invoices/:invoiceNo" element={<InvoiceLegacyRedirectPage />} />
                 
                 {/* ✅ LEGACY EXTERNAL REDIRECTS */}
                 <Route 
@@ -397,8 +377,8 @@ const App = () => {
                   />
                 </Route>
 
-                {/* ✅ LEGACY INVOICES REDIRECT */}
-                <Route path="invoices" element={<Navigate to="member/invoices" replace />} />
+                {/* ✅ GUARD AGAINST OLD DASHBOARD URLS */}
+                <Route path="dashboard/*" element={<NotFound />} />
 
                 {/* ✅ ADMIN */}
                 <Route
