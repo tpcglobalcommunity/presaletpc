@@ -40,6 +40,7 @@ function sanitizeReferral(raw: string) {
 }
 
 export default function BuyTPCPage() {
+  console.log('[ACTIVE_PAGE] BuyTPCPage ACTIVE: src/pages/id/BuyTPCPage.tsx');
   console.log('[ACTIVE_PAGE] BuyTPCPage @ FILE_PATH_HERE');
   console.log('[ACTIVE_PAGE] BuyTPCPage @ src/pages/id/BuyTPCPage.tsx');
   
@@ -59,8 +60,9 @@ export default function BuyTPCPage() {
   const LS_KEY = 'tpc_pending_sponsor_code';
   const refFromUrl = (searchParams.get('ref') || '').trim().toUpperCase();
   
-  const [pendingSponsor, setPendingSponsor] = useState<string>('');
-  const [sponsorLoading, setSponsorLoading] = useState(false);
+  const [sponsorCode, setSponsorCode] = useState<string>('');
+  const [sponsorLoading, setSponsorLoading] = useState<boolean>(false);
+  const [sponsorError, setSponsorError] = useState<string>('');
 
   // EXISTING STATE
   const [currency, setCurrency] = useState<Currency>('IDR');
@@ -85,24 +87,26 @@ export default function BuyTPCPage() {
     async function initSponsor() {
       if (refFromUrl) {
         localStorage.setItem(LS_KEY, refFromUrl);
-        setPendingSponsor(refFromUrl);
+        setSponsorCode(refFromUrl);
         return;
       }
 
       const existing = (localStorage.getItem(LS_KEY) || '').trim().toUpperCase();
       if (existing) {
-        setPendingSponsor(existing);
+        setSponsorCode(existing);
         return;
       }
 
       setSponsorLoading(true);
-      const { data } = await supabase.rpc('get_random_referral_code');
+      const { data } = await supabase.rpc('get_random_referral_code' as any);
       if (cancelled) return;
 
       const code = (data || '').toString().trim().toUpperCase();
       if (code) {
         localStorage.setItem(LS_KEY, code);
-        setPendingSponsor(code);
+        setSponsorCode(code);
+      } else {
+        setSponsorError('Sponsor otomatis gagal ditentukan. Refresh halaman.');
       }
       setSponsorLoading(false);
     }
@@ -193,7 +197,7 @@ export default function BuyTPCPage() {
   const sponsorBonusAmount = typeof sponsorBonus === 'number' ? sponsorBonus : sponsorBonus?.bonus_amount || 0;
   const totalTPC = tpcAmount + sponsorBonusAmount;
 
-  const isValid = amountValue > 0 && walletTpc.trim().length >= 20 && agreed && userEmail !== null && pendingSponsor;
+  const isValid = amountValue > 0 && walletTpc.trim().length >= 20 && agreed && userEmail !== null && sponsorCode && !sponsorLoading && !sponsorError;
 
   const handleSubmit = async () => {
     if (!isValid || isLoading) return;
@@ -210,7 +214,7 @@ export default function BuyTPCPage() {
     setIsLoading(true);
     try {
       // Create invoice with pending sponsor
-      const referralClean = pendingSponsor.trim().toUpperCase();
+      const referralClean = sponsorCode.trim().toUpperCase();
       
       const { data, error } = await supabase.rpc('create_invoice_locked', {
         p_email: userEmail.toLowerCase().trim(),
@@ -233,16 +237,16 @@ export default function BuyTPCPage() {
         const invoice = data[0];
         
         // Show referral status messages
-        if (invoice.referral_valid === false && pendingSponsor) {
+        if (invoice.referral_valid === false && sponsorCode) {
           toast({
             title: "Peringatan Referral",
-            description: `Kode referral "${pendingSponsor}" tidak ditemukan. Invoice dibuat tanpa bonus sponsor.`,
+            description: `Kode referral "${sponsorCode}" tidak ditemukan. Invoice dibuat tanpa bonus sponsor.`,
             variant: "default",
           });
-        } else if (invoice.referral_valid === true && pendingSponsor) {
+        } else if (invoice.referral_valid === true && sponsorCode) {
           toast({
             title: "Referral Valid",
-            description: `Kode referral "${pendingSponsor}" valid! Bonus sponsor ditambahkan.`,
+            description: `Kode referral "${sponsorCode}" valid! Bonus sponsor ditambahkan.`,
             variant: "default",
           });
         }
@@ -372,7 +376,7 @@ export default function BuyTPCPage() {
 
                   <input
                     type="text"
-                    value={sponsorLoading ? 'Loading...' : pendingSponsor}
+                    value={sponsorLoading ? 'Loading...' : sponsorCode}
                     readOnly
                     placeholder="Sponsor akan ditentukan otomatis"
                     className="w-full px-4 py-3 bg-[#1E2329] border border-[#2B3139] rounded-xl text-white placeholder-[#848E9C] uppercase opacity-90 cursor-not-allowed"
@@ -381,7 +385,7 @@ export default function BuyTPCPage() {
                   <div className="flex items-center gap-2 text-[12px]">
                     {sponsorLoading ? (
                       <span className="text-white/60">Menentukan sponsor...</span>
-                    ) : pendingSponsor ? (
+                    ) : sponsorCode ? (
                       <span className="text-emerald-400">Sponsor ditentukan ✅</span>
                     ) : (
                       <span className="text-white/50">Menunggu penentuan sponsor...</span>
@@ -436,9 +440,9 @@ export default function BuyTPCPage() {
                 </Button>
 
                 {/* Helper Message */}
-                {!pendingSponsor && (
-                  <div className="text-center text-sm text-[#848E9C]">
-                    Menunggu penentuan sponsor otomatis...
+                {!sponsorCode && !sponsorLoading && (
+                  <div className="text-center text-sm text-red-400">
+                    {sponsorError || 'Menunggu penentuan sponsor otomatis...'}
                   </div>
                 )}
               </CardContent>
