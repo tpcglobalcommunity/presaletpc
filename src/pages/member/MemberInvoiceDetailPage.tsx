@@ -211,6 +211,28 @@ export default function MemberInvoiceDetailPage() {
       // Refresh invoice data
       await fetchInvoice();
       
+      // Send email notification to admin
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-admin-invoice-email', {
+          body: {
+            invoice_no: invoice.invoice_no,
+            base_currency: invoice.base_currency,
+            amount_input: invoice.amount_input,
+            tpc_amount: invoice.tpc_amount,
+            proof_url: publicUrl,
+            member_email: user.email
+          }
+        });
+
+        if (emailError) {
+          console.error('Email notification failed:', emailError);
+          // Don't show error to user, just log it
+        }
+      } catch (emailError) {
+        console.error('Email notification error:', emailError);
+        // Don't show error to user, just log it
+      }
+      
       toast({ 
         title: 'Upload Berhasil!', 
         description: 'Bukti pembayaran berhasil diunggah dan dikirim untuk verifikasi.' 
