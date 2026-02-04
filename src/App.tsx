@@ -159,6 +159,7 @@ const App = () => {
                 
                 {/* Legacy fallback routes */}
                 <Route path="home-legacy" element={<HomePage />} />
+                <Route path="anti-scam-legacy" element={<AntiScamPage />} />
                 
                 {/* Legacy alias routes (STATIC ONLY, NO WILDCARD PARSING) */}
                 <Route 
@@ -265,8 +266,8 @@ const App = () => {
                   path="anti-scam"
                   element={
                     <LangRoute
-                      id={<AntiScamPage />}
-                      en={<AntiScamPage />}
+                      id={<AntiScamPageV2 />}
+                      en={<Navigate to="/en/member" replace />}
                     />
                   }
                 />
