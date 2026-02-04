@@ -6,7 +6,7 @@ import {
   BrowserRouter,
   Routes, 
   Route, 
-  Navigate, 
+  Navigate,
   useParams
 } from "react-router-dom";
 import { lazy, Suspense, useEffect } from "react";
@@ -59,47 +59,6 @@ const LegacyDashboardRedirectPage = lazy(() => import("@/pages/LegacyDashboardRe
 const LegacyDashboardPathRedirectPage = lazy(() => import("@/pages/LegacyDashboardPathRedirectPage"));
 const RootDashboardRedirectPage = lazy(() => import("@/pages/RootDashboardRedirectPage"));
 
-// Dashboard Alias Redirect Component
-function DashboardAliasRedirect() {
-  const params = useParams();
-  let rest = params["*"] || "";
-  
-  // Trim slashes and normalize
-  rest = rest.replace(/^\/+|\/+$/g, "");
-  
-  // Prevent infinite loops with strict guards
-  if (!rest) {
-    // /:lang/dashboard -> /:lang/member
-    return <Navigate replace to="member" />;
-  }
-  
-  // If rest is exactly "member", redirect to member
-  if (rest === "member") {
-    return <Navigate replace to="member" />;
-  }
-  
-  // If rest already starts with "member/", use it directly (don't double-prefix)
-  if (rest.startsWith("member/")) {
-    return <Navigate replace to={rest} />;
-  }
-  
-  // If rest starts with "dashboard/", strip it (safety)
-  if (rest.startsWith("dashboard/")) {
-    rest = rest.replace(/^dashboard\/+/, "");
-  }
-  
-  // Collapse repeated "member/member/" patterns (max 3 iterations for safety)
-  let iterations = 0;
-  while (rest.startsWith("member/member/") && iterations < 3) {
-    rest = rest.replace(/^member\/+member\//, "member/");
-    iterations++;
-  }
-  
-  // Final redirect
-  const to = `member/${rest}`;
-  return <Navigate replace to={to} />;
-}
-
 // Member Pages (New Member Area)
 const MemberDashboardPage = lazy(() => import("@/pages/member/MemberDashboardPage"));
 const MemberInvoicesPage = lazy(() => import("@/pages/member/MemberInvoicesPage"));
@@ -126,20 +85,17 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
-function useSafeLang() {
-  const { lang } = useParams();
-  return lang === "en" ? "en" : "id";
-}
-
 function LangCallbackPageRedirect() {
-  const safe = useSafeLang();
-  return <Navigate to={`/${safe}/auth/callback`} replace />;
+  const params = useParams();
+  const lang = params.lang === "en" ? "en" : "id";
+  return <Navigate to={`/${lang}/auth/callback`} replace />;
 }
 
 function LangIndexPage() {
-  const safe = useSafeLang();
+  const params = useParams();
+  const lang = params.lang === "en" ? "en" : "id";
   // Index /id atau /en tetap render home sesuai bahasa
-  if (safe === "en") {
+  if (lang === "en") {
     return <HomePage />;
   }
   return <HomePage />;
@@ -152,8 +108,9 @@ function LangRoute({
   id: React.ReactNode;
   en: React.ReactNode;
 }) {
-  const safe = useSafeLang();
-  return <>{safe === "en" ? en : id}</>;
+  const params = useParams();
+  const lang = params.lang === "en" ? "en" : "id";
+  return <>{lang === "en" ? en : id}</>;
 }
 
 const App = () => {
@@ -254,22 +211,16 @@ const App = () => {
                   element={<PublicInvoiceDetailPage />}
                 />
                 
-                {/* ✅ DASHBOARD ALIAS - Redirect to canonical member dashboard */}
+                {/* ✅ DASHBOARD ALIAS - HARD LOCK to member (no wildcard logic) */}
                 <Route 
                   path="dashboard" 
                   element={<Navigate replace to="member" />} 
                 />
                 
-                {/* ✅ DASHBOARD MEMBER SAFETY - Direct redirect for /dashboard/member/* */}
-                <Route 
-                  path="dashboard/member/*" 
-                  element={<Navigate replace to="member/*" />} 
-                />
-                
-                {/* ✅ DASHBOARD NESTED ALIAS - Redirect /:lang/dashboard/* to /:lang/member/* */}
+                {/* ✅ DASHBOARD CATCH-ALL - Redirect everything to member */}
                 <Route 
                   path="dashboard/*" 
-                  element={<DashboardAliasRedirect />} 
+                  element={<Navigate replace to="member" />} 
                 />
                 
                 {/* ✅ LEGACY EXTERNAL REDIRECTS */}
@@ -390,12 +341,6 @@ const App = () => {
                         <MemberDashboardPage />
                       </Suspense>
                     }
-                  />
-                  
-                  {/* alias legacy, redirect ke canonical */}
-                  <Route
-                    path="dashboard"
-                    element={<Navigate replace to="." />}
                   />
                   
                   <Route
