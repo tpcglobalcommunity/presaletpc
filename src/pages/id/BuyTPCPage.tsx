@@ -93,6 +93,8 @@ export default function BuyTPCPage() {
   const [touched, setTouched] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [showWhyLocked, setShowWhyLocked] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Navigation helpers
   const goToTerms = () => navigate('/id/syarat-ketentuan');
@@ -426,34 +428,32 @@ export default function BuyTPCPage() {
 
   const isValid = amountValue > 0 && walletTpc.trim().length >= 20 && agreed && userEmail !== null && sponsorCode && !sponsorLoading && !sponsorError;
 
-  const handleSubmit = async () => {
+  const handleContinue = async () => {
     setSubmitAttempted(true);
-    
-    if (!validation.ok || isLoading) {
+    setSubmitError(null);
+
+    if (!validation.ok) {
+      // Auto-open "Why locked?" panel if validation fails
+      setShowWhyLocked(true);
       return;
     }
 
-    if (!userEmail) {
-      toast({
-        title: "Error",
-        description: "User email tidak ditemukan. Silakan login kembali.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (isSubmitting) return;
+    setIsSubmitting(true);
 
-    if (sponsorLoading || !sponsorCode) {
-      toast({
-        title: "Error",
-        description: 'Sponsor belum siap. Tunggu sebentar...',
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
     try {
-      // Create invoice with pending sponsor
+      // Prepare payload
+      if (!userEmail) {
+        setSubmitError('User email tidak ditemukan. Silakan login kembali.');
+        return;
+      }
+
+      if (sponsorLoading || !sponsorCode) {
+        setSubmitError('Sponsor belum siap. Tunggu sebentar...');
+        return;
+      }
+
+      // Create invoice using existing RPC
       const referralClean = sponsorCode.trim().toUpperCase();
       
       const { data, error } = await supabase.rpc('create_invoice_locked', {
@@ -465,30 +465,28 @@ export default function BuyTPCPage() {
 
       if (error) {
         console.error('Invoice creation error:', error);
-        toast({
-          title: "Error",
-          description: error.message || "Gagal membuat invoice",
-          variant: "destructive",
-        });
+        setSubmitError(error.message || 'Gagal membuat invoice. Coba lagi beberapa saat.');
         return;
       }
 
-      if (data && data.length > 0) {
-        const invoice = data[0];
+      if (data) {
+        const invoice = data;
         
-        // Show referral status messages
-        if (invoice.referral_valid === false && sponsorCode) {
-          toast({
-            title: "Peringatan Referral",
-            description: `Kode referral "${sponsorCode}" tidak ditemukan. Invoice dibuat tanpa bonus sponsor.`,
-            variant: "default",
-          });
-        } else if (invoice.referral_valid === true && sponsorCode) {
-          toast({
-            title: "Referral Valid",
-            description: `Kode referral "${sponsorCode}" valid! Bonus sponsor ditambahkan.`,
-            variant: "default",
-          });
+        // Show referral status messages (if available)
+        if ('referral_valid' in invoice) {
+          if (invoice.referral_valid === false && sponsorCode) {
+            toast({
+              title: "Peringatan Referral",
+              description: `Kode referral "${sponsorCode}" tidak ditemukan. Invoice dibuat tanpa bonus sponsor.`,
+              variant: "default",
+            });
+          } else if (invoice.referral_valid === true && sponsorCode) {
+            toast({
+              title: "Referral Valid", 
+              description: `Kode referral "${sponsorCode}" valid! Bonus sponsor ditambahkan.`,
+              variant: "default",
+            });
+          }
         }
 
         toast({
@@ -501,13 +499,10 @@ export default function BuyTPCPage() {
       }
     } catch (error) {
       console.error('Submit error:', error);
-      toast({
-        title: "Error",
-        description: "Terjadi kesalahan saat membuat invoice",
-        variant: "destructive",
-      });
+      setSubmitError('Gagal membuat invoice. Coba lagi atau periksa koneksi.');
+      if (import.meta.env.DEV) console.error(error);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -713,8 +708,9 @@ export default function BuyTPCPage() {
 
                 {/* Submit Button */}
                 <Button
-                  onClick={handleSubmit}
-                  disabled={ctaDisabled || isLoading}
+                  type="button"
+                  disabled={ctaDisabled || isSubmitting}
+                  onClick={handleContinue}
                   className={cn(
                     "w-full font-semibold py-3 transition-all",
                     ctaDisabled 
@@ -722,7 +718,7 @@ export default function BuyTPCPage() {
                       : "bg-[#F0B90B] hover:bg-[#F8D56B] text-white"
                   )}
                 >
-                  {isLoading ? (
+                  {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Memproses...
@@ -734,6 +730,16 @@ export default function BuyTPCPage() {
                     </>
                   )}
                 </Button>
+
+                {/* Submit Error */}
+                {submitError && (
+                  <div className="mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-red-400">{submitError}</p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Why locked? panel */}
                 {ctaDisabled && (
