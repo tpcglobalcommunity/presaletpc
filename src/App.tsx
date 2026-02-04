@@ -211,6 +211,12 @@ const App = () => {
                   element={<PublicInvoiceDetailPage />}
                 />
                 
+                {/* ✅ DASHBOARD MEMBER EDGE-CASE - Explicit redirect */}
+                <Route 
+                  path="dashboard/member" 
+                  element={<Navigate replace to="member" />} 
+                />
+                
                 {/* ✅ DASHBOARD ALIAS - HARD LOCK to member (no wildcard logic) */}
                 <Route 
                   path="dashboard" 
