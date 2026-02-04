@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
-import { Coins, ArrowRight, Loader2, Shield, CheckCircle, ExternalLink, AlertTriangle } from 'lucide-react';
+import { Coins, ArrowRight, Loader2, Shield, CheckCircle, ExternalLink, AlertTriangle, XCircle } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
-import { formatRupiah } from '@/lib/number';
+import { formatNumberID } from '@/lib/number';
 import { calculateSponsorBonus } from '@/config/pricing';
 import { formatIdr, parseIdr, formatUsdc, parseUsdc, formatSol, parseSol, formatTpc, clampDecimals } from '@/lib/formatters';
 import { getSolUsdPrice } from '@/lib/prices';
@@ -92,6 +92,7 @@ export default function BuyTPCPage() {
   // Validation state
   const [touched, setTouched] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [showWhyLocked, setShowWhyLocked] = useState(false);
 
   // Navigation helpers
   const goToTerms = () => navigate('/id/syarat-ketentuan');
@@ -350,6 +351,28 @@ export default function BuyTPCPage() {
     return isFiniteNumber(n) ? n : 0;
   };
 
+  // Quick-suggest chips handler
+  const handleQuickSuggest = (targetTpc: number) => {
+    const targetUsd = targetTpc * TPC_PRICING.stage1_usdc;
+    let newValue = 0;
+    
+    switch (currency) {
+      case 'USDC':
+        newValue = targetUsd;
+        break;
+      case 'IDR':
+        newValue = targetUsd * usdIdrRate;
+        break;
+      case 'SOL':
+        newValue = targetUsd / solUsdPrice;
+        break;
+    }
+    
+    setAmountValue(newValue);
+    setAmountRaw(formatCurrencyInput(newValue, currency));
+    setTouched(true);
+  };
+
   // Validation logic with useMemo to prevent re-renders
   const validation = useMemo(() => {
     const reasons: string[] = [];
@@ -385,6 +408,16 @@ export default function BuyTPCPage() {
   }, [agreed, amountValue, amountUsd, tpcAmount]);
 
   const ctaDisabled = !validation.ok;
+
+  // Derived checklist for "Why locked?" panel
+  const validationChecklist = useMemo(() => {
+    return {
+      termsOk: agreed,
+      amountOk: isFiniteNumber(amountValue) && amountValue > 0,
+      minUsdOk: isFiniteNumber(amountUsd) && amountUsd >= ORDER_RULES.MIN_USD_ORDER,
+      minTpcOk: isFiniteNumber(tpcAmount) && tpcAmount >= ORDER_RULES.MIN_TPC_ORDER,
+    };
+  }, [agreed, amountValue, amountUsd, tpcAmount]);
 
   // Calculate derived values
   const sponsorBonus = amountValue >= 1000000 ? calculateSponsorBonus(amountValue) : 0;
@@ -543,6 +576,38 @@ export default function BuyTPCPage() {
                   <p className="text-xs text-[#848E9C] mt-2">
                     {hint}
                   </p>
+                  
+                  {/* Quick-suggest chips */}
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    <button
+                      type="button"
+                      onClick={() => handleQuickSuggest(1000)}
+                      className="px-3 py-1 bg-[#F0B90B]/10 hover:bg-[#F0B90B]/20 border border-[#F0B90B]/30 rounded-lg text-xs text-[#F0B90B] transition-colors"
+                    >
+                      Pas 1.000 TPC
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickSuggest(2500)}
+                      className="px-3 py-1 bg-[#F0B90B]/10 hover:bg-[#F0B90B]/20 border border-[#F0B90B]/30 rounded-lg text-xs text-[#F0B90B] transition-colors"
+                    >
+                      2.500 TPC
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickSuggest(5000)}
+                      className="px-3 py-1 bg-[#F0B90B]/10 hover:bg-[#F0B90B]/20 border border-[#F0B90B]/30 rounded-lg text-xs text-[#F0B90B] transition-colors"
+                    >
+                      5.000 TPC
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickSuggest(10000)}
+                      className="px-3 py-1 bg-[#F0B90B]/10 hover:bg-[#F0B90B]/20 border border-[#F0B90B]/30 rounded-lg text-xs text-[#F0B90B] transition-colors"
+                    >
+                      10.000 TPC
+                    </button>
+                  </div>
                 </div>
 
                 {/* Wallet TPC Input */}
@@ -670,6 +735,65 @@ export default function BuyTPCPage() {
                   )}
                 </Button>
 
+                {/* Why locked? panel */}
+                {ctaDisabled && (
+                  <div className="mt-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowWhyLocked(!showWhyLocked)}
+                      className="text-xs text-[#848E9C] hover:text-[#F0B90B] transition-colors flex items-center gap-1"
+                    >
+                      Kenapa tombol terkunci?
+                      <ArrowRight className={`h-3 w-3 transition-transform ${showWhyLocked ? 'rotate-90' : ''}`} />
+                    </button>
+                    
+                    {showWhyLocked && (
+                      <div className="mt-3 bg-[#1E2329]/50 backdrop-blur-xl border border-[#2B3139] rounded-2xl p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          {validationChecklist.termsOk ? (
+                            <CheckCircle className="h-4 w-4 text-green-400" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-red-400" />
+                          )}
+                          <span className={`text-sm ${validationChecklist.termsOk ? 'text-green-400' : 'text-red-400'}`}>
+                            Syarat & Ketentuan disetujui
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {validationChecklist.amountOk ? (
+                            <CheckCircle className="h-4 w-4 text-green-400" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-red-400" />
+                          )}
+                          <span className={`text-sm ${validationChecklist.amountOk ? 'text-green-400' : 'text-red-400'}`}>
+                            Jumlah input valid
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {validationChecklist.minUsdOk ? (
+                            <CheckCircle className="h-4 w-4 text-green-400" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-red-400" />
+                          )}
+                          <span className={`text-sm ${validationChecklist.minUsdOk ? 'text-green-400' : 'text-red-400'}`}>
+                            Minimal 10 USDC
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {validationChecklist.minTpcOk ? (
+                            <CheckCircle className="h-4 w-4 text-green-400" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-red-400" />
+                          )}
+                          <span className={`text-sm ${validationChecklist.minTpcOk ? 'text-green-400' : 'text-red-400'}`}>
+                            Minimal 1.000 TPC
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Helper Message */}
                 {!sponsorCode && !sponsorLoading && (
                   <div className="text-center text-sm text-red-400">
@@ -712,14 +836,14 @@ export default function BuyTPCPage() {
                   <span className="text-[#848E9C]">Harga Stage 1</span>
                   <div className="text-right">
                     <span className="text-white font-semibold">${TPC_PRICING.stage1_usdc.toFixed(3)}</span>
-                    <div className="text-[#848E9C] text-xs">≈ Rp {formatRupiah(getTPCPriceInIDR(usdIdrRate, 'stage1_usdc'))}</div>
+                    <div className="text-[#848E9C] text-xs">≈ Rp {formatNumberID(getTPCPriceInIDR(usdIdrRate, 'stage1_usdc'))}</div>
                   </div>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-[#848E9C]">Harga Stage 2</span>
                   <div className="text-right">
                     <span className="text-white font-semibold">${TPC_PRICING.stage2_usdc.toFixed(3)}</span>
-                    <div className="text-[#848E9C] text-xs">≈ Rp {formatRupiah(getTPCPriceInIDR(usdIdrRate, 'stage2_usdc'))}</div>
+                    <div className="text-[#848E9C] text-xs">≈ Rp {formatNumberID(getTPCPriceInIDR(usdIdrRate, 'stage2_usdc'))}</div>
                   </div>
                 </div>
                 <div className="flex justify-between items-center">
@@ -731,7 +855,7 @@ export default function BuyTPCPage() {
                   <span className="text-[#848E9C]">Target Listing DEX</span>
                   <div className="text-right">
                     <span className="text-[#F0B90B] font-semibold">${TPC_PRICING.listing_target_usdc.toFixed(3)}</span>
-                    <div className="text-[#848E9C] text-xs">≈ Rp {formatRupiah(getTPCPriceInIDR(usdIdrRate, 'listing_target_usdc'))}</div>
+                    <div className="text-[#848E9C] text-xs">≈ Rp {formatNumberID(getTPCPriceInIDR(usdIdrRate, 'listing_target_usdc'))}</div>
                   </div>
                 </div>
               </CardContent>
@@ -762,6 +886,22 @@ export default function BuyTPCPage() {
                       {safeNumber(tpcAmount) <= 0 ? '0' : 
                        safeNumber(tpcAmount) >= 1000 ? safeNumber(tpcAmount).toFixed(2) : safeNumber(tpcAmount).toFixed(4)}
                     </span>
+                  </div>
+                  
+                  {/* Progress bar towards minimum order */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-[#848E9C]">Progress minimal</span>
+                      <span className="text-[#848E9C]">
+                        {safeNumber(tpcAmount).toLocaleString('id-ID')} / {ORDER_RULES.MIN_TPC_ORDER.toLocaleString('id-ID')} TPC
+                      </span>
+                    </div>
+                    <div className="w-full bg-[#2B3139] rounded-full h-2 overflow-hidden">
+                      <div 
+                        className="bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] h-full transition-all duration-300"
+                        style={{ width: `${Math.min(100, (safeNumber(tpcAmount) / ORDER_RULES.MIN_TPC_ORDER) * 100)}%` }}
+                      />
+                    </div>
                   </div>
                   {sponsorBonusAmount > 0 && (
                     <div className="flex justify-between items-center">
