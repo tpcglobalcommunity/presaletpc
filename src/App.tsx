@@ -58,7 +58,6 @@ const MemberDashboardPage = lazy(() => import("@/pages/member/MemberDashboardPag
 const MemberInvoicesPage = lazy(() => import("@/pages/member/MemberInvoicesPage"));
 const MemberInvoiceDetailPage = lazy(() => import("@/pages/member/MemberInvoiceDetailPage"));
 const MemberReferralPage = lazy(() => import("@/pages/member/MemberReferralPage"));
-const MemberSettingsPage = lazy(() => import("@/pages/id/dashboard/SettingsPage"));
 const ProfilePage = lazy(() => import("@/pages/id/member/ProfilePage"));
 const EnProfilePage = lazy(() => import("@/pages/en/member/ProfilePage"));
 
@@ -199,14 +198,6 @@ const App = () => {
                     element={
                       <Suspense fallback={<PageLoader />}>
                         <MemberReferralPage />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="settings"
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <MemberSettingsPage />
                       </Suspense>
                     }
                   />
