@@ -56,6 +56,7 @@ import PublicInvoiceDetailPage from "@/pages/public/PublicInvoiceDetailPage";
 
 // Legacy Redirect Pages
 const LegacyDashboardRedirectPage = lazy(() => import("@/pages/LegacyDashboardRedirectPage"));
+const LegacyDashboardPathRedirectPage = lazy(() => import("@/pages/LegacyDashboardPathRedirectPage"));
 
 // Member Pages (New Member Area)
 const MemberDashboardPage = lazy(() => import("@/pages/member/MemberDashboardPage"));
@@ -194,6 +195,16 @@ const App = () => {
                   element={
                     <Suspense fallback={<PageLoader />}>
                       <LegacyDashboardRedirectPage />
+                    </Suspense>
+                  } 
+                />
+                
+                {/* ✅ LEGACY DASHBOARD PATH REDIRECTS */}
+                <Route 
+                  path="dashboard/*" 
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <LegacyDashboardPathRedirectPage />
                     </Suspense>
                   } 
                 />
