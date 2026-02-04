@@ -1,15 +1,20 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+// React & Router Core
+import { lazy, Suspense } from "react";
 import {
   Routes, 
   Route, 
   Navigate,
   useParams
 } from "react-router-dom";
-import { lazy, Suspense } from "react";
-import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+
+// UI & State Management
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+// Contexts & Error Boundaries
+import { AuthProvider } from "@/contexts/AuthContext";
 import RouteErrorBoundary from "@/components/RouteErrorBoundary";
 import FullScreenLoader from "@/components/FullScreenLoader";
 import PageLoader from "@/components/PageLoader";
@@ -17,15 +22,16 @@ import AppErrorBoundary from "@/components/system/AppErrorBoundary";
 import LangRoute from "@/components/system/LangRoute";
 import IdOnly from "@/components/system/IdOnly";
 
+// Layouts
+import { MobileLayout } from "@/layouts/MobileLayout";
+import { MemberLayout } from "@/layouts/MemberLayout";
+import { AdminLayoutPremium } from "@/components/AdminLayoutPremium";
+
 // WWW to non-www redirect guard
 if (typeof window !== "undefined" && window.location.hostname === "www.tpcglobal.io") {
   const target = `https://tpcglobal.io${window.location.pathname}${window.location.search}${window.location.hash}`;
   window.location.replace(target);
 }
-
-// Layouts
-import { MobileLayout } from "@/layouts/MobileLayout";
-import { MemberLayout } from "@/layouts/MemberLayout";
 
 // Auth Callback
 import AuthCallbackPage from "@/pages/auth/AuthCallbackPage";
@@ -62,9 +68,6 @@ const AdminInvoicesPage = lazy(() => import("@/pages/admin/AdminInvoicesPage"));
 const AdminInvoiceDetailPage = lazy(() => import("@/pages/admin/AdminInvoiceDetailPage"));
 const AdminUsersPage = lazy(() => import("@/pages/admin/AdminUsersPage"));
 const AdminReferralsPage = lazy(() => import("@/pages/admin/AdminReferralsPage"));
-
-// Admin Layout
-import { AdminLayoutPremium } from "@/components/AdminLayoutPremium";
 
 // LangIndexPage
 function LangIndexPage() {
