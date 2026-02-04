@@ -52,21 +52,12 @@ export default function BuyTPCPage() {
   // Fallback constants for presale config
   const FALLBACK_STAGE1_STARTED_AT = new Date('2026-02-02T00:00:00Z').getTime();
   
-  // NEW REFERRAL STATE IMPLEMENTATION
-  const refFromUrlRaw = (searchParams.get('ref') || '').trim();
-  const refFromUrl = refFromUrlRaw ? refFromUrlRaw.toUpperCase() : '';
-  const isUrlReferral = !!refFromUrl;
-
-  const [referral, setReferral] = useState<string>(refFromUrl);
-  const [referralConfirmed, setReferralConfirmed] = useState<boolean>(isUrlReferral);
-  const [referralValid, setReferralValid] = useState<boolean>(false);
-  const [referralChecking, setReferralChecking] = useState<boolean>(false);
-  const [referralError, setReferralError] = useState<string>('');
-
-  const [suggestedReferral, setSuggestedReferral] = useState<string>('');
-  const [suggestionLoading, setSuggestionLoading] = useState<boolean>(false);
-
-  const debounceRef = useRef<number | null>(null);
+  // PENDING SPONSOR LOGIC
+  const LS_KEY = 'tpc_pending_sponsor_code';
+  const refFromUrl = (searchParams.get('ref') || '').trim().toUpperCase();
+  
+  const [pendingSponsor, setPendingSponsor] = useState<string>('');
+  const [sponsorLoading, setSponsorLoading] = useState(false);
 
   // EXISTING STATE
   const [currency, setCurrency] = useState<Currency>('IDR');
@@ -84,108 +75,38 @@ export default function BuyTPCPage() {
   const goToTerms = () => navigate('/id/syarat-ketentuan');
   const goToPrivacy = () => navigate('/id/kebijakan-privasi');
 
-  // Fetch random suggestion jika TIDAK ada ref di URL
+  // Initialize pending sponsor
   useEffect(() => {
     let cancelled = false;
 
-    async function loadSuggestion() {
-      if (isUrlReferral) return; // kalau pakai ref=, tidak perlu random suggestion
-      setSuggestionLoading(true);
+    async function initSponsor() {
+      if (refFromUrl) {
+        localStorage.setItem(LS_KEY, refFromUrl);
+        setPendingSponsor(refFromUrl);
+        return;
+      }
 
-      const { data, error } = await supabase.rpc('get_random_referral_code');
+      const existing = (localStorage.getItem(LS_KEY) || '').trim().toUpperCase();
+      if (existing) {
+        setPendingSponsor(existing);
+        return;
+      }
 
+      setSponsorLoading(true);
+      const { data } = await supabase.rpc('get_random_referral_code');
       if (cancelled) return;
 
-      if (error) {
-        setSuggestedReferral('');
-        setSuggestionLoading(false);
-        return;
-      }
-
       const code = (data || '').toString().trim().toUpperCase();
-      setSuggestedReferral(code);
-      setSuggestionLoading(false);
+      if (code) {
+        localStorage.setItem(LS_KEY, code);
+        setPendingSponsor(code);
+      }
+      setSponsorLoading(false);
     }
 
-    loadSuggestion();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isUrlReferral]);
-
-  // Jika ref dari URL berubah (edge case), sync state & lock
-  useEffect(() => {
-    if (!isUrlReferral) return;
-    setReferral(refFromUrl);
-    setReferralConfirmed(true);
-  }, [isUrlReferral, refFromUrl]);
-
-  // Validasi referral ke DB (debounced)
-  useEffect(() => {
-    const code = (referral || '').trim().toUpperCase();
-
-    // reset state jika kosong
-    if (!code) {
-      setReferralValid(false);
-      setReferralError('Kode referral/sponsor wajib diisi.');
-      setReferralChecking(false);
-      if (debounceRef.current) window.clearTimeout(debounceRef.current);
-      return;
-    }
-
-    setReferralError('');
-    setReferralChecking(true);
-
-    if (debounceRef.current) window.clearTimeout(debounceRef.current);
-
-    debounceRef.current = window.setTimeout(async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('referral_code', code)
-        .limit(1)
-        .maybeSingle();
-
-      if (error) {
-        setReferralValid(false);
-        setReferralError('Gagal memvalidasi kode. Coba lagi.');
-        setReferralChecking(false);
-        return;
-      }
-
-      if (!data?.id) {
-        setReferralValid(false);
-        setReferralError('Kode referral tidak terdaftar.');
-        setReferralChecking(false);
-        return;
-      }
-
-      setReferralValid(true);
-      setReferralError('');
-      setReferralChecking(false);
-    }, 450);
-
-    return () => {
-      if (debounceRef.current) window.clearTimeout(debounceRef.current);
-    };
-  }, [referral]);
-
-  // Manual confirm rules
-  const onReferralInputChange = (v: string) => {
-    const next = (v || '').toUpperCase();
-    setReferral(next);
-    if (!referralConfirmed) setReferralConfirmed(true); // aksi manual
-  };
-
-  const useSuggestedReferral = () => {
-    if (!suggestedReferral) return;
-    setReferral(suggestedReferral);
-    setReferralConfirmed(true); // aksi manual via klik
-  };
-
-  // Gating submit
-  const canProceed = referralConfirmed && !!referral.trim() && referralValid && !referralChecking;
+    initSponsor();
+    return () => { cancelled = true; };
+  }, [refFromUrl]);
 
   // Get current user
   useEffect(() => {
@@ -269,7 +190,7 @@ export default function BuyTPCPage() {
   const sponsorBonusAmount = typeof sponsorBonus === 'number' ? sponsorBonus : sponsorBonus?.bonus_amount || 0;
   const totalTPC = tpcAmount + sponsorBonusAmount;
 
-  const isValid = amountValue > 0 && walletTpc.trim().length >= 20 && canProceed && agreed && userEmail !== null;
+  const isValid = amountValue > 0 && walletTpc.trim().length >= 20 && agreed && userEmail !== null && pendingSponsor;
 
   const handleSubmit = async () => {
     if (!isValid || isLoading) return;
@@ -283,20 +204,10 @@ export default function BuyTPCPage() {
       return;
     }
 
-    // Guard: Ensure referral is confirmed and valid
-    if (!canProceed) {
-      toast({
-        title: "Error",
-        description: "Isi & konfirmasi kode sponsor dulu untuk melanjutkan.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsLoading(true);
     try {
-      // Create invoice with referral
-      const referralClean = referral.trim().toUpperCase();
+      // Create invoice with pending sponsor
+      const referralClean = pendingSponsor.trim().toUpperCase();
       
       const { data, error } = await supabase.rpc('create_invoice_locked', {
         p_email: userEmail.toLowerCase().trim(),
@@ -319,16 +230,16 @@ export default function BuyTPCPage() {
         const invoice = data[0];
         
         // Show referral status messages
-        if (invoice.referral_valid === false && referral) {
+        if (invoice.referral_valid === false && pendingSponsor) {
           toast({
             title: "Peringatan Referral",
-            description: `Kode referral "${referral}" tidak ditemukan. Invoice dibuat tanpa bonus sponsor.`,
+            description: `Kode referral "${pendingSponsor}" tidak ditemukan. Invoice dibuat tanpa bonus sponsor.`,
             variant: "default",
           });
-        } else if (invoice.referral_valid === true && referral) {
+        } else if (invoice.referral_valid === true && pendingSponsor) {
           toast({
             title: "Referral Valid",
-            description: `Kode referral "${referral}" valid! Bonus sponsor ditambahkan.`,
+            description: `Kode referral "${pendingSponsor}" valid! Bonus sponsor ditambahkan.`,
             variant: "default",
           });
         }
@@ -443,71 +354,50 @@ export default function BuyTPCPage() {
                   </div>
                 </div>
 
-                {/* Referral Code - NEW IMPLEMENTATION */}
+                {/* Sponsor Code - AUTO ASSIGNMENT */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="text-sm font-semibold text-white/90">
                       Kode Referral / Sponsor <span className="text-[#F0B90B]">*</span>
                     </div>
-                    {isUrlReferral ? (
+                    {refFromUrl ? (
                       <span className="text-[11px] text-white/50">Dari link sponsor</span>
-                    ) : null}
+                    ) : (
+                      <span className="text-[11px] text-white/50">Auto assignment</span>
+                    )}
                   </div>
 
                   <input
                     type="text"
-                    value={referral}
-                    readOnly={isUrlReferral}
-                    onChange={(e) => onReferralInputChange(e.target.value)}
-                    placeholder="Kode referral / sponsor (WAJIB)"
-                    className={cn(
-                      "w-full px-4 py-3 bg-[#1E2329] border border-[#2B3139] rounded-xl text-white placeholder-[#848E9C] uppercase focus:outline-none focus:ring-2 focus:ring-[#F0B90B]/40 focus:border-[#F0B90B]/50",
-                      isUrlReferral && "opacity-90 cursor-not-allowed bg-[#2B3139]",
-                      referralValid && "border-emerald-500/50",
-                      !referralValid && referral && "border-red-500/50"
-                    )}
+                    value={sponsorLoading ? 'Loading...' : pendingSponsor}
+                    readOnly
+                    placeholder="Sponsor akan ditentukan otomatis"
+                    className="w-full px-4 py-3 bg-[#1E2329] border border-[#2B3139] rounded-xl text-white placeholder-[#848E9C] uppercase opacity-90 cursor-not-allowed"
                   />
 
                   <div className="flex items-center gap-2 text-[12px]">
-                    {referralChecking ? (
-                      <span className="text-white/60">Memeriksa kode...</span>
-                    ) : referralValid ? (
-                      <span className="text-emerald-400">Kode valid ✅</span>
-                    ) : referral ? (
-                      <span className="text-red-400">{referralError || 'Kode tidak valid.'}</span>
+                    {sponsorLoading ? (
+                      <span className="text-white/60">Menentukan sponsor...</span>
+                    ) : pendingSponsor ? (
+                      <span className="text-emerald-400">Sponsor ditentukan ✅</span>
                     ) : (
-                      <span className="text-white/50">Wajib diisi. Minta kode sponsor dari komunitas.</span>
+                      <span className="text-white/50">Menunggu penentuan sponsor...</span>
                     )}
                   </div>
 
-                  {!isUrlReferral && (
-                    <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-3">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <div className="text-sm font-semibold text-white/90">Belum punya sponsor?</div>
-                          <div className="text-xs text-white/60">
-                            Kita siapkan rekomendasi sponsor acak. Kamu tetap bisa ganti jika punya kode sendiri.
-                          </div>
+                  <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-semibold text-white/90">Sistem Sponsor Otomatis</div>
+                        <div className="text-xs text-white/60">
+                          {refFromUrl 
+                            ? `Sponsor dari link: ${refFromUrl}`
+                            : "Sponsor ditentukan otomatis untuk memastikan semua member memiliki upline."
+                          }
                         </div>
-                      </div>
-
-                      <div className="mt-3 flex items-center justify-between gap-3">
-                        <div className="text-sm font-mono text-[#F0B90B]">
-                          {suggestionLoading ? 'Loading...' : (suggestedReferral || '-')}
-                        </div>
-
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          onClick={useSuggestedReferral}
-                          disabled={!suggestedReferral || suggestionLoading}
-                          className="bg-[#F0B90B] hover:bg-[#F8D56B] text-white"
-                        >
-                          Gunakan rekomendasi
-                        </Button>
                       </div>
                     </div>
-                  )}
+                  </div>
                 </div>
 
                 {/* Agreement */}
@@ -543,9 +433,9 @@ export default function BuyTPCPage() {
                 </Button>
 
                 {/* Helper Message */}
-                {!canProceed && (
+                {!pendingSponsor && (
                   <div className="text-center text-sm text-[#848E9C]">
-                    Isi & konfirmasi kode sponsor dulu untuk melanjutkan.
+                    Menunggu penentuan sponsor otomatis...
                   </div>
                 )}
               </CardContent>
@@ -556,8 +446,8 @@ export default function BuyTPCPage() {
           <div className="space-y-6">
             {/* Countdown Card */}
             <CountdownCard
-              endAt={endAt}
-              label={label}
+              targetDate={new Date(endAt)}
+              title={label}
               className="bg-[#1E2329]/50 backdrop-blur-xl border border-[#1F2A33]"
             />
 

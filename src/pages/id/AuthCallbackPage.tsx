@@ -10,8 +10,6 @@ export default function AuthCallbackPage() {
 
     const handleAuth = async () => {
       try {
-        console.log("[AUTH CALLBACK RAW]", window.location.href);
-        
         console.log("[AUTH CALLBACK] Starting session check...");
         const { data, error } = await supabase.auth.getSession();
         
@@ -27,6 +25,27 @@ export default function AuthCallbackPage() {
           console.error("[AUTH CALLBACK] No session found, redirecting to login");
           navigate("/id/login", { replace: true });
           return;
+        }
+
+        // Apply pending sponsor after login
+        const LS_KEY = 'tpc_pending_sponsor_code';
+        const code = (localStorage.getItem(LS_KEY) || '').trim().toUpperCase();
+        
+        if (code) {
+          try {
+            const { data: sponsorData, error: sponsorError } = await supabase.rpc('apply_pending_sponsor', { 
+              p_referral_code: code 
+            });
+            
+            if (sponsorError) {
+              console.warn('[AUTH CALLBACK] Failed to apply sponsor:', sponsorError.message);
+            } else {
+              console.log('[AUTH CALLBACK] Sponsor applied:', sponsorData);
+            }
+          } catch (sponsorErr) {
+            console.warn('[AUTH CALLBACK] Sponsor apply error:', sponsorErr);
+            // Don't block login if sponsor apply fails
+          }
         }
 
         console.log("[AUTH CALLBACK] Session found, redirecting to dashboard");

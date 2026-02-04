@@ -6,7 +6,6 @@ export const getAuthCallbackUrl = (lang: 'id' | 'en' = 'id') => {
   const appUrl = typeof window !== 'undefined' ? window.location.origin : import.meta.env.VITE_APP_URL;
   const callbackPath = `${lang}/auth/callback`;
   const url = joinUrl(appUrl, callbackPath);
-  console.log("[AUTH URLS] Generated callback URL:", url);
   return url;
 };
 

@@ -182,7 +182,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithGoogle = async () => {
     // Use window.location.origin for reliable callback URL
     const callbackUrl = `${window.location.origin}/id/auth/callback`;
-    console.log("[AUTH LOGIN] Redirecting to OAuth with callback:", callbackUrl);
     
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
