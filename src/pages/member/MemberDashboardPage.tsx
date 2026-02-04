@@ -119,11 +119,12 @@ export default function MemberDashboardPage() {
         return;
       }
 
-      const row = Array.isArray(data) ? data[0] : data;
+      // Handle JSON response
+      const statsData = typeof data === 'string' ? JSON.parse(data) : data;
       setStats({
-        totalInvoice: Number(row?.total_invoice ?? 0),
-        totalTPCBought: Number(row?.total_tpc_bought ?? 0),
-        totalBonusReferral: Number(row?.total_referral_bonus_tpc ?? 0),
+        totalInvoice: Number(statsData?.total_invoice ?? 0),
+        totalTPCBought: Number(statsData?.total_tpc ?? 0),
+        totalBonusReferral: Number(statsData?.total_referral_bonus ?? 0),
       });
     };
 

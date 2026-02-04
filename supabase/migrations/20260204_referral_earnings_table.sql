@@ -6,7 +6,7 @@ create table if not exists public.referral_earnings (
   user_id uuid not null references auth.users(id) on delete cascade,
   source_invoice_id uuid references public.invoices(id) on delete set null,
   bonus_tpc numeric not null default 0,
-  status text not null default 'pending', -- pending | approved | paid | cancelled
+  status text not null default 'approved',
   created_at timestamptz not null default now()
 );
 

@@ -200,6 +200,16 @@ const App = () => {
                   element={<PublicInvoiceDetailPage />}
                 />
                 
+                {/* ✅ LEGACY DASHBOARD REDIRECT */}
+                <Route 
+                  path="dashboard" 
+                  element={<Navigate to="member" replace />} 
+                />
+                <Route 
+                  path="dashboard/*" 
+                  element={<Navigate to="member" replace />} 
+                />
+                
                 {/* ✅ LEGACY EXTERNAL REDIRECTS */}
                 <Route 
                   path="invoices/:invoiceNo" 
@@ -313,15 +323,15 @@ const App = () => {
                 }>
                   <Route
                     index
-                    element={<Navigate to="dashboard" replace />}
-                  />
-                  <Route
-                    path="dashboard"
                     element={
                       <Suspense fallback={<PageLoader />}>
                         <MemberDashboardPage />
                       </Suspense>
                     }
+                  />
+                  <Route
+                    path="dashboard"
+                    element={<Navigate to="." replace />}
                   />
                   <Route
                     path="invoices"
