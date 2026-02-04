@@ -4,113 +4,142 @@
 -- dfbbf71c-0a7c-43fb-bab0-d21f12b78b47
 -- ============================================================
 
+begin;
+
 do $$
 declare
   v_super_admin uuid := 'dfbbf71c-0a7c-43fb-bab0-d21f12b78b47';
 begin
+  -- ============================================================
+  -- 1) DELETE APPLICATION DATA (ORDER MATTERS)
+  -- ============================================================
 
--- ============================================================
--- 2. DELETE APPLICATION DATA (ORDER MATTERS)
--- ============================================================
+  -- invoices
+  if to_regclass('public.invoices') is not null then
+    execute format('delete from public.invoices where user_id <> %L::uuid', v_super_admin);
+  end if;
 
--- Invoices & payments
-delete from public.invoices
-where user_id <> v_super_admin;
+  -- withdrawals (optional)
+  if to_regclass('public.withdrawals') is not null then
+    execute format('delete from public.withdrawals where user_id <> %L::uuid', v_super_admin);
+  end if;
 
--- Withdrawals (if exists)
-begin
-  delete from public.withdrawals where user_id <> v_super_admin;
-exception when others then null;
-end;
+  -- referrals (optional, columns may vary)
+  if to_regclass('public.referrals') is not null then
+    begin
+      execute format(
+        'delete from public.referrals where user_id <> %L::uuid or sponsor_user_id <> %L::uuid',
+        v_super_admin, v_super_admin
+      );
+    exception when others then
+      null;
+    end;
+  end if;
 
--- Referral / commission tables (adjust names if needed)
-begin
-  delete from public.referrals where user_id <> v_super_admin or sponsor_user_id <> v_super_admin;
-exception when others then null;
-end;
+  -- commissions (optional)
+  if to_regclass('public.commissions') is not null then
+    execute format('delete from public.commissions where user_id <> %L::uuid', v_super_admin);
+  end if;
 
-begin
-  delete from public.commissions where user_id <> v_super_admin;
-exception when others then null;
-end;
+  -- commission_ledger (optional, columns may vary)
+  if to_regclass('public.commission_ledger') is not null then
+    begin
+      execute format(
+        'delete from public.commission_ledger where user_id <> %L::uuid or source_user_id <> %L::uuid',
+        v_super_admin, v_super_admin
+      );
+    exception when others then
+      null;
+    end;
+  end if;
 
--- Commission ledger (if exists)
-begin
-  delete from public.commission_ledger where user_id <> v_super_admin or source_user_id <> v_super_admin;
-exception when others then null;
-end;
+  -- audit_logs (optional)
+  if to_regclass('public.audit_logs') is not null then
+    execute format('delete from public.audit_logs where user_id <> %L::uuid', v_super_admin);
+  end if;
 
--- Audit / logs
-begin
-  delete from public.audit_logs where user_id <> v_super_admin;
-exception when others then null;
-end;
+  -- member_settings (optional)
+  if to_regclass('public.member_settings') is not null then
+    execute format('delete from public.member_settings where user_id <> %L::uuid', v_super_admin);
+  end if;
 
--- Any other member-only tables (SAFE GENERIC)
-begin
-  delete from public.member_settings where user_id <> v_super_admin;
-exception when others then null;
-end;
+  -- ============================================================
+  -- 2) PROFILES (KEEP SUPER ADMIN)
+  -- ============================================================
+  if to_regclass('public.profiles') is not null then
+    execute format('delete from public.profiles where user_id <> %L::uuid', v_super_admin);
 
--- ============================================================
--- 3. CLEAN PROFILES (KEEP SUPER ADMIN)
--- ============================================================
-delete from public.profiles
-where user_id <> v_super_admin;
+    update public.profiles
+    set role = 'super_admin'
+    where user_id = v_super_admin;
+  end if;
 
--- Ensure super admin role is correct
-update public.profiles
-set role = 'super_admin'
-where user_id = v_super_admin;
-
--- ============================================================
--- 4. CLEAN AUTH USERS (KEEP SUPER ADMIN)
--- ============================================================
-delete from auth.users
-where id <> v_super_admin;
+  -- ============================================================
+  -- 3) AUTH USERS (KEEP SUPER ADMIN) - may fail if no privilege
+  -- ============================================================
+  begin
+    execute format('delete from auth.users where id <> %L::uuid', v_super_admin);
+  exception when others then
+    null;
+  end;
 
 end $$;
 
+commit;
+
 -- ============================================================
--- 5. VERIFICATION
+-- VERIFICATION (SAFE)
+-- - no DO variables here
+-- - no missing table references
 -- ============================================================
 
--- Check super admin still exists
-select 
-  'AUTH USERS' as table_name,
+-- Super admin auth user must exist
+select
+  'AUTH USERS (super admin)' as check_name,
   count(*) as row_count,
   array_agg(email) as emails
 from auth.users
-where id = v_super_admin
-group by 'AUTH USERS';
+where id = 'dfbbf71c-0a7c-43fb-bab0-d21f12b78b47';
 
--- Check super admin profile still exists
-select 
-  'PROFILES' as table_name,
+-- Super admin profile must exist
+select
+  'PROFILES (super admin)' as check_name,
   count(*) as row_count,
   array_agg(email) as emails,
   array_agg(role) as roles
 from public.profiles
-where user_id = v_super_admin
-group by 'PROFILES';
+where user_id = 'dfbbf71c-0a7c-43fb-bab0-d21f12b78b47';
 
--- Check all other data is gone (safe generic)
-select 
-  table_name,
-  row_count
-from (
-  select 'invoices' as table_name, count(*) as row_count from public.invoices where user_id <> v_super_admin
-  union all
-  select 'profiles' as table_name, count(*) as row_count from public.profiles where user_id <> v_super_admin
-  union all
-  select 'auth.users' as table_name, count(*) as row_count from auth.users where id <> v_super_admin
-  union all
-  select 'referrals' as table_name, count(*) as row_count from public.referrals
-  union all
-  select 'withdrawals' as table_name, count(*) as row_count from public.withdrawals
-  union all
-  select 'commission_ledger' as table_name, count(*) as row_count from public.commission_ledger
-  union all
-  select 'member_settings' as table_name, count(*) as row_count from public.member_settings
-) table_counts
-order by table_name;
+-- Optional counts (dynamic, won't error if table missing)
+do $$
+declare
+  t text;
+  cnt bigint;
+begin
+  foreach t in array array[
+    'public.invoices',
+    'public.withdrawals',
+    'public.referrals',
+    'public.commissions',
+    'public.commission_ledger',
+    'public.audit_logs',
+    'public.member_settings',
+    'public.profiles'
+  ]
+  loop
+    if to_regclass(t) is not null then
+      execute format('select count(*) from %s', t) into cnt;
+      raise notice '% => % rows', t, cnt;
+    else
+      raise notice '% => (table not found)', t;
+    end if;
+  end loop;
+
+  -- Also verify no other auth users if privileges allow reading
+  begin
+    execute 'select count(*) from auth.users' into cnt;
+    raise notice 'auth.users => % rows (should be 1)', cnt;
+  exception when others then
+    raise notice 'auth.users => (no privilege to count)';
+  end;
+end $$;
