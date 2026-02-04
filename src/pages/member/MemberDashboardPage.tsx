@@ -7,7 +7,6 @@ import { formatNumberID } from '@/lib/number';
 import { useToast } from '@/hooks/use-toast';
 
 interface Invoice {
-  id: string;
   invoice_no: string;
   status: string;
   tpc_amount: number;
@@ -34,7 +33,7 @@ export default function MemberDashboardPage() {
       
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id,email_initial,email_current,member_code,referred_by')
+        .select('user_id,email_initial,email_current,member_code,created_at')
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -58,7 +57,7 @@ export default function MemberDashboardPage() {
         // For now, use direct query since RPC might not exist
         const { data, error } = await supabase
           .from('invoices')
-          .select('id,invoice_no,status,tpc_amount,created_at')
+          .select('invoice_no,status,tpc_amount,created_at')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(10);
