@@ -507,7 +507,20 @@ export default function BuyTPCPage() {
       }
 
       if (data) {
-        const invoice = data;
+        // FIX: Handle SETOF return type - data could be array or single object
+        const invoice = Array.isArray(data) ? data[0] : data;
+        
+        // DEV-only debug log
+        if (import.meta.env.DEV) {
+          console.log('[INVOICE_RPC]', invoice);
+        }
+        
+        // HARD ERROR: Validate invoice has valid invoice_no
+        if (!invoice || typeof invoice.invoice_no !== 'string') {
+          setSubmitError('Invoice berhasil dibuat, tapi ID tidak valid. Hubungi admin.');
+          console.error('[INVOICE_ERROR] Invalid invoice data:', invoice);
+          return;
+        }
         
         // Show referral status messages (if available)
         if ('referral_valid' in invoice) {
@@ -531,8 +544,8 @@ export default function BuyTPCPage() {
           description: `Invoice #${invoice.invoice_no} telah dibuat. Silakan lanjut ke pembayaran.`,
         });
 
-        // Navigate to invoice detail
-        navigate(`/id/invoice/${invoice.invoice_no}`);
+        // Navigate to invoice detail (ANTI UNDEFINED)
+        navigate(`/id/invoice/${invoice.invoice_no}`, { replace: true });
       }
     } catch (error) {
       console.error('Submit error:', error);
