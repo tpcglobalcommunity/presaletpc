@@ -1,10 +1,12 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 import { MemberBottomNav } from '@/components/MemberBottomNav';
 
 export function MemberLayout() {
   const { user, isLoading } = useAuth();
+  const { lang } = useParams();
+  const safeLang = lang === 'en' ? 'en' : 'id';
 
   if (isLoading) {
     return (
@@ -15,7 +17,7 @@ export function MemberLayout() {
   }
 
   if (!user) {
-    return <Navigate to="/id/login" replace />;
+    return <Navigate to={`/${safeLang}/login`} replace />;
   }
 
   return (
