@@ -37,7 +37,8 @@ set sponsor_user_id = s.user_id
 from public.profiles s
 where p.sponsor_user_id is null
   and p.referred_by is not null
-  and s.member_code = p.referred_by;
+  and s.member_code is not null
+  and s.member_code = p.referred_by::text;
 
 -- 4) Trigger helper: setiap insert/update referred_by -> otomatis isi sponsor_user_id
 create or replace function public._profiles_sync_sponsor_user_id()
@@ -56,7 +57,7 @@ begin
 
   select user_id into v_sponsor_user_id
   from public.profiles
-  where member_code = new.referred_by
+  where member_code = new.referred_by::text
   limit 1;
 
   new.sponsor_user_id := v_sponsor_user_id;
