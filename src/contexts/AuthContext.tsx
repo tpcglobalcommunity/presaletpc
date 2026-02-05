@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useState, ReactNode, useRef } fro
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { isAdminUserId } from '@/config/admin';
-import { getAuthCallbackUrl } from '@/lib/auth-urls';
 import { ensureProfile } from "@/lib/ensureProfile";
 
 interface Profile {
@@ -33,7 +32,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const isInitializingRef = useRef(false);
+
+  // ✅ guard yang benar
+  const authListenerMountedRef = useRef(false);
+  const profileInitForUserRef = useRef<string | null>(null);
+  const profileInitInFlightRef = useRef(false);
 
   const isAdmin = isAdminUserId(user?.id);
 
@@ -49,7 +52,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return null;
     }
     
-    // Handle case where columns don't exist yet
     if (!data || 'error' in data) {
       return null;
     }
@@ -58,7 +60,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const createProfile = async (user: User, referredBy?: string | null) => {
-    // Generate member code
     const { data: memberCode } = await supabase.rpc('generate_member_code');
     
     const { data, error } = await supabase
@@ -78,7 +79,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return null;
     }
     
-    // Handle case where data structure doesn't match Profile interface yet
     if (!data) {
       return null;
     }
@@ -87,7 +87,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const linkInvoicesToUser = async (userId: string, email: string) => {
-    // Find invoices by email and link them to user
     const { error } = await supabase
       .from('invoices')
       .update({ user_id: userId })
@@ -106,85 +105,97 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Prevent multiple initializations
-    if (isInitializingRef.current) {
-      return;
-    }
-    isInitializingRef.current = true;
+    // Prevent multiple listener registrations (React strict mode / hot reload)
+    if (authListenerMountedRef.current) return;
+    authListenerMountedRef.current = true;
 
-    // Set up auth state listener FIRST
+    const initProfileOnce = async (currentSession: Session, event: string) => {
+      const uid = currentSession.user.id;
+
+      // ✅ HANYA init pada event penting
+      const shouldInit =
+        event === 'INITIAL_SESSION' ||
+        event === 'SIGNED_IN' ||
+        profileInitForUserRef.current !== uid; // user berubah
+
+      // Skip event seperti TOKEN_REFRESHED yang sering banget
+      if (!shouldInit) return;
+
+      // ✅ cegah init paralel / berulang
+      if (profileInitInFlightRef.current) return;
+      if (profileInitForUserRef.current === uid && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) {
+        return;
+      }
+
+      profileInitInFlightRef.current = true;
+
+      try {
+        await ensureProfile(uid);
+
+        let userProfile = await fetchProfile(uid);
+
+        if (!userProfile && currentSession.user.email) {
+          const { data: firstInvoice } = await supabase
+            .from('invoices')
+            .select('referral_code')
+            .eq('email', currentSession.user.email)
+            .order('created_at', { ascending: true })
+            .limit(1)
+            .maybeSingle();
+
+          userProfile = await createProfile(currentSession.user, firstInvoice?.referral_code);
+        }
+
+        if (currentSession.user.email) {
+          await linkInvoicesToUser(uid, currentSession.user.email);
+        }
+
+        setProfile(userProfile);
+        profileInitForUserRef.current = uid; // ✅ tandai sudah init untuk user ini
+      } catch (error) {
+        console.error("[AUTH] Profile initialization failed:", error);
+      } finally {
+        profileInitInFlightRef.current = false;
+        setIsLoading(false);
+      }
+    };
+
+    // Listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
 
         if (currentSession?.user) {
-          // Ensure profile exists from auth data (prevent multiple calls)
-          const initializeProfile = async () => {
-            try {
-              // Call ensureProfile to sync auth data to profiles table
-              await ensureProfile(currentSession.user.id);
-              
-              let userProfile = await fetchProfile(currentSession.user.id);
-              
-              if (!userProfile && currentSession.user.email) {
-                // Get referral from first invoice if exists
-                const { data: firstInvoice } = await supabase
-                  .from('invoices')
-                  .select('referral_code')
-                  .eq('email', currentSession.user.email)
-                  .order('created_at', { ascending: true })
-                  .limit(1)
-                  .maybeSingle();
-
-                userProfile = await createProfile(
-                  currentSession.user,
-                  firstInvoice?.referral_code
-                );
-              }
-
-              // Link invoices to user
-              if (currentSession.user.email) {
-                await linkInvoicesToUser(currentSession.user.id, currentSession.user.email);
-              }
-
-              setProfile(userProfile);
-            } catch (error) {
-              console.error("[AUTH] Profile initialization failed:", error);
-            } finally {
-              setIsLoading(false);
-              isInitializingRef.current = false;
-            }
-          };
-
-          // Immediate execution instead of setTimeout to prevent race conditions
-          initializeProfile();
+          await initProfileOnce(currentSession, event);
         } else {
           setProfile(null);
           setIsLoading(false);
-          isInitializingRef.current = false;
+          profileInitForUserRef.current = null;
+          profileInitInFlightRef.current = false;
         }
       }
     );
 
-    // THEN get initial session
-    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
-      if (!initialSession) {
+    // Initial session
+    supabase.auth.getSession()
+      .then(({ data: { session: initialSession } }) => {
+        if (!initialSession) setIsLoading(false);
+      })
+      .catch((error) => {
+        console.warn('[AUTH] getSession failed:', error);
         setIsLoading(false);
-      }
-    }).catch((error) => {
-      console.warn('[AUTH] getSession failed:', error);
-      setIsLoading(false);
-    });
+      });
 
     return () => {
       subscription.unsubscribe();
-      isInitializingRef.current = false;
+      authListenerMountedRef.current = false;
+      profileInitForUserRef.current = null;
+      profileInitInFlightRef.current = false;
     };
   }, []);
 
   const signInWithGoogle = async () => {
-    // Use window.location.origin for reliable callback URL
     const callbackUrl = `${window.location.origin}/id/auth/callback`;
     
     const { error } = await supabase.auth.signInWithOAuth({
@@ -197,20 +208,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    // Avoid global logout on client to prevent 403 loops when refresh token missing
     const { error } = await supabase.auth.signOut({ scope: 'local' });
     if (error) throw error;
   };
 
   const safeSignOut = async () => {
     try {
-      // Avoid global logout on client to prevent 403 loops when refresh token missing
       await supabase.auth.signOut({ scope: 'local' });
     } catch (error) {
       console.warn('[AUTH] Safe signOut failed:', error);
-      // Continue with local state cleanup even if signOut fails
     } finally {
-      // Always clear local state
       setUser(null);
       setSession(null);
       setProfile(null);

@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { formatRupiah, formatNumberID } from '@/lib/number';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { generateProofFilePath, getInvoiceProofUrl } from '@/lib/storage/getInvoiceProofUrl';
 import { getDestination } from '@/config/paymentDestinations';
 import { ErrorCard, LoadingCard } from '@/components/member/MemberUIStates';
 
@@ -171,8 +172,8 @@ export default function MemberInvoiceDetailPage() {
 
     setUploadingFile(true);
     try {
-      const fileName = `${Date.now()}-${selectedFile.name}`;
-      const filePath = `${user.id}/${invoice.id}/${fileName}`;
+      // Generate file path with correct structure: {user_id}/{invoice_id}/{timestamp}-{filename}
+      const filePath = generateProofFilePath(user.id, invoice.id, selectedFile);
 
       // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
@@ -183,10 +184,13 @@ export default function MemberInvoiceDetailPage() {
         throw uploadError;
       }
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('invoice-proofs')
-        .getPublicUrl(filePath);
+      // Get public URL with validation
+      const publicUrl = getInvoiceProofUrl(filePath);
+      
+      // VALIDASI KETAT: Abort jika publicUrl invalid
+      if (!publicUrl) {
+        throw new Error('Gagal generate public URL untuk bukti pembayaran. Silakan coba lagi.');
+      }
 
       // Update invoice with all required fields
       const { error: updateError } = await supabase
@@ -514,29 +518,40 @@ export default function MemberInvoiceDetailPage() {
         )}
 
         {/* Proof Display - Show if proof exists */}
-        {invoice.proof_url && (
-          <div className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4">
-            <h3 className="text-white font-semibold mb-4">Bukti Pembayaran</h3>
-            <div className="space-y-3">
-              <div className="bg-[#2B3139]/50 rounded-lg p-3">
-                <a 
-                  href={invoice.proof_url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between text-[#F0B90B] hover:text-[#F8D56B] transition-colors"
-                >
-                  <span className="text-sm">Lihat Bukti Pembayaran</span>
-                  <ExternalLink className="h-4 w-4" />
-                </a>
+        {invoice.proof_url && (() => {
+          const proofUrl = getInvoiceProofUrl(invoice.proof_url);
+          if (!proofUrl) {
+            return (
+              <div className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4">
+                <h3 className="text-white font-semibold mb-4">Bukti Pembayaran</h3>
+                <Alert className="bg-red-500/10 border-red-500/20">
+                  <AlertDescription className="text-red-400">
+                    Bukti pembayaran tidak tersedia atau URL tidak valid.
+                  </AlertDescription>
+                </Alert>
               </div>
-              {invoice.status === 'UNPAID' && (
-                <div className="text-[#848E9C] text-xs">
-                  Bukti pembayaran sedang dalam proses verifikasi. Anda akan menerima notifikasi setelah pembayaran dikonfirmasi.
+            );
+          }
+          
+          return (
+            <div className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4">
+              <h3 className="text-white font-semibold mb-4">Bukti Pembayaran</h3>
+              <div className="space-y-3">
+                <div className="bg-[#2B3139]/50 rounded-lg p-3">
+                  <a 
+                    href={proofUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between text-[#F0B90B] hover:text-[#F8D56B] transition-colors"
+                  >
+                    <span className="text-sm">Lihat Bukti Pembayaran</span>
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
                 </div>
-              )}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Additional Info */}
         {(invoice.transfer_method || invoice.wallet_tpc) && (

@@ -1,9 +1,9 @@
 import { supabase } from '@/integrations/supabase/client';
-import { INVOICE_PROOF_BUCKET } from '@/config/storage';
+import { PROOF_BUCKET } from '@/config/storage';
 
 /**
- * Get the public URL for an invoice proof
- * Handles both legacy full URLs and new path-only storage
+ * Get public URL for an invoice proof
+ * Validates URL is from correct bucket before returning
  * 
  * @param proofValue - Either a full URL (legacy) or file path (new)
  * @returns Public URL string or null if invalid
@@ -11,20 +11,33 @@ import { INVOICE_PROOF_BUCKET } from '@/config/storage';
 export function getInvoiceProofUrl(proofValue: string | null | undefined): string | null {
   if (!proofValue) return null;
   
-  // Legacy: if it's already a full URL, return as-is
+  // Legacy: if it's already a full URL, validate it's from correct bucket
   if (proofValue.startsWith('http://') || proofValue.startsWith('https://')) {
-    return proofValue;
+    // Backend safety: ensure URL is from invoice-proofs bucket
+    if (proofValue.includes('/storage/v1/object/public/invoice-proofs/')) {
+      return proofValue;
+    }
+    console.error('[STORAGE] Invalid proof URL - not from invoice-proofs bucket:', proofValue);
+    return null;
   }
   
   // New: generate public URL from bucket path
   try {
     const { data } = supabase.storage
-      .from(INVOICE_PROOF_BUCKET)
+      .from(PROOF_BUCKET)
       .getPublicUrl(proofValue);
     
-    return data.publicUrl;
+    const publicUrl = data.publicUrl;
+    
+    // Backend safety: validate generated URL
+    if (!publicUrl || !publicUrl.includes('/storage/v1/object/public/invoice-proofs/')) {
+      console.error('[STORAGE] Generated invalid proof URL:', publicUrl);
+      return null;
+    }
+    
+    return publicUrl;
   } catch (error) {
-    console.error('Error generating proof URL:', error);
+    console.error('[STORAGE] Error generating proof URL:', error);
     return null;
   }
 }
@@ -50,6 +63,7 @@ export async function isProofUrlAccessible(proofValue: string | null | undefined
 
 /**
  * Generate a unique file path for invoice proof upload
+ * Structure: invoice-proofs/{user_id}/{invoice_id}/{timestamp}-{filename}
  * 
  * @param userId - User ID
  * @param invoiceId - Invoice ID
@@ -58,6 +72,5 @@ export async function isProofUrlAccessible(proofValue: string | null | undefined
  */
 export function generateProofFilePath(userId: string, invoiceId: string, file: File): string {
   const timestamp = Date.now();
-  const extension = file.name.split('.').pop() || 'jpg';
-  return `proofs/${userId}/${invoiceId}-${timestamp}.${extension}`;
+  return `${userId}/${invoiceId}/${timestamp}-${file.name}`;
 }
