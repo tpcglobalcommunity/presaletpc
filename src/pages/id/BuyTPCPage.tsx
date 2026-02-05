@@ -27,6 +27,11 @@ import { cn } from '@/lib/utils';
 import CountdownCard from '@/components/CountdownCard';
 import tpcLogo from '@/assets/tpc.png';
 
+// CURRENT BEHAVIOR vs TARGET BEHAVIOR:
+// CURRENT: Calls ensureProfile (with sponsor logic) then create_invoice_locked (separate sponsor logic)
+// TARGET: Calls ensureProfile (minimal, no sponsor) then create_invoice_locked (sponsor logic moved here)
+// SPONSOR LOGIC: Moved from profile creation to invoice creation (best effort, never fails)
+
 type Currency = MoneyCurrency;
 
 interface PresaleConfig {
