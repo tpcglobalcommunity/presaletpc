@@ -16,12 +16,12 @@ export function getProofPublicUrl(proofUrl: string | null | undefined): string |
   if (isHttpUrl(proofUrl)) {
     const normalizedUrl = normalizeProofUrl(proofUrl);
     
-    // Backend safety: ensure URL is from proofs bucket
-    if (normalizedUrl?.includes('/storage/v1/object/public/proofs/')) {
+    // Backend safety: ensure URL is from invoice-proofs bucket
+    if (normalizedUrl?.includes('/storage/v1/object/public/invoice-proofs/')) {
       return normalizedUrl;
     }
     
-    console.error('[STORAGE] Invalid proof URL - not from proofs bucket:', proofUrl);
+    console.error('[STORAGE] Invalid proof URL - not from invoice-proofs bucket:', proofUrl);
     return null;
   }
   
@@ -34,7 +34,7 @@ export function getProofPublicUrl(proofUrl: string | null | undefined): string |
     const publicUrl = data.publicUrl;
     
     // Backend safety: validate generated URL
-    if (!publicUrl || !publicUrl.includes('/storage/v1/object/public/proofs/')) {
+    if (!publicUrl || !publicUrl.includes('/storage/v1/object/public/invoice-proofs/')) {
       console.error('[STORAGE] Generated invalid proof URL:', publicUrl);
       return null;
     }
@@ -47,7 +47,7 @@ export function getProofPublicUrl(proofUrl: string | null | undefined): string |
     if (error.message?.includes('Bucket not found') || 
         error.message?.includes('The bucket does not exist') ||
         error.status === 400 || error.status === 404) {
-      console.error('[STORAGE] Bucket configuration error - proofs must be PUBLIC or project mismatch');
+      console.error('[STORAGE] Bucket configuration error - invoice-proofs must be PUBLIC or project mismatch');
     }
     
     return null;
@@ -75,7 +75,7 @@ export async function isProofUrlAccessible(proofUrl: string | null | undefined):
 
 /**
  * Generate a unique file path for invoice proof upload
- * Structure: proofs/{user_id}/{invoice_id}/{timestamp}-{filename}
+ * Structure: invoice-proofs/{user_id}/{invoice_id}/{timestamp}-{filename}
  * 
  * @param userId - User ID
  * @param invoiceId - Invoice ID

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams, useParams } from 'react-router-dom';
 import { Coins, ArrowRight, Loader2, Shield, CheckCircle, ExternalLink, AlertTriangle, XCircle } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import CountdownCard from '@/components/CountdownCard';
 import tpcLogo from '@/assets/tpc.png';
@@ -48,7 +49,31 @@ export default function BuyTPCPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const { lang = 'id' } = useParams(); // Get lang from URL
   const { toast } = useToast();
+  const { user } = useAuth(); // Auth guard
+  
+  // AUTH GUARD: Redirect to login if not authenticated
+  useEffect(() => {
+    if (!user) {
+      toast({
+        title: 'Login Diperlukan',
+        description: 'Silakan login terlebih dahulu sebelum membuat invoice.',
+        variant: 'destructive'
+      });
+      navigate(`/${lang}/auth?returnTo=${encodeURIComponent(location.pathname + location.search)}`);
+      return;
+    }
+  }, [user, navigate, toast, lang, location.pathname, location.search]);
+  
+  // Early return if user not ready
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#0D0F1D] flex items-center justify-center">
+        <div className="text-white">Mengarahkan ke halaman login...</div>
+      </div>
+    );
+  }
   
   // Presale configuration from environment variables
   const endAt = import.meta.env.VITE_PRESALE_END_AT ?? "2026-08-02T19:49:30+08:00";
@@ -508,6 +533,17 @@ export default function BuyTPCPage() {
 
       if (error) {
         console.error('Invoice creation error:', error);
+        
+        // Handle auth required error
+        if (error.message?.includes('AUTH_REQUIRED')) {
+          toast({
+            title: 'Login Diperlukan',
+            description: 'Silakan login dulu sebelum membuat invoice.',
+            variant: 'destructive'
+          });
+          navigate(`/${lang}/auth?returnTo=${encodeURIComponent(location.pathname + location.search)}`);
+          return;
+        }
         
         // Human-friendly error messages
         if (error.message?.includes('Wallet TPC wajib diisi')) {

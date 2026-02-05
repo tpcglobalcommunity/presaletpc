@@ -6,12 +6,19 @@
 export function normalizeProofUrl(url?: string | null): string | null {
   if (!url) return null;
   
-  // Legacy URL: replace old bucket name with new one
-  if (url.includes("/invoice-proofs/")) {
-    const normalized = url.replace("/invoice-proofs/", "/proofs/");
+  // Legacy URL: replace proofs bucket with invoice-proofs
+  if (url.includes("/proofs/")) {
+    const normalized = url.replace("/proofs/", "/invoice-proofs/");
     console.warn('[STORAGE] Normalized legacy proof URL:', normalized);
     return normalized;
   }
   
-  return url;
+  // Legacy URL: ensure invoice-proofs bucket is used
+  if (url.includes("/invoice-proofs/")) {
+    return url; // Already correct
+  }
+  
+  // If URL doesn't contain expected bucket, log error
+  console.error('[STORAGE] Invalid proof URL - no valid bucket found:', url);
+  return null;
 }
