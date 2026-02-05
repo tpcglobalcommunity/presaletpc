@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Search, Filter, Wallet, CheckCircle, XCircle, Clock, Copy, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Search, Filter, Wallet, CheckCircle, XCircle, Clock, Copy, ChevronLeft, ChevronRight, ScrollText, Eye } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,15 @@ interface Withdrawal {
   member_code: string;
 }
 
+interface AuditLog {
+  id: string;
+  action: 'REQUEST' | 'APPROVE' | 'REJECT';
+  actor_role: 'member' | 'admin';
+  actor_user_id: string;
+  metadata: any;
+  created_at: string;
+}
+
 export default function WithdrawalsPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -49,6 +58,12 @@ export default function WithdrawalsPage() {
     withdrawal: Withdrawal | null;
     reason: string;
   }>({ open: false, withdrawal: null, reason: '' });
+  const [auditLogDialog, setAuditLogDialog] = useState<{
+    open: boolean;
+    withdrawal: Withdrawal | null;
+    logs: AuditLog[];
+    isLoading: boolean;
+  }>({ open: false, withdrawal: null, logs: [], isLoading: false });
 
   const limit = 20;
   const offset = (currentPage - 1) * limit;
@@ -247,6 +262,36 @@ export default function WithdrawalsPage() {
         description: 'Gagal menyalin',
         variant: 'destructive'
       });
+    }
+  };
+
+  const handleViewAuditLog = async (withdrawal: Withdrawal) => {
+    setAuditLogDialog({ open: true, withdrawal, logs: [], isLoading: true });
+    
+    try {
+      const { data, error } = await supabase.rpc('admin_get_withdrawal_audit_logs' as any, {
+        p_withdrawal_id: withdrawal.id
+      });
+
+      if (error) {
+        console.error('Error fetching audit logs:', error);
+        toast({
+          title: 'Error',
+          description: 'Gagal memuat audit log',
+          variant: 'destructive'
+        });
+      } else {
+        setAuditLogDialog(prev => ({ ...prev, logs: data || [] }));
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast({
+        title: 'Error',
+        description: 'Terjadi kesalahan yang tidak terduga',
+        variant: 'destructive'
+      });
+    } finally {
+      setAuditLogDialog(prev => ({ ...prev, isLoading: false }));
     }
   };
 
@@ -462,6 +507,24 @@ export default function WithdrawalsPage() {
                         </Button>
                       </div>
                     )}
+                    {withdrawal.status !== 'PENDING' && (
+                      <Button
+                        disabled
+                        variant="outline"
+                        className="border-slate-700/50 text-slate-400"
+                      >
+                        Sudah diproses
+                      </Button>
+                    )}
+                    <Button
+                      onClick={() => handleViewAuditLog(withdrawal)}
+                      variant="ghost"
+                      size="sm"
+                      className="text-[#848E9C] hover:text-white"
+                    >
+                      <ScrollText className="w-4 h-4 mr-1" />
+                      Audit Log
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -618,6 +681,168 @@ export default function WithdrawalsPage() {
               ) : (
                 'Konfirmasi Reject'
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Audit Log Dialog */}
+      <Dialog open={auditLogDialog.open} onOpenChange={(open) => setAuditLogDialog(prev => ({ ...prev, open }))}>
+        <DialogContent className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-white max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-amber-400 flex items-center gap-2">
+              <ScrollText className="w-5 h-5" />
+              Audit Log Withdrawal
+            </DialogTitle>
+          </DialogHeader>
+          
+          {auditLogDialog.withdrawal && (
+            <div className="space-y-4">
+              <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-4">
+                <h4 className="font-semibold text-white mb-2">Detail Withdrawal</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-[#848E9C]">ID:</span>
+                    <span className="text-white font-mono text-xs">{auditLogDialog.withdrawal.id.slice(0, 8)}...</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#848E9C]">Jumlah:</span>
+                    <span className="text-white font-semibold">{formatNumberID(auditLogDialog.withdrawal.amount_tpc)} TPC</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#848E9C]">Email:</span>
+                    <span className="text-white">{auditLogDialog.withdrawal.email}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#848E9C]">Status:</span>
+                    <div>{getStatusBadge(auditLogDialog.withdrawal.status)}</div>
+                  </div>
+                </div>
+              </div>
+              
+              {auditLogDialog.isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-4 border-amber-400"></div>
+                </div>
+              ) : auditLogDialog.logs.length === 0 ? (
+                <div className="text-center py-8">
+                  <ScrollText className="h-12 w-12 text-[#848E9C] mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-white mb-2">Tidak Ada Audit Log</h3>
+                  <p className="text-[#848E9C]">Belum ada aktivitas untuk withdrawal ini.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-white">Timeline Aktivitas</h4>
+                  <div className="relative">
+                    {/* Timeline line */}
+                    <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-700"></div>
+                    
+                    {auditLogDialog.logs.map((log, index) => (
+                      <div key={log.id} className="relative flex items-start gap-4 pb-6">
+                        {/* Timeline dot */}
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center z-10 ${
+                          log.action === 'REQUEST' ? 'bg-blue-500/20 border-blue-500/30' :
+                          log.action === 'APPROVE' ? 'bg-green-500/20 border-green-500/30' :
+                          'bg-red-500/20 border-red-500/30'
+                        } border`}>
+                          {log.action === 'REQUEST' && <Clock className="w-4 h-4 text-blue-400" />}
+                          {log.action === 'APPROVE' && <CheckCircle className="w-4 h-4 text-green-400" />}
+                          {log.action === 'REJECT' && <XCircle className="w-4 h-4 text-red-400" />}
+                        </div>
+                        
+                        {/* Content */}
+                        <div className="flex-1 bg-slate-800/30 border border-slate-700/50 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className={`font-semibold ${
+                                log.action === 'REQUEST' ? 'text-blue-400' :
+                                log.action === 'APPROVE' ? 'text-green-400' :
+                                'text-red-400'
+                              }`}>
+                                {log.action === 'REQUEST' ? 'REQUEST' :
+                                 log.action === 'APPROVE' ? 'APPROVE' :
+                                 'REJECT'}
+                              </span>
+                              <span className="text-xs text-[#848E9C]">
+                                {log.actor_role === 'admin' ? 'Admin' : 'Member'}
+                              </span>
+                            </div>
+                            <span className="text-xs text-[#848E9C]">
+                              {formatDateID(log.created_at)}
+                            </span>
+                          </div>
+                          
+                          {/* Metadata details */}
+                          <div className="space-y-2 text-sm">
+                            {log.action === 'REQUEST' && (
+                              <>
+                                <div className="flex justify-between">
+                                  <span className="text-[#848E9C]">Amount:</span>
+                                  <span className="text-white">{formatNumberID(log.metadata.amount_tpc)} TPC</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-[#848E9C]">Wallet:</span>
+                                  <div className="flex items-center gap-2">
+                                    <code className="text-white font-mono text-xs bg-slate-900/50 px-2 py-1 rounded">
+                                      {truncateWalletAddress(log.metadata.wallet_address)}
+                                    </code>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => handleCopy(log.metadata.wallet_address, 'Wallet Address')}
+                                      className="text-[#848E9C] hover:text-white p-1"
+                                    >
+                                      <Copy className="w-3 h-3" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                            
+                            {log.action === 'APPROVE' && (
+                              <div className="flex justify-between items-center">
+                                <span className="text-[#848E9C]">TX Hash:</span>
+                                <div className="flex items-center gap-2">
+                                  <code className="text-green-400 font-mono text-xs bg-slate-900/50 px-2 py-1 rounded">
+                                    {truncateWalletAddress(log.metadata.tx_hash, 10, 10)}
+                                  </code>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => handleCopy(log.metadata.tx_hash, 'Transaction Hash')}
+                                    className="text-[#848E9C] hover:text-white p-1"
+                                  >
+                                    <Copy className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                            
+                            {log.action === 'REJECT' && (
+                              <div>
+                                <span className="text-[#848E9C]">Alasan:</span>
+                                <div className="text-red-400 bg-red-500/10 border border-red-500/30 px-3 py-2 rounded mt-1">
+                                  {log.metadata.reason}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button
+              onClick={() => setAuditLogDialog({ open: false, withdrawal: null, logs: [], isLoading: false })}
+              variant="outline"
+              className="border-slate-700/50 text-white hover:bg-slate-800/50"
+            >
+              Tutup
             </Button>
           </DialogFooter>
         </DialogContent>
