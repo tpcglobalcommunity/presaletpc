@@ -158,7 +158,7 @@ export default function BuyTPCPage() {
       if (import.meta.env.DEV) {
         console.log('[SPONSOR] fetching random sponsor via RPC...');
       }
-      const { data, error } = await supabase.rpc('get_random_referral_code');
+      const { data, error } = await supabase.rpc('get_random_referral_code' as any);
 
       if (cancelled) return;
 
