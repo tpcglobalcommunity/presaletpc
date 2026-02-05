@@ -40,6 +40,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const profileInitForUserRef = useRef<string | null>(null);
   const profileInitInFlightRef = useRef(false);
   const safetyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isLoadingRef = useRef(true); // ✅ NEW: Ref untuk safety timeout
+
+  // Update ref setiap kali isLoading berubah
+  useEffect(() => {
+    isLoadingRef.current = isLoading;
+  }, [isLoading]);
 
   const isAdmin = isAdminUserId(user?.id);
 
@@ -176,18 +182,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
           if (!session?.user) {
             setProfile(null);
+            // ✅ UI READY segera (tidak menunggu profile init)
+            setIsLoading(false);
+            isLoadingRef.current = false;
+            setSessionInitialized(true);
             return;
           }
 
-          // init profile hanya jika perlu
-          await initProfileOnce(session, event);
+          // ✅ UI READY segera (tidak menunggu profile init)
+          setIsLoading(false);
+          isLoadingRef.current = false;
+          setSessionInitialized(true);
+
+          // ✅ Background init - fire-and-forget
+          initProfileOnce(session, event).catch((e) =>
+            console.error("[AUTH] background initProfileOnce failed:", e)
+          );
+          return;
 
         } catch (err) {
           console.error('[AUTH] fatal:', err);
-        } finally {
-          // 🔒 HARD LOCK — APAPUN KONDISINYA
+          // ✅ Force UI ready pada error
           setIsLoading(false);
-          // ✅ Tandai session sudah di-initialize
+          isLoadingRef.current = false;
           setSessionInitialized(true);
         }
       }
@@ -201,22 +218,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!initialSession) {
           console.log('[AUTH] No initial session, setting isLoading to false');
           setIsLoading(false);
+          isLoadingRef.current = false;
           setSessionInitialized(true);
         }
         // ❌ HAPUS: Tidak panggil initProfileOnce manual
-        // Biarkan onAuthStateChange yang handle init
+        // Biarkan onAuthStateChange yang handle init dengan non-blocking
       })
       .catch((error) => {
         console.error('[AUTH] getSession failed:', error);
         setIsLoading(false);
+        isLoadingRef.current = false;
         setSessionInitialized(true);
       });
 
     // 🛡️ SAFETY NET - Gunakan ref yang sudah ada
     safetyTimeoutRef.current = setTimeout(() => {
-      if (isLoading) {
+      if (isLoadingRef.current) {
         console.warn('[AUTH] SAFETY TIMEOUT - forcing loading to false');
         setIsLoading(false);
+        isLoadingRef.current = false;
+        setSessionInitialized(true); // ✅ Biar layout tidak gating
       }
     }, 3000);
 
