@@ -198,20 +198,22 @@ export default function MemberInvoiceDetailPage() {
         throw new Error('Gagal generate public URL untuk bukti pembayaran. Silakan coba lagi.');
       }
 
-      // Update invoice with all required fields
-      const { error: updateError } = await supabase
-        .from('invoices')
-        .update({ 
-          proof_url: publicUrl,
-          proof_uploaded_at: new Date().toISOString(),
-          submitted_at: new Date().toISOString(),
-          status: 'PENDING_REVIEW'
-        })
-        .eq('id', invoice.id)
-        .eq('user_id', user.id); // Security check
+      // Submit proof via secure RPC function
+      const { data: submitResult, error: submitError } = await supabase.rpc('member_submit_invoice_proof' as any, {
+        p_invoice_id: invoice.id,
+        p_user_id: user.id,
+        p_proof_url: publicUrl,
+        p_proof_uploaded_at: new Date().toISOString()
+      });
 
-      if (updateError) {
-        throw updateError;
+      if (submitError) {
+        throw new Error('Gagal submit bukti pembayaran: ' + submitError.message);
+      }
+
+      // Handle RPC result properly
+      const result = submitResult as any[];
+      if (!result || result.length === 0 || !result[0]?.success) {
+        throw new Error(result?.[0]?.message || 'Gagal submit bukti pembayaran');
       }
 
       // Clear selected file and preview
@@ -221,31 +223,9 @@ export default function MemberInvoiceDetailPage() {
       // Refresh invoice data
       await fetchInvoice();
       
-      // Send email notification to admin
-      try {
-        const { error: emailError } = await supabase.functions.invoke('send-admin-invoice-email', {
-          body: {
-            invoice_no: invoice.invoice_no,
-            base_currency: invoice.base_currency,
-            amount_input: invoice.amount_input,
-            tpc_amount: invoice.tpc_amount,
-            proof_url: publicUrl,
-            member_email: user.email
-          }
-        });
-
-        if (emailError) {
-          console.error('Email notification failed:', emailError);
-          // Don't show error to user, just log it
-        }
-      } catch (emailError) {
-        console.error('Email notification error:', emailError);
-        // Don't show error to user, just log it
-      }
-      
       toast({ 
         title: 'Upload Berhasil!', 
-        description: 'Bukti pembayaran berhasil diunggah dan dikirim untuk verifikasi.' 
+        description: 'Bukti pembayaran berhasil dikirim. Admin akan segera memverifikasi.' 
       });
     } catch (error) {
       console.error('Upload error:', error);
