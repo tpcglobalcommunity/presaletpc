@@ -300,6 +300,9 @@ export default function BuyTPCPage() {
         break;
     }
 
+    // ✅ FIX: Update amountUsd state so USD estimate displays correctly
+    setAmountUsd(usd);
+
     // Calculate TPC amount (using stage 1 price)
     const tpc = usd / TPC_PRICING.stage1_usdc;
     setTpcAmount(tpc);
