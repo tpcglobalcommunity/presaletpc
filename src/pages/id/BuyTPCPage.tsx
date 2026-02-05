@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { buildLoginUrl } from '@/lib/authRedirect';
 import { cn } from '@/lib/utils';
 import CountdownCard from '@/components/CountdownCard';
 import tpcLogo from '@/assets/tpc.png';
@@ -61,7 +62,7 @@ export default function BuyTPCPage() {
         description: 'Silakan login terlebih dahulu sebelum membuat invoice.',
         variant: 'destructive'
       });
-      navigate(`/${lang}/auth?returnTo=${encodeURIComponent(location.pathname + location.search)}`);
+      navigate(buildLoginUrl(lang, location.pathname + location.search));
       return;
     }
   }, [user, navigate, toast, lang, location.pathname, location.search]);
@@ -541,7 +542,7 @@ export default function BuyTPCPage() {
             description: 'Silakan login dulu sebelum membuat invoice.',
             variant: 'destructive'
           });
-          navigate(`/${lang}/auth?returnTo=${encodeURIComponent(location.pathname + location.search)}`);
+          navigate(buildLoginUrl(lang, location.pathname + location.search));
           return;
         }
         

@@ -53,6 +53,7 @@ import InvoiceSuccessPage from "@/pages/id/InvoiceSuccessPage";
 // Shared Public Pages
 import TutorialPhantomWalletPage from "@/pages/public/TutorialPhantomWalletPage";
 import LoginPageV2 from "@/pages/public/LoginPage"; // V2
+import LegacyAuthRedirectPage from "@/pages/public/LegacyAuthRedirectPage";
 
 // Member Pages (Lazy Loaded)
 const MemberDashboardPage = lazy(() => import("@/pages/member/MemberDashboardPage"));
@@ -164,6 +165,12 @@ function App() {
                 <Route
                   path="tutorial/phantom-wallet"
                   element={<TutorialPhantomWalletPage />}
+                />
+                
+                {/* LEGACY AUTH REDIRECT */}
+                <Route
+                  path="auth"
+                  element={<LegacyAuthRedirectPage />}
                 />
                 
                 {/* CANONICAL DASHBOARD ROUTE */}

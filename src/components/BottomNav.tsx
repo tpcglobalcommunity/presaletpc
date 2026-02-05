@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { MenuDrawer } from './MenuDrawer';
 import { useState } from 'react';
+import { buildLoginUrl } from '@/lib/authRedirect';
 
 export function BottomNav() {
   const navigate = useNavigate();
@@ -20,7 +21,8 @@ export function BottomNav() {
       icon: Coins, 
       label: 'BUY TPC', 
       path: '/id/buytpc',
-      isPrimary: true 
+      isPrimary: true,
+      requiresAuth: true 
     },
     { 
       icon: User, 
@@ -35,7 +37,14 @@ export function BottomNav() {
         {navItems.map((item) => (
           <button
             key={item.path}
-            onClick={() => navigate(item.path)}
+            onClick={() => {
+              if (item.requiresAuth && !user) {
+                // Redirect to login with returnTo
+                navigate(buildLoginUrl('id', item.path));
+              } else {
+                navigate(item.path);
+              }
+            }}
             className={`flex flex-col items-center justify-center min-w-[56px] py-2 px-3 rounded-xl transition-all ${
               item.isPrimary
                 ? 'relative -mt-6'
