@@ -40,9 +40,10 @@ export default function AdminInvoicesPage() {
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
-        const { data, error } = await supabase.rpc('admin_list_invoices', {
-          p_status: statusFilter === 'all' ? null : statusFilter
-        });
+        const { data, error } = await supabase
+          .from('invoices')
+          .select('id, invoice_no, status, amount_input, base_currency, amount_usd, tpc_amount, created_at, email, transfer_method, proof_url, submitted_at')
+          .order('created_at', { ascending: false });
 
         if (error) {
           console.error('Error fetching invoices:', error);
@@ -50,7 +51,7 @@ export default function AdminInvoicesPage() {
           return;
         }
 
-        setInvoices((data as Invoice[]) || []);
+        setInvoices(data || []);
       } catch (error) {
         console.error('Error:', error);
         toast({ title: 'Terjadi kesalahan', variant: 'destructive' });
