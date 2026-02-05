@@ -38,6 +38,14 @@ export function getInvoiceProofUrl(proofValue: string | null | undefined): strin
     return publicUrl;
   } catch (error) {
     console.error('[STORAGE] Error generating proof URL:', error);
+    
+    // Check if error is related to bucket configuration
+    if (error.message?.includes('Bucket not found') || 
+        error.message?.includes('The bucket does not exist') ||
+        error.status === 400 || error.status === 404) {
+      console.error('[STORAGE] Bucket configuration error - invoice-proofs must be PUBLIC');
+    }
+    
     return null;
   }
 }
