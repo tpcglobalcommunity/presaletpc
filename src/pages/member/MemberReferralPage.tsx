@@ -53,7 +53,7 @@ export default function MemberReferralPage() {
 
     (async () => {
       try {
-        const { data, error } = await supabase.rpc('get_random_referral_code');
+        const { data, error } = await supabase.rpc('get_random_referral_code' as any);
         
         if (error) {
           console.error('Error getting random sponsor:', error);
