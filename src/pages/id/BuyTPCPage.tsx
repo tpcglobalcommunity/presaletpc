@@ -48,9 +48,6 @@ export default function BuyTPCPage() {
   const [sponsorError, setSponsorError] = useState('');
   const [defaultSponsor, setDefaultSponsor] = useState('');
 
-  // Helper function
-  const t = (key: string, en: string, id: string) => lang === 'en' ? en : id;
-
   // Load draft from URL/localStorage
   useEffect(() => {
     const draft = loadBuyDraft();
@@ -58,6 +55,12 @@ export default function BuyTPCPage() {
       setAmountValue(draft.amount_input || '');
       setCurrency(draft.currency || 'IDR');
       setWalletAddress(draft.wallet_address || '');
+      setSponsorCode(draft.ref_code || '');
+    }
+    
+    const urlRef = searchParams.get('ref');
+    if (urlRef) {
+      setSponsorCode(sanitizeReferral(urlRef));
     }
   }, [searchParams]);
 
@@ -86,14 +89,15 @@ export default function BuyTPCPage() {
   useEffect(() => {
     if (amountValue || walletAddress) {
       saveBuyDraft({
+        ref_code: sponsorCode,
         amount_input: amountValue,
         currency,
         wallet_address: walletAddress,
       });
     }
-  }, [amountValue, currency, walletAddress]);
+  }, [amountValue, currency, walletAddress, sponsorCode]);
 
-  const handleBuyRedirect = () => {
+  const handleContinue = async () => {
     if (!amountValue || parseFloat(amountValue) <= 0) {
       toast({
         title: lang === 'id' ? "Error" : "Error",
@@ -112,9 +116,68 @@ export default function BuyTPCPage() {
       return;
     }
 
+    if (!isSponsorValid) {
+      toast({
+        title: lang === 'id' ? "Error" : "Error",
+        description: lang === 'id' ? "Kode sponsor tidak valid" : "Invalid sponsor code",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    const returnTo = encodeURIComponent(`/${lang}/member/buytpc${location.search ?? ''}`);
-    navigate(`/${lang}/login?returnTo=${returnTo}`);
+    try {
+      // Use member-safe RPC for invoice creation
+      const { data, error } = await supabase.rpc('member_create_invoice_locked' as any, {
+        p_email: 'guest-user@example.com', // Will be updated with actual email after login
+        p_base_currency: currency,
+        p_amount_input: parseFloat(amountValue),
+        p_wallet_address: walletAddress,
+        p_referral_code: sponsorCode.trim().toUpperCase() || 'TPC-GLOBAL'
+      });
+
+      if (error) {
+        console.error('Error creating invoice:', error);
+        toast({
+          title: lang === 'id' ? "Error" : "Error",
+          description: lang === 'id' ? "Gagal membuat invoice" : "Failed to create invoice",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data && data.length > 0) {
+        const invoice = data[0];
+        
+        // Save draft with invoice info
+        saveBuyDraft({
+          ref_code: invoice.referral_code,
+          amount_input: amountValue,
+          currency,
+          wallet_address: walletAddress,
+        });
+
+        toast({
+          title: lang === 'id' ? "Invoice Dibuat" : "Invoice Created",
+          description: lang === 'id' ? `Invoice #${invoice.invoice_no} berhasil dibuat` : `Invoice #${invoice.invoice_no} created successfully`,
+        });
+
+        // Navigate to member area with invoice details
+        navigate(`/${lang}/member/invoices`);
+      } else {
+        toast({
+          title: lang === 'id' ? "Error" : "Error",
+          description: lang === 'id' ? "Tidak dapat membuat invoice" : "Unable to create invoice",
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      toast({
+        title: lang === 'id' ? "Error" : "Error",
+        description: lang === 'id' ? "Terjadi kesalahan" : "An error occurred",
+        variant: "destructive",
+      });
+    }
   };
 
   const endTime = new Date(endAt).getTime();
@@ -134,7 +197,7 @@ export default function BuyTPCPage() {
       </div>
 
       {/* Grid Pattern */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http://www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.03)%22%20stroke-width%3D%221%22%3E%3Cpath%20d%3D%22M0%2030h60M30%200v60%22/%3E%3C/g%3E%3C/svg%3E')] opacity-50"></div>
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%22%20xmlns%3D%22http://www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.03)%22%20stroke-width%3D%221%22%3E%3Cpath%20d%3D%22M0%2030h60M30%22/%3E%3C/g%3E%3C/svg%3E')] opacity-50"></div>
 
       <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
@@ -158,10 +221,10 @@ export default function BuyTPCPage() {
             </div>
 
             <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-white via-amber-200 to-white bg-clip-text text-transparent mb-4">
-              {t('heroTitle', 'Join TPC Presale Now', 'Bergabung dengan TPC Presale Sekarang')}
+              {lang === 'id' ? 'Bergabung dengan TPC Presale Sekarang' : 'Join TPC Presale Now'}
             </h1>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
-              {t('heroSubtitle', 'Get TPC tokens at the best price before listing on DEX', 'Dapatkan token TPC dengan harga terbaik sebelum listing di DEX')}
+              {lang === 'id' ? 'Dapatkan token TPC dengan harga terbaik sebelum listing di DEX' : 'Get TPC tokens at the best price before listing on DEX'}
             </p>
           </div>
 
@@ -177,7 +240,7 @@ export default function BuyTPCPage() {
                 <CardHeader className="pb-6">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent">
-                      {t('backToForm', 'Back to Form', 'Kembali ke Form')}
+                      {lang === 'id' ? 'Form Pembelian' : 'Purchase Form'}
                     </CardTitle>
                     <div className="flex items-center gap-2 text-amber-400">
                       <CheckCircle className="w-5 h-5" />
@@ -189,7 +252,7 @@ export default function BuyTPCPage() {
                   {/* Amount Input */}
                   <div className="space-y-3">
                     <Label htmlFor="amount" className="text-lg font-medium text-gray-200">
-                      {t('investmentAmount', 'Investment Amount', 'Jumlah Investasi')}
+                      {lang === 'id' ? 'Jumlah Investasi' : 'Investment Amount'}
                     </Label>
                     <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
                       <div className="flex items-center gap-2 mb-3">
@@ -198,10 +261,10 @@ export default function BuyTPCPage() {
                         </div>
                         <div>
                           <p className="text-sm font-medium text-gray-200">
-                            {t('investmentSummary', 'Investment Summary', 'Ringkasan Investasi')}
+                            {lang === 'id' ? 'Ringkasan Investasi' : 'Investment Summary'}
                           </p>
                           <p className="text-xs text-gray-400">
-                            {t('startFrom100kIDR', 'Start from 100.000 IDR (~$6 USD)', 'Mulai dari 100.000 IDR (~$6 USD)')}
+                            {lang === 'id' ? 'Mulai dari 100.000 IDR (~$6 USD)' : 'Start from 100.000 IDR (~$6 USD)'}
                           </p>
                         </div>
                       </div>
@@ -211,7 +274,7 @@ export default function BuyTPCPage() {
                           type="number"
                           value={amountValue}
                           onChange={(e) => setAmountValue(e.target.value)}
-                          placeholder={t('enterAmount', 'Enter amount', 'Masukkan jumlah')}
+                          placeholder={lang === 'id' ? 'Masukkan jumlah' : 'Enter amount'}
                           className="bg-slate-900/50 border-slate-700/50 text-white placeholder-gray-400 text-lg h-12 rounded-xl focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20"
                         />
                         {amountValue && (
@@ -226,11 +289,11 @@ export default function BuyTPCPage() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2 text-sm text-gray-400">
                             <TrendingUp className="w-4 h-4" />
-                            <span>{t('estimatedTPC', 'Estimated TPC', 'Estimasi TPC')}</span>
+                            <span>{lang === 'id' ? 'Estimasi TPC' : 'Estimated TPC'}</span>
                           </div>
                           <div className="text-right">
                             <div className="text-amber-400 font-bold text-lg">{tpcAmount.toFixed(2)} TPC</div>
-                            <div className="text-xs text-gray-400">{t('atTPCPrice', '@ $0.10/TPC', '@ $0.10/TPC')}</div>
+                            <div className="text-xs text-gray-400">{lang === 'id' ? '@ $0.10/TPC' : '@ $0.10/TPC'}</div>
                           </div>
                         </div>
                       </div>
@@ -240,7 +303,7 @@ export default function BuyTPCPage() {
                   {/* Currency Selection */}
                   <div className="space-y-3">
                     <Label htmlFor="currency" className="text-lg font-medium text-gray-200">
-                      {t('currency', 'Currency', 'Mata Uang')}
+                      {lang === 'id' ? 'Mata Uang' : 'Currency'}
                     </Label>
                     <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
                       <div className="flex items-center gap-2 mb-3">
@@ -249,10 +312,10 @@ export default function BuyTPCPage() {
                         </div>
                         <div>
                           <p className="text-sm font-medium text-gray-200">
-                            {t('proceedToBuy', 'Proceed to Buy', 'Lanjut Beli')}
+                            {lang === 'id' ? 'Pilih Mata Uang' : 'Choose currency'}
                           </p>
                           <p className="text-xs text-gray-400">
-                            {t('chooseSafeCurrency', 'Choose currency that suits you best', 'Pilih mata uang yang nyaman untuk Anda')}
+                            {lang === 'id' ? 'Pilih mata uang yang nyaman untuk Anda' : 'Choose currency that suits you best'}
                           </p>
                         </div>
                       </div>
@@ -264,19 +327,19 @@ export default function BuyTPCPage() {
                           <SelectItem value="IDR">
                             <div className="flex items-center gap-2">
                               <span>IDR</span>
-                              <span className="text-xs text-gray-400">- {t('indonesianRupiah', 'Indonesian Rupiah', 'Rupiah Indonesia')}</span>
+                              <span className="text-xs text-gray-400">- {lang === 'id' ? 'Rupiah Indonesia' : 'Indonesian Rupiah'}</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="USDC">
                             <div className="flex items-center gap-2">
                               <span>USDC</span>
-                              <span className="text-xs text-gray-400">- {t('usdStablecoin', 'USD Stablecoin', 'Stablecoin USD')}</span>
+                              <span className="text-xs text-gray-400">- {lang === 'id' ? 'Stablecoin USD' : 'USD Stablecoin'}</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="SOL">
                             <div className="flex items-center gap-2">
                               <span>SOL</span>
-                              <span className="text-xs text-gray-400">- {t('solanaToken', 'Solana Token', 'Token Solana')}</span>
+                              <span className="text-xs text-gray-400">- {lang === 'id' ? 'Token Solana' : 'Solana Token'}</span>
                             </div>
                           </SelectItem>
                         </SelectContent>
@@ -287,7 +350,7 @@ export default function BuyTPCPage() {
                   {/* Wallet Address */}
                   <div className="space-y-3">
                     <Label htmlFor="wallet" className="text-lg font-medium text-gray-200">
-                      {t('walletAddress', 'Wallet Address', 'Alamat Wallet')}
+                      {lang === 'id' ? 'Alamat Wallet' : 'Wallet Address'}
                     </Label>
                     <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
                       <div className="flex items-center gap-2 mb-3">
@@ -296,10 +359,10 @@ export default function BuyTPCPage() {
                         </div>
                         <div>
                           <p className="text-sm font-medium text-gray-200">
-                            {t('cancel', 'Cancel', 'Batal')}, {t('investmentDetails', 'Investment Details', 'Detail Investasi')}
+                            {lang === 'id' ? 'Alamat Wallet Penerima' : 'Receiving Wallet'}
                           </p>
                           <p className="text-xs text-gray-400">
-                            {t('solanaNetwork', 'Solana Network - Ensure correct wallet address', 'Jaringan Solana - Pastikan alamat wallet benar')}
+                            {lang === 'id' ? 'Alamat wallet untuk menerima token TPC' : 'Wallet address to receive TPC tokens'}
                           </p>
                         </div>
                       </div>
@@ -308,7 +371,7 @@ export default function BuyTPCPage() {
                         type="text"
                         value={walletAddress}
                         onChange={(e) => setWalletAddress(e.target.value)}
-                        placeholder={t('enterWalletAddress', 'Enter wallet address', 'Masukkan alamat wallet')}
+                        placeholder={lang === 'id' ? 'Masukkan alamat wallet' : 'Enter wallet address'}
                         className="bg-slate-900/50 border-slate-700/50 text-white placeholder-gray-400 text-lg h-12 rounded-xl focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20"
                       />
                     </div>
@@ -317,11 +380,7 @@ export default function BuyTPCPage() {
                   {/* Referral Code */}
                   <div className="space-y-3">
                     <Label htmlFor="sponsor" className="text-lg font-medium text-gray-200">
-                      {t('referralCode', 'Referral Code', 'Kode Referal')} ({defaultSponsor && (
-                        <span className="text-green-400 ml-2">
-                          {t('autoAssigned', 'Auto-assigned', 'Ter-otomatis')}
-                        </span>
-                      )})
+                      {lang === 'id' ? 'Kode Referal' : 'Referral Code'}
                     </Label>
                     <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
                       <div className="flex items-center gap-2 mb-3">
@@ -330,10 +389,10 @@ export default function BuyTPCPage() {
                         </div>
                         <div>
                           <p className="text-sm font-medium text-gray-200">
-                            {t('bonusReferral', 'Referral Bonus', 'Bonus Referal')}
+                            {lang === 'id' ? 'Bonus Referal' : 'Referral Bonus'}
                           </p>
                           <p className="text-xs text-gray-400">
-                            {t('getAdditionalBonus', 'Get additional bonus from referral code', 'Dapatkan bonus tambahan dari kode referal')}
+                            {lang === 'id' ? 'Dapatkan bonus tambahan dari kode referal' : 'Get additional bonus from referral code'}
                           </p>
                         </div>
                       </div>
@@ -342,7 +401,7 @@ export default function BuyTPCPage() {
                         type="text"
                         value={sponsorCode}
                         onChange={(e) => setSponsorCode(e.target.value)}
-                        placeholder={defaultSponsor || (t('enterReferralCode', 'Enter referral code', 'Masukkan kode referal'))}
+                        placeholder={lang === 'id' ? 'TPC-GLOBAL' : 'TPC-GLOBAL'}
                         className="bg-slate-900/50 border-slate-700/50 text-white placeholder-gray-400 text-lg h-12 rounded-xl focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20"
                       />
                       {sponsorError && (
@@ -365,8 +424,8 @@ export default function BuyTPCPage() {
                   <div className="flex items-center gap-3 mb-4">
                     <Shield className="w-8 h-8 text-green-400" />
                     <div>
-                      <h3 className="text-lg font-bold text-green-400">{t('secureTransactions', 'Secure Transactions', 'Transaksi Aman')}</h3>
-                      <p className="text-sm text-gray-300">{t('allTransactionsSecure', 'All transactions are secure and verified', 'Semua transaksi aman dan terverifikasi')}</p>
+                      <h3 className="text-lg font-bold text-green-400">{lang === 'id' ? 'Transaksi Aman' : 'Secure Transactions'}</h3>
+                      <p className="text-sm text-gray-300">{lang === 'id' ? 'Semua transaksi aman dan terverifikasi' : 'All transactions are secure and verified'}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -378,8 +437,8 @@ export default function BuyTPCPage() {
                   <div className="flex items-center gap-3 mb-4">
                     <Star className="w-8 h-8 text-amber-400" />
                     <div>
-                      <h3 className="text-lg font-bold text-amber-400">{t('earlyBirdBonus', 'Early Bird Bonus', 'Bonus Early Bird')}</h3>
-                      <p className="text-sm text-gray-300">{t('limitedTimeBonus', 'Limited time bonus for early participants', 'Bonus waktu terbatas untuk peserta awal')}</p>
+                      <h3 className="text-lg font-bold text-amber-400">{lang === 'id' ? 'Bonus Early Bird' : 'Early Bird Bonus'}</h3>
+                      <p className="text-sm text-gray-300">{lang === 'id' ? 'Bonus waktu terbatas untuk peserta awal' : 'Limited time bonus for early participants'}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -394,8 +453,8 @@ export default function BuyTPCPage() {
                         <Shield className="w-6 h-6 text-blue-400" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-blue-400">{t('verifiedProject', 'Verified Project', 'Proyek Terverifikasi')}</h4>
-                        <p className="text-xs text-gray-400">{t('auditedSmartContract', 'Audited smart contract', 'Kontrak pintar diaudit')}</p>
+                        <h4 className="font-semibold text-blue-400">{lang === 'id' ? 'Proyek Terverifikasi' : 'Verified Project'}</h4>
+                        <p className="text-xs text-gray-400">{lang === 'id' ? 'Kontrak pintar diaudit' : 'Audited smart contract'}</p>
                       </div>
                     </div>
                     <div className="text-center">
@@ -403,8 +462,8 @@ export default function BuyTPCPage() {
                         <Star className="w-6 h-6 text-purple-400" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-purple-400">{t('communityTrusted', 'Community Trusted', 'Komunitas Dipercaya')}</h4>
-                        <p className="text-xs text-gray-400">{t('thousandsOfUsers', 'Thousands of users trust us', 'Ribuan pengguna mempercayai kami')}</p>
+                        <h4 className="font-semibold text-purple-400">{lang === 'id' ? 'Komunitas Dipercaya' : 'Community Trusted'}</h4>
+                        <p className="text-xs text-gray-400">{lang === 'id' ? 'Ribuan pengguna mempercayai kami' : 'Thousands of users trust us'}</p>
                       </div>
                     </div>
                   </div>
@@ -421,30 +480,31 @@ export default function BuyTPCPage() {
                   <div className="flex items-center gap-3 mb-4">
                     <Shield className="w-10 h-10 text-amber-400" />
                     <div>
-                      <h3 className="text-xl font-bold text-amber-400">{t('securityGuaranteed', 'Security Guaranteed', 'Keamanan Terjamin')}</h3>
-                      <p className="text-sm text-gray-300">{t('encryptedPaymentSystem', 'Encrypted payment system and verified smart contracts', 'Sistem pembayaran terenkripsi dan kontrak pintar terverifikasi')}</p>
+                      <h3 className="text-xl font-bold text-amber-400">{lang === 'id' ? 'Keamanan Terjamin' : 'Security Guaranteed'}</h3>
+                      <p className="text-sm text-gray-300">{lang === 'id' ? 'Sistem pembayaran terenkripsi dan kontrak pintar terverifikasi' : 'Encrypted payment system and verified smart contracts'}</p>
                     </div>
                   </div>
                   
                   <Button
-                    onClick={handleBuyRedirect}
+                    onClick={handleContinue}
                     disabled={timeLeft <= 0}
                     className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold py-4 px-6 rounded-xl shadow-lg shadow-amber-500/25 transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <div className="flex items-center justify-center gap-2">
                       <ArrowRight className="w-5 h-5" />
-                      <span>{t('buyTPCNow', 'Buy TPC Now', 'Beli TPC Sekarang')}</span>
+                      <span>{lang === 'id' ? 'Beli TPC Sekarang' : 'Buy TPC Now'}</span>
                     </div>
                   </Button>
                   
                   <div className="text-sm text-gray-400 mt-4">
-                    {t('loginRequired', 'Login diperlukan untuk menyelesaikan pembelian')}
+                    {lang === 'id' ? 'Login diperlukan untuk menyelesaikan pembelian' : 'Login required to complete purchase'}
                   </div>
                   
                   <div className="text-xs text-gray-300">
-                    {t('ctaDescription', 'Click the button above to login to your account and continue with TPC purchase. Your investment details will be saved and available after login.', 'Klik tombol di atas untuk login ke akun Anda dan melanjutkan dengan pembelian TPC. Detail investasi Anda akan disimpan dan tersedia setelah login.')}
+                    {lang === 'id' ? 'Klik tombol di atas untuk login ke akun Anda dan melanjutkan dengan pembelian TPC. Detail investasi Anda akan disimpan dan tersedia setelah login.' : 'Click the button above to login to your account and continue with TPC purchase. Your investment details will be saved and available after login.'}
                   </div>
-                </CardContent>
+                </div>
+              </CardContent>
             </Card>
           </div>
         </div>
