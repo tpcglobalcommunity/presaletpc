@@ -74,15 +74,28 @@ export default function MemberInvoicesPage() {
 
     try {
       setError(null);
-      const { data, error } = await supabase
+      setIsLoading(true);
+      
+      // Query dengan user_id primary dan email fallback
+      let query = supabase
         .from('invoices')
         .select('id, invoice_no, status, amount_input, base_currency, amount_usd, tpc_amount, created_at, expires_at')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
+
+      // Primary: user_id
+      query = query.eq('user_id', user.id);
+      
+      // Fallback: email (untuk invoice lama yang belum ter-link)
+      if (user.email) {
+        query = query.or(`email.eq.${user.email},user_id.is.null`);
+      }
+      
+      const { data, error } = await query;
       
       if (error) {
         console.error('Error fetching invoices:', error);
         setError('Akses ditolak atau data tidak ditemukan.');
+        setInvoices([]);
         return;
       }
       
@@ -90,7 +103,9 @@ export default function MemberInvoicesPage() {
     } catch (error) {
       console.error('Error:', error);
       setError('Terjadi kesalahan yang tidak terduga.');
+      setInvoices([]);
     } finally {
+      // WAJIB: Selalu set loading false
       setIsLoading(false);
     }
   };
@@ -203,8 +218,12 @@ export default function MemberInvoicesPage() {
       <div className="p-4 space-y-4">
         {filteredInvoices.length === 0 ? (
           <EmptyStateCard
-            title="Tidak Ada Invoice"
-            message={`Belum ada invoice dengan status "${TAB_LABELS[activeTab]}".`}
+            title="Belum Ada Invoice"
+            message={
+              activeTab === 'ALL' 
+                ? "Belum ada invoice. Silakan beli TPC untuk memulai."
+                : `Belum ada invoice dengan status "${TAB_LABELS[activeTab]}".`
+            }
             icon={<FileText className="h-12 w-12 text-slate-600" />}
           />
         ) : (
