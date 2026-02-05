@@ -13,6 +13,7 @@ import { formatRupiah, formatNumberID } from '@/lib/number';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { generateProofFilePath, getInvoiceProofUrl } from '@/lib/storage/getInvoiceProofUrl';
 import { normalizeProofUrl } from '@/lib/normalizeProofUrl';
+import { uploadProofFile, updateInvoiceProof, parseLegacyProofUrlToBucketPath, getProofPublicUrl } from '@/lib/storageProof';
 import { getDestination } from '@/config/paymentDestinations';
 import { ErrorCard, LoadingCard } from '@/components/member/MemberUIStates';
 
@@ -28,8 +29,11 @@ interface Invoice {
   expires_at?: string;
   transfer_method?: string;
   wallet_tpc?: string;
-  proof_url?: string;
-  submitted_at?: string;
+  proof_url?: string | null;
+  proof_bucket?: string | null;
+  proof_path?: string | null;
+  proof_uploaded_at?: string | null;
+  submitted_at?: string | null;
   rejected_reason?: string;
   rejected_at?: string;
 }
@@ -173,75 +177,22 @@ export default function MemberInvoiceDetailPage() {
 
     setUploadingFile(true);
     try {
-      // Generate file path with correct structure: proofs/{user_id}/{invoice_id}/{timestamp-filename}
-      const bucket = "proofs";
-      const timestamp = Date.now();
-      const path = `${bucket}/${user.id}/${invoice.id}/${timestamp}-${selectedFile.name}`;
-      
       console.log('[PROOF_UPLOAD] Starting upload:', {
-        bucket,
-        path,
+        invoiceId: invoice.id,
+        userId: user.id,
         fileName: selectedFile.name,
-        fileSize: selectedFile.size,
-        invoiceId: invoice.id
+        fileSize: selectedFile.size
       });
 
-      // Upload to Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from(bucket)
-        .upload(path, selectedFile, { 
-          upsert: false, 
-          contentType: selectedFile.type 
-        });
-
-      if (uploadError) {
-        console.error('[PROOF_UPLOAD] Upload failed:', uploadError);
-        
-        // Check if error is related to bucket configuration
-        if (uploadError.message?.includes('Bucket not found') || 
-            uploadError.message?.includes('The bucket does not exist') ||
-            uploadError.status === 400 || uploadError.status === 404) {
-          throw new Error('Storage belum siap: bucket tidak ditemukan / belum PUBLIC / salah project. Cek Supabase Storage bucket name & project ref.');
-        }
-        throw uploadError;
-      }
-
-      console.log('[PROOF_UPLOAD] Upload successful, getting public URL...');
-
-      // Get public URL with validation
-      const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-      const publicUrl = data.publicUrl;
+      // Upload proof file using canonical helper
+      const { bucket, path, publicUrl } = await uploadProofFile(
+        user.id, 
+        invoice.id, 
+        selectedFile
+      );
       
-      console.log('[PROOF_UPLOAD] Generated public URL:', {
-        path,
-        publicUrl,
-        bucket
-      });
-      
-      // VALIDASI KETAT: Abort jika publicUrl invalid
-      if (!publicUrl || !publicUrl.includes('/storage/v1/object/public/proofs/')) {
-        throw new Error('Gagal generate public URL untuk bukti pembayaran. Silakan coba lagi.');
-      }
-
-      // Submit proof via secure RPC function
-      const { data: submitResult, error: submitError } = await supabase.rpc('member_submit_invoice_proof' as any, {
-        p_invoice_id: invoice.id,
-        p_user_id: user.id,
-        p_proof_url: publicUrl, // Store full public URL in DB
-        p_proof_uploaded_at: new Date().toISOString()
-      });
-
-      if (submitError) {
-        throw new Error('Gagal submit bukti pembayaran: ' + submitError.message);
-      }
-
-      // Handle RPC result properly
-      const result = submitResult as any[];
-      if (!result || result.length === 0 || !result[0]?.success) {
-        throw new Error(result?.[0]?.message || 'Gagal submit bukti pembayaran');
-      }
-
-      console.log('[PROOF_UPLOAD] RPC submission successful:', result[0]);
+      // Update invoice with proof information
+      await updateInvoiceProof(invoice.id, bucket, path, publicUrl);
 
       // Clear selected file and preview
       setSelectedFile(null);
@@ -531,15 +482,47 @@ export default function MemberInvoiceDetailPage() {
         )}
 
         {/* Proof Display - Show if proof exists */}
-        {invoice.proof_url && (() => {
-          const proofUrl = normalizeProofUrl(invoice.proof_url);
+        {(invoice.proof_url || invoice.proof_path) && (() => {
+          let proofUrl: string | null = null;
+          let shouldUpdateDb = false;
+
+          // Priority 1: Use canonical proof_bucket + proof_path
+          if (invoice.proof_bucket && invoice.proof_path) {
+            proofUrl = getProofPublicUrl(invoice.proof_bucket, invoice.proof_path);
+            console.log('[STORAGE] Using canonical proof:', { bucket: invoice.proof_bucket, path: invoice.proof_path, url: proofUrl });
+          }
+          // Priority 2: Parse legacy proof_url
+          else if (invoice.proof_url) {
+            const parsed = parseLegacyProofUrlToBucketPath(invoice.proof_url);
+            if (parsed) {
+              proofUrl = getProofPublicUrl(parsed.bucket, parsed.path);
+              shouldUpdateDb = true; // Mark for DB update
+              console.log('[STORAGE] Using parsed legacy proof:', { parsed, url: proofUrl });
+              
+              // Background update DB with canonical info (best effort)
+              setTimeout(async () => {
+                try {
+                  await (supabase.from('invoices') as any).update({
+                    proof_bucket: parsed.bucket,
+                    proof_path: parsed.path
+                  }).eq('id', invoice.id);
+                  console.log('[STORAGE] Updated invoice with canonical proof info');
+                } catch (error: any) {
+                  console.warn('[STORAGE] Failed to update invoice with canonical proof info:', error);
+                }
+              }, 0);
+            } else {
+              console.error('[STORAGE] Failed to parse legacy proof URL:', invoice.proof_url);
+            }
+          }
+
           if (!proofUrl) {
             return (
               <div className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4">
                 <h3 className="text-white font-semibold mb-4">Bukti Pembayaran</h3>
                 <Alert className="bg-red-500/10 border-red-500/20">
                   <AlertDescription className="text-red-400">
-                    Bukti pembayaran tidak tersedia atau URL tidak valid.
+                    Bukti pembayaran tidak ditemukan. Silakan upload ulang bukti pembayaran.
                   </AlertDescription>
                 </Alert>
               </div>
@@ -561,6 +544,11 @@ export default function MemberInvoiceDetailPage() {
                     <ExternalLink className="h-4 w-4" />
                   </a>
                 </div>
+                {shouldUpdateDb && (
+                  <div className="text-xs text-gray-400">
+                    Bukti pembayaran sedang diperbarui ke format baru...
+                  </div>
+                )}
               </div>
             </div>
           );
