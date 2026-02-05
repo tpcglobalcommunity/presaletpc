@@ -43,6 +43,7 @@ import NotFound from "@/pages/NotFound";
 import HomePage from "@/pages/id/HomePage";
 import LoginPage from "@/pages/id/LoginPage"; // Legacy
 import BuyTPCPage from "@/pages/id/BuyTPCPage";
+import PresaleInfoPage from "@/pages/id/PresaleInfoPage";
 import AntiScamPage from "@/pages/id/AntiScamPage";
 import EdukasiPage from "@/pages/id/EdukasiPage";
 import FAQPage from "@/pages/id/FAQPage";
@@ -130,6 +131,10 @@ function App() {
                 <Route
                   path="buytpc"
                   element={<IdOnly><BuyTPCPage /></IdOnly>}
+                />
+                <Route
+                  path="presale"
+                  element={<IdOnly><PresaleInfoPage /></IdOnly>}
                 />
                 <Route
                   path="anti-scam"
