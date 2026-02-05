@@ -7,6 +7,32 @@ set search_path = public;
 -- 1) Modify upsert_profile_from_auth to include auto sponsor assignment
 drop function if exists public.upsert_profile_from_auth(uuid);
 
+-- 1.1) Create referrals table (direct referrals / level 1)
+create table if not exists public.referrals (
+  id uuid primary key default gen_random_uuid(),
+  sponsor_id uuid not null references public.profiles(user_id) on delete cascade,
+  referred_user_id uuid not null references public.profiles(user_id) on delete cascade,
+  created_at timestamptz not null default now(),
+  constraint referrals_unique_referred unique (referred_user_id)
+);
+
+-- 1.2) Helpful indexes
+create index if not exists idx_referrals_sponsor_id on public.referrals (sponsor_id);
+create index if not exists idx_referrals_created_at on public.referrals (created_at);
+
+-- 1.3) Create audit logs table for sponsor assignment tracking
+create table if not exists public.sponsor_assignment_audit (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null,
+  sponsor_id uuid not null,
+  reason text not null,
+  created_at timestamptz default now(),
+  metadata jsonb default '{}'::jsonb
+);
+
+create index if not exists idx_sponsor_audit_user_id on public.sponsor_assignment_audit(user_id);
+create index if not exists idx_sponsor_audit_created_at on public.sponsor_assignment_audit(created_at);
+
 create or replace function public.upsert_profile_from_auth(p_user_id uuid)
 returns void
 language plpgsql
