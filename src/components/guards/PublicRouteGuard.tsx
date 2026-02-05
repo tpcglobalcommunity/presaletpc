@@ -24,6 +24,7 @@ export function PublicRouteGuard({ children }: PublicRouteGuardProps) {
   const path = location.pathname;
   const publicPaths = [
     `/${safe}/buytpc`,
+    `/${safe}/presale`,
     `/${safe}/login`,
     `/${safe}/auth/callback`,
     `/${safe}/auth/callback-page`,
@@ -43,6 +44,7 @@ export function PublicRouteGuard({ children }: PublicRouteGuardProps) {
   const isPublic =
     publicPaths.includes(path) ||
     path.startsWith(`/${safe}/buytpc/`) ||
+    path.startsWith(`/${safe}/presale`) ||
     path.startsWith(`/${safe}/tutorial/`);
 
   // Allow public paths without authentication
