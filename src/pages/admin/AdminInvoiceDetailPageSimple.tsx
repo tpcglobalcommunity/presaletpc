@@ -8,32 +8,35 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatNumberID, formatRupiah } from '@/lib/number';
 import { useToast } from '@/hooks/use-toast';
 
-interface Invoice {
-  id: string;
-  invoice_no: string;
-  status: string;
-  amount_input: number;
-  base_currency: string;
-  amount_usd: number;
-  tpc_amount: number;
-  created_at: string;
-  email: string;
-  transfer_method?: string;
-  wallet_tpc?: string;
-  proof_url?: string;
-  proof_uploaded_at?: string;
-  submitted_at?: string;
-  reviewed_by?: string;
-  reviewed_at?: string;
-  review_note?: string;
-  rejected_reason?: string;
-  rejected_at?: string;
-  tpc_sent: boolean;
-  tpc_tx_hash?: string;
-}
+type Invoice = {
+  id?: string | null;
+  invoice_no?: string | null;
+  status?: string | null;
+  amount_input?: number | null;
+  base_currency?: string | null;
+  amount_usd?: number | null;
+  tpc_amount?: number | null;
+  created_at?: string | null;
+  email?: string | null;
+  transfer_method?: string | null;
+  wallet_tpc?: string | null;
+  proof_url?: string | null;
+  proof_uploaded_at?: string | null;
+  submitted_at?: string | null;
+  reviewed_by?: string | null;
+  reviewed_at?: string | null;
+  review_note?: string | null;
+  rejected_reason?: string | null;
+  rejected_at?: string | null;
+  sponsor_code?: string | null;
+  sponsor_user_id?: string | null;
+  expires_at?: string | null;
+  tpc_sent?: boolean | null;
+  tpc_tx_hash?: string | null;
+};
 
 export default function AdminInvoiceDetailPage() {
-  const { invoiceNo } = useParams<{ invoiceNo: string }>();
+  const { invoiceKey } = useParams<{ invoiceKey: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
@@ -42,7 +45,7 @@ export default function AdminInvoiceDetailPage() {
 
   useEffect(() => {
     const fetchInvoice = async () => {
-      if (!invoiceNo) {
+      if (!invoiceKey) {
         setNotFound(true);
         setIsLoading(false);
         return;
@@ -54,7 +57,7 @@ export default function AdminInvoiceDetailPage() {
         const { data: invoiceData, error: invoiceError } = await supabase
           .from('invoices')
           .select('id')
-          .eq('invoice_no', invoiceNo)
+          .eq('invoice_no', invoiceKey)
           .single();
 
         if (invoiceError || !invoiceData) {
@@ -87,7 +90,7 @@ export default function AdminInvoiceDetailPage() {
     };
 
     fetchInvoice();
-  }, [invoiceNo]);
+  }, [invoiceKey]);
 
   const getStatusConfig = (status: string) => {
     switch (status) {
@@ -113,7 +116,7 @@ export default function AdminInvoiceDetailPage() {
         <div className="text-center">
           <AlertTriangle className="h-12 w-12 text-red-400 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-white mb-2">Invoice Tidak Ditemukan</h1>
-          <p className="text-[#848E9C]">Invoice dengan nomor "{invoiceNo}" tidak ditemukan.</p>
+          <p className="text-[#848E9C]">Invoice dengan nomor "{invoiceKey}" tidak ditemukan.</p>
           <Button
             onClick={() => navigate('/id/admin/invoices')}
             className="mt-4 bg-[#F0B90B] hover:bg-[#F8D56B] text-black"
@@ -398,5 +401,4 @@ export default function AdminInvoiceDetailPage() {
       </Card>
     </div>
   </div>
-</div>
 );
