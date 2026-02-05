@@ -8,9 +8,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ensureProfile } from "@/lib/ensureProfile";
 import { loadBuyDraft, clearBuyDraft } from "@/lib/buyDraft";
 
-// CURRENT BEHAVIOR vs TARGET BEHAVIOR:
-// CURRENT: Calls ensureProfile which can fail on sponsor assignment, causing auth callback to crash
-// TARGET: Calls ensureProfile which uses ensure_profile_minimal (no sponsor logic), never fails on auth
+// AUTH CALLBACK STRICT SCOPE
+// RULES: Create profile only, assign sponsor only after login, never run on public buy
 
 interface AuthCallbackPageProps {
   forcedLang?: "id" | "en";
