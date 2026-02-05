@@ -40,38 +40,6 @@ where p.sponsor_user_id is null
   and s.member_code is not null
   and s.member_code = p.referred_by::text;
 
--- 4) Trigger helper: setiap insert/update referred_by -> otomatis isi sponsor_user_id
-create or replace function public._profiles_sync_sponsor_user_id()
-returns trigger
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  v_sponsor_user_id uuid;
-begin
-  if new.referred_by is null or new.referred_by = '' then
-    new.sponsor_user_id := null;
-    return new;
-  end if;
-
-  select user_id into v_sponsor_user_id
-  from public.profiles
-  where member_code = new.referred_by::text
-  limit 1;
-
-  new.sponsor_user_id := v_sponsor_user_id;
-  return new;
-end;
-$$;
-
-drop trigger if exists trg_profiles_sync_sponsor_user_id on public.profiles;
-create trigger trg_profiles_sync_sponsor_user_id
-before insert or update of referred_by
-on public.profiles
-for each row
-execute function public._profiles_sync_sponsor_user_id();
-
 -- 5) RPC: get_referral_stats() dengan UUID type-safe
 drop function if exists public.get_referral_stats();
 
