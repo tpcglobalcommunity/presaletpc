@@ -21,6 +21,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { buildLoginUrl } from '@/lib/authRedirect';
+import { saveBuyDraft, loadBuyDraft, clearBuyDraft } from '@/lib/buyDraft';
 import { cn } from '@/lib/utils';
 import CountdownCard from '@/components/CountdownCard';
 import tpcLogo from '@/assets/tpc.png';
@@ -50,31 +51,9 @@ export default function BuyTPCPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const { lang = 'id' } = useParams(); // Get lang from URL
+  const { lang = 'id' } = useParams<{ lang: string }>();
   const { toast } = useToast();
-  const { user } = useAuth(); // Auth guard
-  
-  // AUTH GUARD: Redirect to login if not authenticated
-  useEffect(() => {
-    if (!user) {
-      toast({
-        title: 'Login Diperlukan',
-        description: 'Silakan login terlebih dahulu sebelum membuat invoice.',
-        variant: 'destructive'
-      });
-      navigate(buildLoginUrl(lang, location.pathname + location.search));
-      return;
-    }
-  }, [user, navigate, toast, lang, location.pathname, location.search]);
-  
-  // Early return if user not ready
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-[#0D0F1D] flex items-center justify-center">
-        <div className="text-white">Mengarahkan ke halaman login...</div>
-      </div>
-    );
-  }
+  const { user } = useAuth(); // Optional: untuk CTA logic, bukan page guard
   
   // Presale configuration from environment variables
   const endAt = import.meta.env.VITE_PRESALE_END_AT ?? "2026-08-02T19:49:30+08:00";
@@ -122,6 +101,37 @@ export default function BuyTPCPage() {
   const [showWhyLocked, setShowWhyLocked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Load draft data on mount (for authenticated users returning from login)
+  useEffect(() => {
+    if (user) {
+      // Only load draft if user is authenticated (returning from login flow)
+      const draft = loadBuyDraft();
+      if (draft) {
+        console.log('[BUYTPC] Loading draft after login');
+        
+        // Apply draft data
+        if (draft.wallet_address) setWalletTpc(draft.wallet_address);
+        if (draft.ref_code) setSponsorCode(draft.ref_code);
+        if (draft.amount_input) setAmountRaw(draft.amount_input);
+        if (draft.currency) setCurrency(draft.currency as Currency);
+        
+        // Clear draft after loading
+        clearBuyDraft();
+      }
+    }
+    
+    // Also load from URL parameters (direct navigation)
+    const urlAmount = searchParams.get('amount');
+    const urlWallet = searchParams.get('wallet');
+    const urlCurrency = searchParams.get('currency');
+    
+    if (urlAmount && !amountRaw) setAmountRaw(urlAmount);
+    if (urlWallet && !walletTpc) setWalletTpc(urlWallet);
+    if (urlCurrency && !['IDR', 'USDC', 'SOL'].includes(currency)) {
+      setCurrency(urlCurrency as Currency);
+    }
+  }, [user, searchParams]); // Remove state dependencies to prevent infinite loop
 
   // Navigation helpers
   const goToTerms = () => navigate('/id/syarat-ketentuan');
@@ -506,6 +516,29 @@ export default function BuyTPCPage() {
       return;
     }
 
+    // LOGIN GATING: Save draft and redirect if not authenticated
+    if (!user) {
+      // Save current draft to sessionStorage
+      saveBuyDraft({
+        wallet_address: walletTpc,
+        ref_code: sponsorCode || undefined,
+        amount_input: amountRaw,
+        currency: currency === 'SOL' ? 'USDC' : currency, // Convert SOL to USDC for draft
+        lang: lang || 'id'
+      });
+
+      // Redirect to login
+      toast({
+        title: 'Login Diperlukan',
+        description: 'Silakan login untuk melanjutkan pembelian.',
+        variant: 'default'
+      });
+      
+      navigate(buildLoginUrl(lang || 'id', location.pathname + location.search));
+      return;
+    }
+
+    // AUTHENTICATED FLOW: Continue with invoice creation
     if (isSubmitting) return;
     setIsSubmitting(true);
 

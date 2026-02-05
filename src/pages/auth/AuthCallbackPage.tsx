@@ -6,6 +6,7 @@ import { AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ensureProfile } from "@/lib/ensureProfile";
+import { loadBuyDraft, clearBuyDraft } from "@/lib/buyDraft";
 
 interface AuthCallbackPageProps {
   forcedLang?: "id" | "en";
@@ -98,6 +99,24 @@ export default function AuthCallbackPage({ forcedLang }: AuthCallbackPageProps =
             await ensureProfile(sessionData.session.user.id);
           } catch (profileError) {
             console.warn("[AUTH CALLBACK] Profile sync failed:", profileError);
+          }
+          
+          // Check for buy draft and resume if exists
+          const draft = loadBuyDraft();
+          if (draft) {
+            console.log("[AUTH CALLBACK] Found buy draft, resuming purchase");
+            clearBuyDraft(); // Clear draft immediately
+            
+            // Redirect to buytpc with draft data
+            const params = new URLSearchParams();
+            if (draft.ref_code) params.set('ref', draft.ref_code);
+            if (draft.amount_input) params.set('amount', draft.amount_input);
+            if (draft.wallet_address) params.set('wallet', draft.wallet_address);
+            if (draft.currency && draft.currency !== 'IDR') params.set('currency', draft.currency);
+            
+            const buyUrl = `/${finalLang}/buytpc${params.toString() ? '?' + params.toString() : ''}`;
+            navigate(buyUrl, { replace: true });
+            return;
           }
           
           console.log("[AUTH CALLBACK] Session found, redirecting to dashboard");
