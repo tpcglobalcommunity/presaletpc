@@ -174,6 +174,9 @@ as $$
 $$;
 
 -- F) CREATE_INVOICE_LOCKED PATCH — SPONSOR MOVED HERE
+-- Drop existing function first to allow signature change
+drop function if exists public.create_invoice_locked(text, text, text, numeric, text);
+
 create or replace function public.create_invoice_locked(
   p_email text,
   p_referral_code text,
