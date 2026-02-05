@@ -1,3 +1,4 @@
+// Admin Invoice Detail Page - Fixed: 2025-02-05 12:05 UTC
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle, XCircle, FileText, Clock, AlertTriangle } from 'lucide-react';
