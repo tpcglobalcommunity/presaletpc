@@ -48,7 +48,7 @@ import WhitepaperPage from "@/pages/id/WhitepaperPage";
 import DAOPage from "@/pages/id/DAOPage";
 import TransparansiPage from "@/pages/id/TransparansiPage";
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
-import AdminInvoicesPage from './pages/admin/AdminInvoicesPageSimple';
+import AdminInvoicesPage from './pages/admin/AdminInvoicesPageWorking';
 import AdminInvoiceDetailPage from './pages/admin/AdminInvoiceDetailPageSimple';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminReferralsPage from './pages/admin/AdminReferralsPage';
