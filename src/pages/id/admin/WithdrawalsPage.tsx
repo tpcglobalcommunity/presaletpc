@@ -44,6 +44,11 @@ export default function WithdrawalsPage() {
     withdrawal: Withdrawal | null;
     txHash: string;
   }>({ open: false, withdrawal: null, txHash: '' });
+  const [rejectDialog, setRejectDialog] = useState<{
+    open: boolean;
+    withdrawal: Withdrawal | null;
+    reason: string;
+  }>({ open: false, withdrawal: null, reason: '' });
 
   const limit = 20;
   const offset = (currentPage - 1) * limit;
@@ -152,6 +157,76 @@ export default function WithdrawalsPage() {
       toast({
         title: 'Error',
         description: error instanceof Error ? error.message : 'Gagal menyetujui withdrawal',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsProcessing(null);
+    }
+  };
+
+  const handleReject = (withdrawal: Withdrawal) => {
+    setRejectDialog({ open: true, withdrawal, reason: '' });
+  };
+
+  const confirmReject = async () => {
+    if (!rejectDialog.withdrawal || !rejectDialog.reason.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Alasan penolakan harus diisi',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsProcessing(rejectDialog.withdrawal.id);
+    
+    try {
+      // Call RPC to reject withdrawal
+      const { data, error } = await supabase.rpc('admin_reject_withdrawal' as any, {
+        p_withdrawal_id: rejectDialog.withdrawal.id,
+        p_reason: rejectDialog.reason.trim()
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      // Send email notification to member
+      try {
+        const session = await supabase.auth.getSession();
+        const accessToken = session.data.session?.access_token;
+        
+        if (accessToken) {
+          await callEdgeFunction('send-withdrawal-rejected-email', {
+            withdrawal_id: rejectDialog.withdrawal.id,
+            amount_tpc: rejectDialog.withdrawal.amount_tpc,
+            wallet_address: rejectDialog.withdrawal.wallet_address,
+            reason: rejectDialog.reason.trim()
+          }, accessToken);
+        }
+      } catch (emailError) {
+        console.error('Email notification failed:', emailError);
+        // Don't fail the rejection if email fails
+        toast({
+          title: 'Peringatan',
+          description: 'Withdrawal berhasil ditolak, namun email notifikasi gagal dikirim.',
+          variant: 'default'
+        });
+      }
+
+      toast({
+        title: 'Berhasil',
+        description: 'Withdrawal berhasil ditolak dan notifikasi email dikirim.',
+      });
+
+      setRejectDialog({ open: false, withdrawal: null, reason: '' });
+      await fetchWithdrawals();
+      
+    } catch (error) {
+      console.error('Error rejecting withdrawal:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Gagal menolak withdrawal',
         variant: 'destructive'
       });
     } finally {
@@ -355,20 +430,37 @@ export default function WithdrawalsPage() {
                   <div className="flex flex-col items-end gap-3">
                     {getStatusBadge(withdrawal.status)}
                     {withdrawal.status === 'PENDING' && (
-                      <Button
-                        onClick={() => handleApprove(withdrawal)}
-                        disabled={isProcessing === withdrawal.id}
-                        className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-semibold shadow-lg shadow-amber-500/25"
-                      >
-                        {isProcessing === withdrawal.id ? (
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black"></div>
-                        ) : (
-                          <>
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                            Approve
-                          </>
-                        )}
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => handleApprove(withdrawal)}
+                          disabled={isProcessing === withdrawal.id}
+                          className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-semibold shadow-lg shadow-amber-500/25"
+                        >
+                          {isProcessing === withdrawal.id ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black"></div>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-4 h-4 mr-2" />
+                              Approve
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          onClick={() => handleReject(withdrawal)}
+                          disabled={isProcessing === withdrawal.id}
+                          variant="outline"
+                          className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                        >
+                          {isProcessing === withdrawal.id ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-400"></div>
+                          ) : (
+                            <>
+                              <XCircle className="w-4 h-4 mr-2" />
+                              Reject
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -462,6 +554,69 @@ export default function WithdrawalsPage() {
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black"></div>
               ) : (
                 'Konfirmasi Approve'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reject Dialog */}
+      <Dialog open={rejectDialog.open} onOpenChange={(open) => setRejectDialog(prev => ({ ...prev, open }))}>
+        <DialogContent className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-red-400">Reject Withdrawal</DialogTitle>
+          </DialogHeader>
+          
+          {rejectDialog.withdrawal && (
+            <div className="space-y-4">
+              <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-4">
+                <h4 className="font-semibold text-white mb-2">Ringkasan Withdrawal</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-[#848E9C]">Jumlah:</span>
+                    <span className="text-white font-semibold">{formatNumberID(rejectDialog.withdrawal.amount_tpc)} TPC</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#848E9C]">Email:</span>
+                    <span className="text-white">{rejectDialog.withdrawal.email}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#848E9C]">Wallet:</span>
+                    <span className="text-white font-mono text-xs">{truncateWalletAddress(rejectDialog.withdrawal.wallet_address)}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="reject-reason" className="text-white">Alasan Penolakan *</Label>
+                <textarea
+                  id="reject-reason"
+                  value={rejectDialog.reason}
+                  onChange={(e) => setRejectDialog(prev => ({ ...prev, reason: e.target.value }))}
+                  placeholder="Masukkan alasan penolakan"
+                  className="w-full bg-slate-800/50 border-slate-700/50 text-white placeholder-[#848E9C] mt-1 p-3 rounded resize-none h-24"
+                />
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button
+              onClick={() => setRejectDialog({ open: false, withdrawal: null, reason: '' })}
+              variant="outline"
+              className="border-slate-700/50 text-white hover:bg-slate-800/50"
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={confirmReject}
+              disabled={isProcessing === rejectDialog.withdrawal?.id}
+              variant="destructive"
+            >
+              {isProcessing === rejectDialog.withdrawal?.id ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              ) : (
+                'Konfirmasi Reject'
               )}
             </Button>
           </DialogFooter>
