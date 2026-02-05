@@ -73,6 +73,8 @@ for each row
 execute function public._profiles_sync_sponsor_user_id();
 
 -- 5) RPC: get_referral_stats() dengan UUID type-safe
+drop function if exists public.get_referral_stats();
+
 create or replace function public.get_referral_stats()
 returns table (
   total_downline bigint
@@ -96,6 +98,8 @@ end;
 $$;
 
 -- 6) RPC: get_referral_direct_financial_stats() dengan UUID type-safe
+drop function if exists public.get_referral_direct_financial_stats();
+
 create or replace function public.get_referral_direct_financial_stats()
 returns table (
   total_invoice bigint,
