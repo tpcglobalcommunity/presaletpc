@@ -47,6 +47,12 @@ import FAQPage from "@/pages/id/FAQPage";
 import WhitepaperPage from "@/pages/id/WhitepaperPage";
 import DAOPage from "@/pages/id/DAOPage";
 import TransparansiPage from "@/pages/id/TransparansiPage";
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdminInvoicesPage from './pages/admin/AdminInvoicesPage';
+import AdminInvoiceDetailPage from './pages/admin/AdminInvoiceDetailPage';
+import AdminUsersPage from './pages/admin/AdminUsersPage';
+import AdminReferralsPage from './pages/admin/AdminReferralsPage';
+import AdminAnalyticsPage from './pages/admin/AdminAnalyticsPage';
 import MarketPage from "@/pages/id/MarketPage";
 import InvoiceSuccessPage from "@/pages/id/InvoiceSuccessPage";
 
@@ -306,18 +312,26 @@ function App() {
                     } 
                   />
                   <Route 
-                    path="users" 
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <AdminUsersPage />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
                     path="referrals" 
                     element={
                       <Suspense fallback={<PageLoader />}>
                         <AdminReferralsPage />
+                      </Suspense>
+                    } 
+                  />
+                  <Route 
+                    path="analytics" 
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <AdminAnalyticsPage />
+                      </Suspense>
+                    } 
+                  />
+                  <Route 
+                    path="users" 
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <AdminUsersPage />
                       </Suspense>
                     } 
                   />

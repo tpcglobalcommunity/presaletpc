@@ -102,7 +102,7 @@ export function AdminLayoutPremium() {
     {
       title: 'Referrals',
       icon: <TrendingUp className="h-5 w-5" />,
-      href: `${base}/analytics`,
+      href: `${base}/referrals`,
     },
     {
       title: 'Marketing',

@@ -11,6 +11,7 @@ import { formatNumberID, formatRupiah } from '@/lib/number';
 import { useToast } from '@/hooks/use-toast';
 
 interface Invoice {
+  id: string;
   invoice_no: string;
   status: string;
   amount_input: number;
@@ -193,7 +194,7 @@ export default function AdminInvoicesPage() {
                             return;
                           }
                           const safeLang = lang === 'en' ? 'en' : 'id';
-                          navigate(`/${safeLang}/admin/invoices/${invoice.invoice_no}`);
+                          navigate(`/${safeLang}/admin/invoices/${invoice.id}`);
                         }}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
@@ -234,7 +235,7 @@ export default function AdminInvoicesPage() {
                                     return;
                                   }
                                   const safeLang = lang === 'en' ? 'en' : 'id';
-                                  navigate(`/${safeLang}/admin/invoices/${invoice.invoice_no}`);
+                                  navigate(`/${safeLang}/admin/invoices/${invoice.id}`);
                                 }}
                               >
                                 <Eye className="h-3 w-3 mr-1" />
