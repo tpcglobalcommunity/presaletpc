@@ -256,27 +256,50 @@ export default function BuyTPCPage() {
                     <Label htmlFor="amount" className="text-lg font-medium text-gray-200">
                       {t('Jumlah Investasi', 'Investment Amount')}
                     </Label>
-                    <div className="relative">
-                      <Input
-                        id="amount"
-                        type="number"
-                        value={amountValue}
-                        onChange={(e) => setAmountValue(e.target.value)}
-                        placeholder={t('Masukkan jumlah', 'Enter amount')}
-                        className="bg-slate-900/50 border-slate-700/50 text-white placeholder-gray-400 text-lg h-12 rounded-xl focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20"
-                      />
+                    <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
+                          <TrendingUp className="w-4 h-4 text-amber-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-200">
+                            {t('Investasi Minimum', 'Minimum Investment')}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {t('Mulai dari 100.000 IDR (~$6 USD)', 'Start from 100.000 IDR (~$6 USD)')}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="relative">
+                        <Input
+                          id="amount"
+                          type="number"
+                          value={amountValue}
+                          onChange={(e) => setAmountValue(e.target.value)}
+                          placeholder={t('Masukkan jumlah investasi', 'Enter investment amount')}
+                          className="bg-slate-900/50 border-slate-700/50 text-white placeholder-gray-400 text-lg h-12 rounded-xl focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20"
+                        />
+                        {amountValue && (
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-amber-400 font-medium">
+                            ≈ {amountUsd.toFixed(2)} USD
+                          </div>
+                        )}
+                      </div>
                       {amountValue && (
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-amber-400 font-medium">
-                          ≈ {amountUsd.toFixed(2)} USD
+                        <div className="mt-3 p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-sm text-gray-400">
+                              <TrendingUp className="w-4 h-4" />
+                              <span>{t('Estimasi TPC', 'TPC Estimate')}</span>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-amber-400 font-bold text-lg">{tpcAmount.toFixed(2)} TPC</div>
+                              <div className="text-xs text-gray-400">{t('@ $0.10/TPC', '@ $0.10/TPC')}</div>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
-                    {amountValue && (
-                      <div className="flex items-center gap-2 text-sm text-gray-400">
-                        <TrendingUp className="w-4 h-4" />
-                        <span>Estimasi TPC: <span className="text-amber-400 font-semibold">{tpcAmount.toFixed(2)} TPC</span></span>
-                      </div>
-                    )}
                   </div>
 
                   {/* Currency Selection */}
@@ -284,16 +307,61 @@ export default function BuyTPCPage() {
                     <Label htmlFor="currency" className="text-lg font-medium text-gray-200">
                       {t('Pilih Mata Uang', 'Select Currency')}
                     </Label>
-                    <Select value={currency} onValueChange={(value: Currency) => setCurrency(value)}>
-                      <SelectTrigger className="bg-slate-900/50 border-slate-700/50 text-white h-12 rounded-xl focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-900/95 border-slate-700/50 backdrop-blur-xl">
-                        <SelectItem value="IDR">🇮🇩 IDR - Rupiah Indonesia</SelectItem>
-                        <SelectItem value="USDC">💵 USDC - USD Coin</SelectItem>
-                        <SelectItem value="SOL">◎ SOL - Solana</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
+                          <Shield className="w-4 h-4 text-blue-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-200">
+                            {t('Metode Pembayaran', 'Payment Method')}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {t('Pilih mata uang yang nyaman untuk Anda', 'Choose currency that suits you best')}
+                          </p>
+                        </div>
+                      </div>
+                      <Select value={currency} onValueChange={(value: Currency) => setCurrency(value)}>
+                        <SelectTrigger className="bg-slate-900/50 border-slate-700/50 text-white h-12 rounded-xl focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-900/95 border-slate-700/50 backdrop-blur-xl">
+                          <SelectItem value="IDR">
+                            <div className="flex items-center gap-2">
+                              <span>🇮🇩</span>
+                              <div>
+                                <div className="font-medium">IDR - Rupiah Indonesia</div>
+                                <div className="text-xs text-gray-400">{t('Transfer Bank BCA', 'BCA Bank Transfer')}</div>
+                              </div>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="USDC">
+                            <div className="flex items-center gap-2">
+                              <span>💵</span>
+                              <div>
+                                <div className="font-medium">USDC - USD Coin</div>
+                                <div className="text-xs text-gray-400">{t('Crypto Wallet', 'Crypto Wallet')}</div>
+                              </div>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="SOL">
+                            <div className="flex items-center gap-2">
+                              <span>◎</span>
+                              <div>
+                                <div className="font-medium">SOL - Solana</div>
+                                <div className="text-xs text-gray-400">{t('Solana Network', 'Solana Network')}</div>
+                              </div>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <div className="mt-3 p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
+                        <div className="flex items-center gap-2 text-xs text-gray-400">
+                          <Shield className="w-4 h-4 text-green-400" />
+                          <span>{t('Semua transaksi aman dan terverifikasi', 'All transactions are secure and verified')}</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Wallet Address */}
@@ -301,14 +369,35 @@ export default function BuyTPCPage() {
                     <Label htmlFor="wallet" className="text-lg font-medium text-gray-200">
                       {t('Alamat Wallet TPC', 'TPC Wallet Address')}
                     </Label>
-                    <Input
-                      id="wallet"
-                      type="text"
-                      value={walletAddress}
-                      onChange={(e) => setWalletAddress(e.target.value)}
-                      placeholder={t('Masukkan alamat wallet untuk menerima TPC', 'Enter wallet address to receive TPC')}
-                      className="bg-slate-900/50 border-slate-700/50 text-white placeholder-gray-400 text-lg h-12 rounded-xl focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20"
-                    />
+                    <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center">
+                          <Shield className="w-4 h-4 text-purple-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-200">
+                            {t('Wallet Penerima', 'Receiving Wallet')}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {t('Alamat wallet untuk menerima token TPC', 'Wallet address to receive TPC tokens')}
+                          </p>
+                        </div>
+                      </div>
+                      <Input
+                        id="wallet"
+                        type="text"
+                        value={walletAddress}
+                        onChange={(e) => setWalletAddress(e.target.value)}
+                        placeholder={t('Masukkan alamat wallet Solana', 'Enter Solana wallet address')}
+                        className="bg-slate-900/50 border-slate-700/50 text-white placeholder-gray-400 text-lg h-12 rounded-xl focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20"
+                      />
+                      <div className="mt-3 p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
+                        <div className="flex items-center gap-2 text-xs text-gray-400">
+                          <Shield className="w-4 h-4 text-green-400" />
+                          <span>{t('Solana Network - Pastikan alamat wallet benar', 'Solana Network - Ensure correct wallet address')}</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Referral Code */}
@@ -316,51 +405,121 @@ export default function BuyTPCPage() {
                     <Label htmlFor="sponsor" className="text-lg font-medium text-gray-200">
                       {t('Kode Referal (Opsional)', 'Referral Code (Optional)')}
                     </Label>
-                    <Input
-                      id="sponsor"
-                      type="text"
-                      value={sponsorCode}
-                      onChange={(e) => setSponsorCode(sanitizeReferral(e.target.value))}
-                      placeholder={t('TPC-GLOBAL', 'TPC-GLOBAL')}
-                      className="bg-slate-900/50 border-slate-700/50 text-white placeholder-gray-400 text-lg h-12 rounded-xl focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20"
-                    />
+                    <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-8 h-8 rounded-lg bg-green-500/20 border border-green-500/30 flex items-center justify-center">
+                          <Star className="w-4 h-4 text-green-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-200">
+                            {t('Bonus Referal', 'Referral Bonus')}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {t('Dapatkan bonus tambahan dari kode referal', 'Get additional bonus from referral code')}
+                          </p>
+                        </div>
+                      </div>
+                      <Input
+                        id="sponsor"
+                        type="text"
+                        value={sponsorCode}
+                        onChange={(e) => setSponsorCode(sanitizeReferral(e.target.value))}
+                        placeholder={t('TPC-GLOBAL', 'TPC-GLOBAL')}
+                        className="bg-slate-900/50 border-slate-700/50 text-white placeholder-gray-400 text-lg h-12 rounded-xl focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20"
+                      />
+                      <div className="mt-3 p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
+                        <div className="flex items-center gap-2 text-xs text-gray-400">
+                          <Star className="w-4 h-4 text-amber-400" />
+                          <span>{t('Kosongkan jika tidak ada kode referal', 'Leave empty if no referral code')}</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   <Separator className="bg-slate-700/50" />
 
                   {/* CTA Section */}
                   <div className="space-y-6">
-                    <Button
-                      onClick={handleBuyRedirect}
-                      disabled={timeLeft <= 0}
-                      className="w-full h-14 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold text-lg rounded-xl shadow-lg shadow-amber-500/25 transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                    >
-                      <div className="flex items-center justify-center gap-3">
-                        <span>{t('Login untuk Beli TPC', 'Login to Buy TPC')}</span>
-                        <ArrowRight className="w-5 h-5" />
-                      </div>
-                    </Button>
-
-                    <div className="text-center space-y-3">
-                      <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-full">
-                        <Shield className="w-4 h-4 text-amber-400" />
-                        <p className="text-sm text-gray-300">
-                          {t('Untuk keamanan, pembelian hanya bisa dilakukan setelah login.', 'For security, purchases are available after login.')}
-                        </p>
+                    <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
+                          <Shield className="w-5 h-5 text-amber-400" />
+                        </div>
+                        <div>
+                          <p className="text-lg font-medium text-gray-200">
+                            {t('Keamanan Terjamin', 'Security Guaranteed')}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {t('Sistem pembayaran terenkripsi dan terverifikasi', 'Encrypted and verified payment system')}
+                          </p>
+                        </div>
                       </div>
                       
-                      <div className="flex items-center justify-center gap-6 text-sm text-gray-400">
-                        <div className="flex items-center gap-1">
-                          <CheckCircle className="w-4 h-4 text-green-400" />
-                          <span>{t('Aman', 'Secure')}</span>
+                      <Button
+                        onClick={handleBuyRedirect}
+                        disabled={timeLeft <= 0}
+                        className="w-full h-14 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold text-lg rounded-xl shadow-lg shadow-amber-500/25 transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                      >
+                        <div className="flex items-center justify-center gap-3">
+                          <span>{t('Login untuk Beli TPC', 'Login to Buy TPC')}</span>
+                          <ArrowRight className="w-5 h-5" />
                         </div>
-                        <div className="flex items-center gap-1">
-                          <CheckCircle className="w-4 h-4 text-green-400" />
-                          <span>{t('Tercepat', 'Fast')}</span>
+                      </Button>
+
+                      <div className="text-center space-y-4">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900/50 border border-slate-700/50 rounded-full">
+                          <Shield className="w-4 h-4 text-amber-400" />
+                          <p className="text-sm text-gray-300">
+                            {t('Untuk keamanan, pembelian hanya bisa dilakukan setelah login.', 'For security, purchases are available after login.')}
+                          </p>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <CheckCircle className="w-4 h-4 text-green-400" />
-                          <span>{t('Terpercaya', 'Trusted')}</span>
+                        
+                        <div className="grid grid-cols-3 gap-4 text-center">
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="w-12 h-12 rounded-lg bg-green-500/20 border border-green-500/30 flex items-center justify-center">
+                              <CheckCircle className="w-6 h-6 text-green-400" />
+                            </div>
+                            <div>
+                              <div className="text-sm font-medium text-gray-200">{t('Aman', 'Secure')}</div>
+                              <div className="text-xs text-gray-400">{t('SSL Terenkripsi', 'SSL Encrypted')}</div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="w-12 h-12 rounded-lg bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
+                              <TrendingUp className="w-6 h-6 text-blue-400" />
+                            </div>
+                            <div>
+                              <div className="text-sm font-medium text-gray-200">{t('Tercepat', 'Fast')}</div>
+                              <div className="text-xs text-gray-400">{t('Proses Instant', 'Instant Process')}</div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="w-12 h-12 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center">
+                              <Star className="w-6 h-6 text-purple-400" />
+                            </div>
+                            <div>
+                              <div className="text-sm font-medium text-gray-200">{t('Terpercaya', 'Trusted')}</div>
+                              <div className="text-xs text-gray-400">{t('10K+ Pengguna', '10K+ Users')}</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 p-4 bg-slate-900/50 rounded-lg border border-slate-700/50">
+                          <div className="flex items-start gap-3">
+                            <div className="w-6 h-6 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center flex-shrink-0 mt-1">
+                              <Sparkles className="w-3 h-3 text-amber-400" />
+                            </div>
+                            <div className="text-left">
+                              <p className="text-sm font-medium text-gray-200 mb-1">
+                                {t('Kenapa Harus Login?', 'Why Login Required?')}
+                              </p>
+                              <p className="text-xs text-gray-400 leading-relaxed">
+                                {t('Login diperlukan untuk keamanan transaksi dan compliance regulasi. Data Anda terlindungi dengan enkripsi tingkat enterprise.', 'Login is required for transaction security and regulatory compliance. Your data is protected with enterprise-level encryption.')}
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
