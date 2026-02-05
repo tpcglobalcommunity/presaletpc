@@ -18,12 +18,6 @@ export function BottomNav() {
     { icon: Home, label: 'Home', path: '/id' },
     { icon: TrendingUp, label: 'Market', path: '/id/market' },
     { 
-      icon: Target, 
-      label: 'Presale', 
-      path: '/id/presale',
-      requiresAuth: false // ✅ PUBLIC - tidak memerlukan auth
-    },
-    { 
       icon: Coins, 
       label: 'BUY TPC', 
       path: '/id/buytpc',

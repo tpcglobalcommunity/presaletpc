@@ -32,10 +32,10 @@ export async function ensureProfile(userId: string): Promise<void> {
         const { error: retryError } = await supabase.rpc('ensure_profile_minimal' as any);
         
         if (retryError) {
-          // 🔒 HANDLE UUID ERRORS in retry
+          // HANDLE UUID ERRORS in retry
           if (retryError.message?.includes('invalid input syntax for type uuid')) {
             console.warn("[PROFILE] UUID syntax error in retry, treating as success:", retryError.message);
-            return; // ✅ Return success, don't throw
+            return; // Return success, don't throw
           }
           
           if (retryError.message?.includes('AUTH_REQUIRED') || 
@@ -49,7 +49,7 @@ export async function ensureProfile(userId: string): Promise<void> {
       }
     }
     
-    // 🆕 ADD MEMBER_CODE FALLBACK
+    // ADD MEMBER_CODE FALLBACK
     // Ensure member_code exists even if minimal profile succeeded
     const { error: memberCodeError } = await supabase.rpc('ensure_profile_member_code' as any, {
       p_user_id: userId
@@ -60,11 +60,22 @@ export async function ensureProfile(userId: string): Promise<void> {
       // Don't throw - member_code is critical but not blocking
     }
     
-    console.log("[PROFILE] Minimal profile + member_code ensured successfully for user:", userId);
+    // 🆕 ADD SPONSOR CODE FALLBACK
+    // Ensure sponsor_code exists even if minimal profile succeeded
+    const { error: sponsorCodeError } = await supabase.rpc('ensure_profile_sponsor_code' as any, {
+      p_user_id: userId
+    });
+    
+    if (sponsorCodeError) {
+      console.error("[PROFILE] Error ensuring sponsor code:", sponsorCodeError);
+      // Don't throw - sponsor_code is critical but not blocking
+    }
+    
+    console.log("[PROFILE] Minimal profile + member_code + sponsor_code ensured successfully for user:", userId);
   } catch (error) {
     console.error("[PROFILE] Failed to ensure minimal profile for user:", userId, "error:", error);
     
-    // 🔒 HANDLE UUID ERRORS in catch block
+    // HANDLE UUID ERRORS in catch block
     if (error instanceof Error && 
         (error.message.includes('invalid input syntax for type uuid'))) {
       console.warn("[PROFILE] UUID syntax error caught, treating as success:", error.message);
