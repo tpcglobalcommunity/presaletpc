@@ -598,8 +598,10 @@ export default function BuyTPCPage() {
           description: `Invoice #${invoice.invoice_no} telah dibuat. Silakan lanjut ke pembayaran.`,
         });
 
-        // Navigate to invoice detail (ANTI UNDEFINED)
-        navigate(`/id/invoice/${invoice.invoice_no}`, { replace: true });
+        // Navigate to member invoice detail (AUTHENTICATED ONLY)
+        const safeLang = lang === 'en' ? 'en' : 'id';
+        console.log(`[BUY_TPC] Redirecting to member invoice detail: /${safeLang}/member/invoices/${invoice.invoice_no}`);
+        navigate(`/${safeLang}/member/invoices/${invoice.invoice_no}`, { replace: true });
       }
     } catch (error) {
       console.error('Submit error:', error);

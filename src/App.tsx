@@ -52,7 +52,6 @@ import InvoiceSuccessPage from "@/pages/id/InvoiceSuccessPage";
 
 // Shared Public Pages
 import TutorialPhantomWalletPage from "@/pages/public/TutorialPhantomWalletPage";
-import PublicInvoiceDetailPage from "@/pages/public/PublicInvoiceDetailPage";
 import LoginPageV2 from "@/pages/public/LoginPage"; // V2
 
 // Member Pages (Lazy Loaded)
@@ -165,10 +164,6 @@ function App() {
                 <Route
                   path="tutorial/phantom-wallet"
                   element={<TutorialPhantomWalletPage />}
-                />
-                <Route
-                  path="public/invoice/:invoiceNo"
-                  element={<PublicInvoiceDetailPage />}
                 />
                 
                 {/* CANONICAL DASHBOARD ROUTE */}
