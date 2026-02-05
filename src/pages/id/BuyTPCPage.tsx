@@ -495,30 +495,13 @@ export default function BuyTPCPage() {
       // ✅ ENSURE PROFILE HANYA DI CTA
       await ensureProfile(user.id);
 
-      // ✅ SPONSOR LOGIC HANYA DI CTA
+      // ✅ SPONSOR LOGIC: Gunakan sponsor dari form (valid/referral) atau biarkan ensureProfile handle auto assignment
       let finalSponsorCode = sponsorCode.trim().toUpperCase();
       
-      // Jika sponsor adalah fallback (TPC-GLOBAL), panggil pick_sponsor_b1
+      // Jika sponsor adalah fallback (TPC-GLOBAL), biarkan ensureProfile handle auto sponsor assignment
+      // Tidak perlu manual pick_sponsor_b1 di sini
       if (finalSponsorCode === 'TPC-GLOBAL') {
-        const { data: sponsorId, error: sponsorError } = await supabase.rpc('pick_sponsor_b1' as any);
-        
-        if (sponsorError || !sponsorId) {
-          throw new Error("AUTO_SPONSOR_FAILED");
-        }
-        
-        // Get sponsor code dari sponsor_id
-        const { data: sponsorData, error: sponsorDataError } = await supabase
-          .from('profiles')
-          .select('member_code')
-          .eq('id', sponsorId)
-          .single();
-          
-        if (sponsorDataError || !sponsorData?.member_code) {
-          throw new Error("SPONSOR_CODE_NOT_FOUND");
-        }
-        
-        finalSponsorCode = sponsorData.member_code;
-        console.log('[SPONSOR] Auto-assigned sponsor:', finalSponsorCode);
+        console.log('[SPONSOR] Using TPC-GLOBAL, ensureProfile will handle auto sponsor assignment');
       }
 
       // Create invoice using existing RPC

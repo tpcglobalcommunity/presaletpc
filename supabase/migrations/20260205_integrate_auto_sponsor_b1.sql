@@ -89,9 +89,14 @@ begin
                 
                 v_assignment_reason := 'AUTO_B1_LOWEST_DIRECT';
             else
-                -- Fallback: no eligible sponsors (should not happen)
-                v_assignment_reason := 'NO_ELIGIBLE_SPONSOR';
+                -- 🔒 HARD FAIL: No eligible sponsors found
+                raise exception 'AUTO_SPONSOR_FAILED: No eligible sponsors available for assignment';
             end if;
+        end if;
+        
+        -- 🔒 HARD GUARD: Ensure sponsor_id is valid UUID
+        if v_sponsor_id is null or v_sponsor_id = '' or v_sponsor_id = '00000000-0000-0000-0000-000000000000' then
+            raise exception 'AUTO_SPONSOR_FAILED: Invalid sponsor_id generated';
         end if;
         
         -- Insert new profile with sponsor
