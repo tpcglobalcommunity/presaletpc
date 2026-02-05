@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText, Clock, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,6 +18,7 @@ interface Invoice {
   tpc_amount: number;
   created_at: string;
   expires_at?: string;
+  proof_url?: string;
 }
 
 const getStatusConfig = (status: string) => {
@@ -40,13 +41,17 @@ const TAB_LABELS = {
 } as const;
 
 export default function MemberInvoicesPage() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'ALL'|'PAID'|'PENDING_REVIEW'|'UNPAID'|'CANCELLED'>('ALL');
+  
+  // Prevent double-run / setState after unmount
+  const cancelledRef = useRef(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Filter invoices based on active tab
   const filteredInvoices =
@@ -66,53 +71,107 @@ export default function MemberInvoicesPage() {
   };
 
   const fetchInvoices = async () => {
+    // Reset cancelled flag
+    cancelledRef.current = false;
+    
+    // Clear existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
     try {
       setIsLoading(true);
+      setError(null);
 
-      if (!user) {
+      // Fetch hanya saat auth loading selesai DAN user.id tersedia
+      if (authLoading || !user?.id) {
         setInvoices([]);
-        setError('User tidak terautentikasi');
         return;
       }
 
-      // Query dengan user_id primary dan email fallback
-      let query = supabase
+      // Timeout protection (12 detik)
+      timeoutRef.current = setTimeout(() => {
+        if (!cancelledRef.current) {
+          console.warn('[MEMBER_INVOICES] Request timeout - forcing stop');
+          cancelledRef.current = true;
+          setIsLoading(false);
+          setError('Request timeout. Silakan coba lagi.');
+          setInvoices([]);
+        }
+      }, 12000);
+
+      console.log('[MEMBER_INVOICES] Fetching invoices for user:', user.id);
+
+      const { data, error } = await supabase
         .from('invoices')
-        .select('id, invoice_no, status, amount_input, base_currency, amount_usd, tpc_amount, created_at, expires_at')
+        .select('id, invoice_no, status, tpc_amount, created_at, expires_at, proof_url, amount_input, base_currency, amount_usd')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      // Primary: user_id
-      query = query.eq('user_id', user.id);
-      
-      // Fallback: email (untuk invoice lama yang belum ter-link)
-      if (user.email) {
-        query = query.or(`email.eq.${user.email},user_id.is.null`);
+      // Clear timeout on success/error
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
       }
-      
-      const { data, error } = await query;
-      
+
+      // Check if component was unmounted
+      if (cancelledRef.current) {
+        return;
+      }
+
       if (error) {
+        console.error('[MEMBER_INVOICES] load error:', error);
         throw error;
       }
-      
-      setInvoices(data ?? []);
+
+      console.log('[MEMBER_INVOICES] Loaded invoices:', data?.length || 0);
+      setInvoices(data || []);
       setError(null);
     } catch (err) {
-      console.error('[INVOICES] fetch failed:', err);
-      setInvoices([]);
+      // Clear timeout on error
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+
+      // Check if component was unmounted
+      if (cancelledRef.current) {
+        return;
+      }
+
+      console.error('[MEMBER_INVOICES] load error:', err);
+      
+      // Show toast error
+      toast({
+        title: 'Gagal Memuat Invoice',
+        description: 'Terjadi kesalahan saat memuat data invoice. Silakan coba lagi.',
+        variant: 'destructive',
+      });
+      
       setError('Gagal memuat invoice. Silakan coba lagi.');
+      setInvoices([]);
     } finally {
-      // ⛔ WAJIB, TANPA SYARAT
-      setIsLoading(false);
+      // Check if component was unmounted
+      if (!cancelledRef.current) {
+        setIsLoading(false);
+      }
     }
   };
 
+  // Effect untuk fetch invoices
   useEffect(() => {
     fetchInvoices();
-  }, [user]);
+
+    // Cleanup on unmount
+    return () => {
+      cancelledRef.current = true;
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [authLoading, user?.id]); // deps yang tepat
 
   const handleRetry = () => {
-    setIsLoading(true);
     fetchInvoices();
   };
 
