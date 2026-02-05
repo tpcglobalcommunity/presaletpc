@@ -296,6 +296,14 @@ function App() {
                 >
                   <Route index element={<Navigate replace to="invoices" />} />
                   <Route 
+                    path="dashboard" 
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <AdminDashboardPage />
+                      </Suspense>
+                    } 
+                  />
+                  <Route 
                     path="invoices" 
                     element={
                       <Suspense fallback={<PageLoader />}>
