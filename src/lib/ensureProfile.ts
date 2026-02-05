@@ -49,7 +49,18 @@ export async function ensureProfile(userId: string): Promise<void> {
       }
     }
     
-    console.log("[PROFILE] Minimal profile ensured successfully for user:", userId);
+    // 🆕 ADD MEMBER_CODE FALLBACK
+    // Ensure member_code exists even if minimal profile succeeded
+    const { error: memberCodeError } = await supabase.rpc('ensure_profile_member_code' as any, {
+      p_user_id: userId
+    });
+    
+    if (memberCodeError) {
+      console.error("[PROFILE] Error ensuring member code:", memberCodeError);
+      // Don't throw - member_code is critical but not blocking
+    }
+    
+    console.log("[PROFILE] Minimal profile + member_code ensured successfully for user:", userId);
   } catch (error) {
     console.error("[PROFILE] Failed to ensure minimal profile for user:", userId, "error:", error);
     
