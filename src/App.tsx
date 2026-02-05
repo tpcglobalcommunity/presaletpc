@@ -49,7 +49,7 @@ import DAOPage from "@/pages/id/DAOPage";
 import TransparansiPage from "@/pages/id/TransparansiPage";
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminInvoicesPage from './pages/admin/AdminInvoicesPageSimple';
-import AdminInvoiceDetailPage from './pages/admin/AdminInvoiceDetailPage';
+import AdminInvoiceDetailPage from './pages/admin/AdminInvoiceDetailPageSimple';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminReferralsPage from './pages/admin/AdminReferralsPage';
 import AdminAnalyticsPage from './pages/admin/AdminAnalyticsPage';
