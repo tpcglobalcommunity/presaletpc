@@ -1,71 +1,86 @@
--- RLS Policies for Invoices Table
+-- ============================================================
+-- RLS POLICIES: public.invoices
 -- Member can read own invoices (user_id primary, email fallback)
+-- Admin can read all invoices via public.is_admin()
+-- ============================================================
 
--- Enable RLS
+-- 1) Enable RLS
 ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
 
--- Drop existing policies (if any)
+-- 2) Drop old policies (safe)
 DROP POLICY IF EXISTS "member_read_own_invoices" ON public.invoices;
 DROP POLICY IF EXISTS "admin_read_all_invoices" ON public.invoices;
 DROP POLICY IF EXISTS "member_update_own_invoices" ON public.invoices;
+DROP POLICY IF EXISTS "admin_update_all_invoices" ON public.invoices;
+DROP POLICY IF EXISTS "admin_delete_invoices" ON public.invoices;
 
--- Member can read own invoices
+-- 3) MEMBER: read own invoices
+-- primary: user_id = auth.uid()
+-- fallback: email = auth.jwt()->>'email' (temporary safety for legacy rows)
 CREATE POLICY "member_read_own_invoices"
 ON public.invoices
 FOR SELECT
+TO authenticated
 USING (
   user_id = auth.uid()
-  OR (email = auth.jwt() ->> 'email' AND user_id IS NULL)
+  OR (
+    user_id IS NULL
+    AND email IS NOT NULL
+    AND email = (auth.jwt() ->> 'email')
+  )
 );
 
--- Admin can read all invoices
+-- 4) ADMIN: read all invoices (no table dependency)
 CREATE POLICY "admin_read_all_invoices"
 ON public.invoices
 FOR SELECT
+TO authenticated
 USING (
-  auth.uid() IN (
-    SELECT user_id FROM admin_users WHERE is_active = true
-  )
+  public.is_admin()
 );
 
--- Member can update own invoices (for proof upload, etc.)
+-- 5) MEMBER: update own invoices (for proof upload, status changes)
 CREATE POLICY "member_update_own_invoices"
 ON public.invoices
 FOR UPDATE
+TO authenticated
 USING (
   user_id = auth.uid()
-  OR (email = auth.jwt() ->> 'email' AND user_id IS NULL)
+  OR (
+    user_id IS NULL
+    AND email IS NOT NULL
+    AND email = (auth.jwt() ->> 'email')
+  )
 )
 WITH CHECK (
   user_id = auth.uid()
-  OR (email = auth.jwt() ->> 'email' AND user_id IS NULL)
+  OR (
+    user_id IS NULL
+    AND email IS NOT NULL
+    AND email = (auth.jwt() ->> 'email')
+  )
 );
 
--- Admin can update all invoices
+-- 6) ADMIN: update all invoices
 CREATE POLICY "admin_update_all_invoices"
 ON public.invoices
 FOR UPDATE
+TO authenticated
 USING (
-  auth.uid() IN (
-    SELECT user_id FROM admin_users WHERE is_active = true
-  )
+  public.is_admin()
 )
 WITH CHECK (
-  auth.uid() IN (
-    SELECT user_id FROM admin_users WHERE is_active = true
-  )
+  public.is_admin()
 );
 
--- Member cannot insert invoices (system only)
--- Admin cannot insert invoices (system only)
-
--- Member cannot delete invoices (system only)
--- Admin can delete invoices
+-- 7) ADMIN: delete invoices (system cleanup)
 CREATE POLICY "admin_delete_invoices"
 ON public.invoices
 FOR DELETE
+TO authenticated
 USING (
-  auth.uid() IN (
-    SELECT user_id FROM admin_users WHERE is_active = true
-  )
+  public.is_admin()
 );
+
+-- 8) No INSERT policies (system only)
+-- Invoices should only be created by backend/system functions
