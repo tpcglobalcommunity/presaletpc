@@ -109,6 +109,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (authListenerMountedRef.current) return;
     authListenerMountedRef.current = true;
 
+    // Safety timeout untuk mencegah infinite loading
+    const safetyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    
     const initProfileOnce = async (currentSession: Session, event: string) => {
       const uid = currentSession.user.id;
 
@@ -119,7 +122,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profileInitForUserRef.current !== uid; // user berubah
 
       // Skip event seperti TOKEN_REFRESHED yang sering banget
-      if (!shouldInit) return;
+      if (!shouldInit) {
+        // tidak init ulang, tapi UI harus jalan
+        return;
+      }
 
       // ✅ cegah init paralel / berulang
       if (profileInitInFlightRef.current) return;
@@ -156,38 +162,69 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error("[AUTH] Profile initialization failed:", error);
       } finally {
         profileInitInFlightRef.current = false;
-        setIsLoading(false);
       }
     };
 
-    // Listener
+    // 🔒 HARD LOCK — Bungkus seluruh callback dengan try/finally
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, currentSession) => {
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
+      async (event, session) => {
+        try {
+          console.log('[AUTH] Auth state changed:', event, session ? 'session exists' : 'no session');
+          
+          setSession(session);
+          setUser(session?.user ?? null);
 
-        if (currentSession?.user) {
-          await initProfileOnce(currentSession, event);
-        } else {
-          setProfile(null);
+          if (!session?.user) {
+            setProfile(null);
+            return;
+          }
+
+          // init profile hanya jika perlu
+          await initProfileOnce(session, event);
+
+        } catch (err) {
+          console.error('[AUTH] fatal:', err);
+        } finally {
+          // 🔒 HARD LOCK — APAPUN KONDISINYA
           setIsLoading(false);
-          profileInitForUserRef.current = null;
-          profileInitInFlightRef.current = false;
         }
       }
     );
 
     // Initial session
+    console.log('[AUTH] Getting initial session...');
     supabase.auth.getSession()
       .then(({ data: { session: initialSession } }) => {
-        if (!initialSession) setIsLoading(false);
+        console.log('[AUTH] Initial session received:', initialSession ? 'exists' : 'null');
+        if (!initialSession) {
+          console.log('[AUTH] No initial session, setting isLoading to false');
+          setIsLoading(false);
+        } else {
+          // ✅ Trigger auth state change for existing session
+          console.log('[AUTH] Triggering auth state change for existing session');
+          // Manual trigger untuk existing session
+          initProfileOnce(initialSession, 'INITIAL_SESSION').finally(() => {
+            setIsLoading(false);
+          });
+        }
       })
       .catch((error) => {
-        console.warn('[AUTH] getSession failed:', error);
+        console.error('[AUTH] getSession failed:', error);
         setIsLoading(false);
       });
 
+    // 🛡️ SAFETY NET - Force loading false setelah 3 detik
+    safetyTimeoutRef.current = setTimeout(() => {
+      if (isLoading) {
+        console.warn('[AUTH] SAFETY TIMEOUT - forcing loading to false');
+        setIsLoading(false);
+      }
+    }, 3000);
+
     return () => {
+      if (safetyTimeoutRef.current) {
+        clearTimeout(safetyTimeoutRef.current);
+      }
       subscription.unsubscribe();
       authListenerMountedRef.current = false;
       profileInitForUserRef.current = null;
