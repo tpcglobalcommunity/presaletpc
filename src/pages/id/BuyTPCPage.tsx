@@ -116,15 +116,23 @@ export default function BuyTPCPage() {
     setIsSubmitting(true);
 
     try {
+      // Generate guest_id for public buy
       const guestId = crypto.randomUUID();
       
-      const { data, error } = await supabase.rpc('create_invoice_locked', {
+      // Prepare RPC payload with all 6 required parameters
+      const payload = {
         p_email: `guest-${guestId}@tpc-guest.io`,
         p_referral_code: sponsorCode.trim().toUpperCase() || 'TPC-GLOBAL',
         p_base_currency: currency,
         p_amount_input: parseFloat(amountValue),
-        p_wallet_tpc: walletAddress.trim()
-      });
+        p_wallet_tpc: walletAddress.trim(),
+        p_guest_id: guestId
+      };
+      
+      // Runtime safety log for debugging
+      console.log('[BUY] create_invoice_locked payload', payload);
+      
+      const { data, error } = await supabase.rpc('create_invoice_locked', payload);
 
       if (error) {
         console.error("[INVOICE] Error creating invoice:", error);
