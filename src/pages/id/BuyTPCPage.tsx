@@ -11,7 +11,6 @@ import { buildLoginUrl } from '@/lib/authRedirect';
 import { saveBuyDraft, loadBuyDraft, clearBuyDraft } from '@/lib/buyDraft';
 import CountdownCard from '@/components/CountdownCard';
 import tpcLogo from '@/assets/tpc.png';
-import { supabase } from "@/integrations/supabase/client";
 
 // PUBLIC BUY FLOW - NO AUTH DEPENDENCY
 type Currency = 'IDR' | 'USDC' | 'SOL';
@@ -42,7 +41,6 @@ export default function BuyTPCPage() {
   const [sponsorCode, setSponsorCode] = useState('');
   const [amountUsd, setAmountUsd] = useState(0);
   const [tpcAmount, setTpcAmount] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [solUsdPrice] = useState(150);
 
   // Load draft from URL/localStorage
@@ -94,7 +92,8 @@ export default function BuyTPCPage() {
     }
   }, [amountValue, currency, walletAddress, sponsorCode]);
 
-  const handleContinue = async () => {
+  const handleBuyRedirect = () => {
+    // Validate form before redirect
     if (!amountValue || parseFloat(amountValue) <= 0) {
       toast({
         title: lang === 'id' ? "Error" : "Error",
@@ -113,63 +112,9 @@ export default function BuyTPCPage() {
       return;
     }
 
-    setIsSubmitting(true);
-
-    try {
-      // Generate guest_id for public buy
-      const guestId = crypto.randomUUID();
-      
-      // Prepare RPC payload with all 6 required parameters
-      const payload = {
-        p_email: `guest-${guestId}@tpc-guest.io`,
-        p_referral_code: sponsorCode.trim().toUpperCase() || 'TPC-GLOBAL',
-        p_base_currency: currency,
-        p_amount_input: parseFloat(amountValue),
-        p_wallet_tpc: walletAddress.trim(),
-        p_guest_id: guestId
-      };
-      
-      // Runtime safety log for debugging
-      console.log('[BUY] create_invoice_locked payload', payload);
-      
-      const { data, error } = await supabase.rpc('create_invoice_locked', payload);
-
-      if (error) {
-        console.error("[INVOICE] Error creating invoice:", error);
-        toast({
-          title: lang === 'id' ? "Error" : "Error",
-          description: error.message || (lang === 'id' ? "Gagal membuat invoice" : "Failed to create invoice"),
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (data && data.length > 0) {
-        const invoice = data[0];
-        clearBuyDraft();
-        
-        toast({
-          title: lang === 'id' ? "Berhasil" : "Success",
-          description: lang === 'id' ? `Invoice ${invoice.invoice_no} dibuat` : `Invoice ${invoice.invoice_no} created`,
-        });
-
-        navigate(`/${lang}/invoice/${invoice.invoice_no}`);
-      }
-    } catch (error) {
-      console.error("[INVOICE] Fatal error:", error);
-      toast({
-        title: lang === 'id' ? "Error" : "Error",
-        description: lang === 'id' ? "Terjadi kesalahan" : "An error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleLoginRedirect = () => {
-    const returnUrl = encodeURIComponent(location.pathname + location.search);
-    navigate(`/${lang}/login?returnTo=${returnUrl}`);
+    // Redirect to login with returnTo to member buy page
+    const returnTo = encodeURIComponent(`/${lang}/member/buytpc${location.search ?? ''}`);
+    navigate(`/${lang}/login?returnTo=${returnTo}`);
   };
 
   const endTime = new Date(endAt).getTime();
@@ -273,28 +218,17 @@ export default function BuyTPCPage() {
 
               <div className="space-y-4">
                 <Button
-                  onClick={handleContinue}
-                  disabled={isSubmitting || timeLeft <= 0}
+                  onClick={handleBuyRedirect}
+                  disabled={timeLeft <= 0}
                   className="w-full bg-[#F0B90B] hover:bg-[#e0990c] text-white"
                 >
-                  {isSubmitting ? (
-                    <span>{t('Memproses...', 'Processing...')}</span>
-                  ) : (
-                    <span>{t('Lanjutkan Pembelian', 'Continue Purchase')}</span>
-                  )}
+                  {t('Login untuk Beli TPC', 'Login to Buy TPC')}
                 </Button>
 
                 <div className="text-center">
                   <p className="text-sm text-gray-300 mb-2">
-                    {t('Atau login untuk melihat riwayat', 'Or login to view history')}
+                    {t('Untuk keamanan, pembelian hanya bisa dilakukan setelah login.', 'For security, purchases are available after login.')}
                   </p>
-                  <Button
-                    variant="outline"
-                    onClick={handleLoginRedirect}
-                    className="border-[#2a3f42] text-white hover:bg-[#2a3f42]"
-                  >
-                    {t('Login', 'Login')}
-                  </Button>
                 </div>
               </div>
             </CardContent>
