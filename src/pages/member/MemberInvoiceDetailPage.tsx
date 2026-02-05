@@ -177,7 +177,7 @@ export default function MemberInvoiceDetailPage() {
 
       // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
-        .from('invoice-proofs')
+        .from('proofs')
         .upload(filePath, selectedFile);
 
       if (uploadError) {

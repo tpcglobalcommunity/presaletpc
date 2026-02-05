@@ -13,11 +13,19 @@ export function getInvoiceProofUrl(proofValue: string | null | undefined): strin
   
   // Legacy: if it's already a full URL, validate it's from correct bucket
   if (proofValue.startsWith('http://') || proofValue.startsWith('https://')) {
-    // Backend safety: ensure URL is from invoice-proofs bucket
-    if (proofValue.includes('/storage/v1/object/public/invoice-proofs/')) {
+    // Backend safety: ensure URL is from proofs bucket
+    if (proofValue.includes('/storage/v1/object/public/proofs/')) {
       return proofValue;
     }
-    console.error('[STORAGE] Invalid proof URL - not from invoice-proofs bucket:', proofValue);
+    
+    // Fallback for old data: replace invoice-proofs with proofs
+    if (proofValue.includes('/storage/v1/object/public/invoice-proofs/')) {
+      const fallbackUrl = proofValue.replace('/invoice-proofs/', '/proofs/');
+      console.warn('[STORAGE] Using fallback URL for old invoice-proofs data:', fallbackUrl);
+      return fallbackUrl;
+    }
+    
+    console.error('[STORAGE] Invalid proof URL - not from proofs bucket:', proofValue);
     return null;
   }
   
@@ -30,7 +38,7 @@ export function getInvoiceProofUrl(proofValue: string | null | undefined): strin
     const publicUrl = data.publicUrl;
     
     // Backend safety: validate generated URL
-    if (!publicUrl || !publicUrl.includes('/storage/v1/object/public/invoice-proofs/')) {
+    if (!publicUrl || !publicUrl.includes('/storage/v1/object/public/proofs/')) {
       console.error('[STORAGE] Generated invalid proof URL:', publicUrl);
       return null;
     }
@@ -43,7 +51,7 @@ export function getInvoiceProofUrl(proofValue: string | null | undefined): strin
     if (error.message?.includes('Bucket not found') || 
         error.message?.includes('The bucket does not exist') ||
         error.status === 400 || error.status === 404) {
-      console.error('[STORAGE] Bucket configuration error - invoice-proofs must be PUBLIC or project mismatch');
+      console.error('[STORAGE] Bucket configuration error - proofs must be PUBLIC or project mismatch');
       return null;
     }
     
@@ -72,7 +80,7 @@ export async function isProofUrlAccessible(proofValue: string | null | undefined
 
 /**
  * Generate a unique file path for invoice proof upload
- * Structure: invoice-proofs/{user_id}/{invoice_id}/{timestamp}-{filename}
+ * Structure: proofs/{user_id}/{invoice_id}/{timestamp}-{filename}
  * 
  * @param userId - User ID
  * @param invoiceId - Invoice ID
