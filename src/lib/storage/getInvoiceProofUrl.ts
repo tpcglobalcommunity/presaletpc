@@ -43,7 +43,8 @@ export function getInvoiceProofUrl(proofValue: string | null | undefined): strin
     if (error.message?.includes('Bucket not found') || 
         error.message?.includes('The bucket does not exist') ||
         error.status === 400 || error.status === 404) {
-      console.error('[STORAGE] Bucket configuration error - invoice-proofs must be PUBLIC');
+      console.error('[STORAGE] Bucket configuration error - invoice-proofs must be PUBLIC or project mismatch');
+      return null;
     }
     
     return null;
