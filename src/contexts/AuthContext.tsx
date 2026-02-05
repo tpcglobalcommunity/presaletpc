@@ -33,10 +33,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // ✅ guard yang benar
+  // ✅ guard yang benar - SEMUA ref di top-level
   const authListenerMountedRef = useRef(false);
   const profileInitForUserRef = useRef<string | null>(null);
   const profileInitInFlightRef = useRef(false);
+  const safetyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isAdmin = isAdminUserId(user?.id);
 
@@ -109,9 +110,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (authListenerMountedRef.current) return;
     authListenerMountedRef.current = true;
 
-    // Safety timeout untuk mencegah infinite loading
-    const safetyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-    
     const initProfileOnce = async (currentSession: Session, event: string) => {
       const uid = currentSession.user.id;
 
@@ -191,7 +189,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // Initial session
+    // Initial session - cukup untuk fallback, tidak panggil initProfileOnce manual
     console.log('[AUTH] Getting initial session...');
     supabase.auth.getSession()
       .then(({ data: { session: initialSession } }) => {
@@ -199,21 +197,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!initialSession) {
           console.log('[AUTH] No initial session, setting isLoading to false');
           setIsLoading(false);
-        } else {
-          // ✅ Trigger auth state change for existing session
-          console.log('[AUTH] Triggering auth state change for existing session');
-          // Manual trigger untuk existing session
-          initProfileOnce(initialSession, 'INITIAL_SESSION').finally(() => {
-            setIsLoading(false);
-          });
         }
+        // ❌ HAPUS: Tidak panggil initProfileOnce manual
+        // Biarkan onAuthStateChange yang handle init
       })
       .catch((error) => {
         console.error('[AUTH] getSession failed:', error);
         setIsLoading(false);
       });
 
-    // 🛡️ SAFETY NET - Force loading false setelah 3 detik
+    // 🛡️ SAFETY NET - Gunakan ref yang sudah ada
     safetyTimeoutRef.current = setTimeout(() => {
       if (isLoading) {
         console.warn('[AUTH] SAFETY TIMEOUT - forcing loading to false');
