@@ -36,7 +36,6 @@ as $$
       on r.sponsor_id = p.user_id
     where 
       p.role = 'member'
-      and coalesce(p.is_active, true) = true
       and p.user_id is not null
     group by p.user_id, p.created_at
   )
