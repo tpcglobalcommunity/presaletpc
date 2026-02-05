@@ -240,83 +240,9 @@ export default function AdminInvoiceDetailPage() {
               <div className="text-[#848E9C] text-sm">TPC</div>
               <div className="text-white font-medium">{formatNumberID(invoice.tpc_amount || 0)} TPC</div>
             </div>
-
-    {/* TPC Info */}
-    <Card className="bg-[#1E2329] border border-[#2B3139]">
-      <CardHeader>
-        <CardTitle>Informasi TPC</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <div className="text-[#848E9C] text-sm">Wallet Tujuan</div>
-            <div className="text-white font-mono text-sm">
-              {invoice.wallet_tpc || 'Belum diatur'}
-            </div>
-          </div>
-          <div>
-            <div className="text-[#848E9C] text-sm">TPC Terkirim</div>
-            <div className="text-white font-medium">
-              {invoice.tpc_sent ? (
-                <Badge className="bg-emerald-400/10 text-emerald-400 border-emerald-400/20">
-                  <CheckCircle className="h-3 w-3 mr-1" />
-                  Sudah
-                </Badge>
-              ) : (
-                <Badge className="bg-[#848E9C]/10 text-[#848E9C] border-[#848E9C]/20">
-                  <Clock className="h-3 w-3 mr-1" />
-                  Belum
-                </Badge>
-              )}
-            </div>
-          </div>
-          <div>
-            <div className="text-[#848E9C] text-sm">TPC</div>
-            <div className="text-white font-medium">{formatNumberID(invoice.tpc_amount)} TPC</div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-
-    {/* Actions */}
-    <div className="lg:col-span-3">
-      <Card className="bg-[#1E2329] border border-[#2B3139]">
-        <CardHeader>
-          <CardTitle>Aksi</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {invoice.status === 'PENDING_REVIEW' && (
-              <div className="space-y-3">
-                <Button className="w-full bg-[#F0B90B] hover:bg-[#F8D56B] text-black">
-                  Approve Pembayaran
-                </Button>
-                <Button variant="outline" className="w-full border-red-500 text-red-500 hover:bg-red-600">
-                  Reject Pembayaran
-                </Button>
-              </div>
-            )}
-          
-            {invoice.status === 'REJECTED' && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
-                <h4 className="text-white font-medium mb-2">Pembayaran Ditolak</h4>
-                <p className="text-red-200 text-sm">{invoice.rejected_reason || 'Tidak ada alasan'}</p>
-                <p className="text-red-300 text-xs mt-2">
-                  Ditolak pada: {invoice.rejected_at ? new Date(invoice.rejected_at).toLocaleString('id-ID') : '-'}
-                </p>
-              </div>
-            )}
-
-            {invoice.status === 'PAID' && (
-              <div className="bg-emerald-400/10 border border-emerald-400/20 rounded-lg p-4">
-                <h4 className="text-white font-medium mb-2">Pembayaran Selesai</h4>
-                <CheckCircle className="h-8 w-8 text-emerald-400 mx-auto mb-4" />
-                <p className="text-emerald-200 text-sm">Pembayaran telah diverifikasi dan selesai.</p>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
     </div>
-  </div>
-);
+  );
+}
