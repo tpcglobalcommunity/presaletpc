@@ -127,6 +127,69 @@ export default function AdminInvoiceDetailPage() {
     fetchInvoice();
   }, [invoiceKey]);
 
+  const handleApprove = async () => {
+    if (!invoice?.id) {
+      toast({
+        title: 'Error',
+        description: 'Invoice ID tidak ditemukan',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (invoice.status === 'PAID' || invoice.status === 'APPROVED') {
+      toast({
+        title: 'Error',
+        description: 'Invoice sudah disetujui',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      
+      // Use admin RPC to approve invoice and post bonus atomically
+      const { data, error } = await supabase.rpc('admin_approve_invoice_and_post_bonus' as any, {
+        p_invoice_id: invoice.id
+      });
+
+      if (error) {
+        console.error('Error approving invoice:', error);
+        toast({
+          title: 'Error',
+          description: `Gagal approve invoice: ${error.message}`,
+          variant: 'destructive',
+        });
+      } else if (data && data.length > 0) {
+        const updatedInvoice = data[0];
+        
+        toast({
+          title: 'Berhasil',
+          description: `Invoice #${updatedInvoice.invoice_no} berhasil disetujui dan bonus referral diposting`,
+        });
+        
+        // Refresh invoice data
+        setInvoice(updatedInvoice);
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Gagal approve invoice',
+          variant: 'destructive',
+        });
+      }
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      toast({
+        title: 'Error',
+        description: 'Terjadi kesalahan yang tidak terduga',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const getStatusConfig = (status: string) => {
     switch (status) {
       case 'PAID': return { color: 'text-emerald-400', bgColor: 'bg-emerald-400/10', borderColor: 'border-emerald-400/20', label: 'Lunas', icon: CheckCircle };

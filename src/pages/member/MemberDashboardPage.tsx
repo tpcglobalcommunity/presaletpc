@@ -16,6 +16,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { supabase } from '@/integrations/supabase/client';
+import { formatNumberID } from '@/lib/number';
 
 export default function MemberDashboardPage() {
   const navigate = useNavigate();
@@ -23,6 +25,34 @@ export default function MemberDashboardPage() {
   const { user } = useAuth();
   
   const safeLang = lang === "en" ? "en" : "id";
+  
+  // State for referral bonus stats
+  const [referralStats, setReferralStats] = useState<any>(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
+
+  // Fetch referral bonus stats
+  useEffect(() => {
+    const fetchReferralStats = async () => {
+      if (!user) return;
+      
+      setIsLoadingStats(true);
+      try {
+        const { data, error } = await supabase.rpc('member_get_dashboard_stats' as any);
+        
+        if (error) {
+          console.error('Error fetching referral stats:', error);
+        } else {
+          setReferralStats(data);
+        }
+      } catch (err) {
+        console.error('Unexpected error:', err);
+      } finally {
+        setIsLoadingStats(false);
+      }
+    };
+
+    fetchReferralStats();
+  }, [user]);
 
   const handleBuyTPC = () => {
     navigate(`/${safeLang}/buytpc`);
@@ -128,7 +158,67 @@ export default function MemberDashboardPage() {
           </Card>
         </div>
 
-        {/* Secondary Actions */}
+        {/* Referral Bonus Stats Card */}
+          <Card className="bg-gradient-to-br from-green-500/10 to-green-600/10 border-green-500/30 hover:border-green-500/50 transition-all duration-300 hover:scale-[1.02]">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center">
+                  <Award className="w-5 h-5 text-green-400" />
+                </div>
+                <div>
+                  <CardTitle className="text-white text-lg">Bonus Referral</CardTitle>
+                  <Badge className="bg-green-500/20 text-green-500 border-green-500/30">
+                    Active
+                  </Badge>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              {isLoadingStats ? (
+                <div className="animate-pulse">
+                  <div className="h-2 bg-green-500/30 rounded-full"></div>
+                  <p className="text-center text-green-400">Memuat data...</p>
+                </div>
+              ) : referralStats ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-green-400">
+                        {formatNumberID(referralStats.total_referral_bonus_earned || 0)}
+                      </div>
+                      <p className="text-sm text-green-300">Total Bonus Didapat</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-blue-400">
+                        {formatNumberID(referralStats.total_referral_bonus_withdrawn || 0)}
+                      </div>
+                      <p className="text-sm text-blue-300">Total Bonus Diambil</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-amber-400">
+                        {formatNumberID(referralStats.total_referral_bonus_available || 0)}
+                      </div>
+                      <p className="text-sm text-amber-300">Bonus Tersedia</p>
+                    </div>
+                  </div>
+                  <div className="mt-6 pt-4 border-t border-green-500/30">
+                    <p className="text-sm text-green-300 text-center">
+                      <span className="font-semibold">Catatan:</span> Bonus hanya diberikan untuk direct sponsor (1 level). 
+                      Bonus diproses saat invoice berstatus <strong>PAID</strong> atau <strong>APPROVED</strong>.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center text-gray-400 py-8">
+                  <Award className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                  <p className="text-lg">Data Bonus Tidak Tersedia</p>
+                  <p className="text-sm">Silakan hubungi admin untuk informasi lebih lanjut.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Secondary Actions */}
         <div className="grid grid-cols-2 gap-4">
           {/* Invoice Card */}
           <Card className="bg-white/5 border-white/10 hover:bg-white/10 transition-all duration-300">
