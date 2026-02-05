@@ -610,6 +610,17 @@ export default function BuyTPCPage() {
         </div>
       </div>
 
+      {/* Countdown Section - Top */}
+      <div className="py-8">
+        <div className="max-w-6xl mx-auto px-4">
+          <CountdownCard
+            targetDate={new Date(endAt)}
+            title={label}
+            className="bg-[#1E2329]/50 backdrop-blur-xl border border-[#1F2A33]"
+          />
+        </div>
+      </div>
+
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -902,13 +913,6 @@ export default function BuyTPCPage() {
 
           {/* Right Column - Info */}
           <div className="space-y-6">
-            {/* Countdown Card */}
-            <CountdownCard
-              targetDate={new Date(endAt)}
-              title={label}
-              className="bg-[#1E2329]/50 backdrop-blur-xl border border-[#1F2A33]"
-            />
-
             {/* Token Info */}
             <Card className="bg-[#1E2329]/50 backdrop-blur-xl border border-[#1F2A33]">
               <CardHeader>
