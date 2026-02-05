@@ -85,7 +85,7 @@ export function AdminLayoutPremium() {
     {
       title: 'Dashboard',
       icon: <LayoutDashboard className="h-5 w-5" />,
-      href: `${base}`,
+      href: `${base}/dashboard`,
     },
     {
       title: 'Invoices',
