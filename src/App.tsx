@@ -47,12 +47,6 @@ import FAQPage from "@/pages/id/FAQPage";
 import WhitepaperPage from "@/pages/id/WhitepaperPage";
 import DAOPage from "@/pages/id/DAOPage";
 import TransparansiPage from "@/pages/id/TransparansiPage";
-import AdminDashboardPage from './pages/admin/AdminDashboardPage';
-import AdminInvoicesPage from './pages/admin/AdminInvoicesPageWorking';
-import AdminInvoiceDetailPage from './pages/admin/AdminInvoiceDetailPageSimple';
-import AdminUsersPage from './pages/admin/AdminUsersPage';
-import AdminReferralsPage from './pages/admin/AdminReferralsPage';
-import AdminAnalyticsPage from './pages/admin/AdminAnalyticsPage';
 import MarketPage from "@/pages/id/MarketPage";
 import InvoiceSuccessPage from "@/pages/id/InvoiceSuccessPage";
 
@@ -72,10 +66,12 @@ const MemberWalletPage = lazy(() => import("@/pages/member/MemberWalletPage"));
 const MemberWithdrawalPage = lazy(() => import("@/pages/member/MemberWithdrawalPage"));
 
 // Admin Pages (Lazy Loaded)
+const AdminDashboardPage = lazy(() => import("@/pages/admin/AdminDashboardPage"));
 const AdminInvoicesPage = lazy(() => import("@/pages/admin/AdminInvoicesPage"));
 const AdminInvoiceDetailPage = lazy(() => import("@/pages/admin/AdminInvoiceDetailPage"));
 const AdminUsersPage = lazy(() => import("@/pages/admin/AdminUsersPage"));
 const AdminReferralsPage = lazy(() => import("@/pages/admin/AdminReferralsPage"));
+const AdminAnalyticsPage = lazy(() => import("@/pages/admin/AdminAnalyticsPage"));
 
 // LangIndexPage
 function LangIndexPage() {
