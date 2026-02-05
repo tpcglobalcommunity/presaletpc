@@ -49,30 +49,13 @@ export function AdminLayoutPremium() {
   useEffect(() => {
     const fetchSidebarStats = async () => {
       try {
-        const { data, error } = await supabase.rpc('tpc_get_dashboard_stats_admin');
-        if (error) {
-          console.error('[ADMIN] sidebar stats fetch failed', error);
-          return;
-        }
-
-        if (!data) {
-          console.log('[ADMIN] no sidebar stats data received');
-          return;
-        }
-
-        // Parse JSON response from RPC
-        const statsData = data as unknown as {
-          totalPending: number;
-          totalApproved: number;
-          totalRejected: number;
-          totalInvoices: number;
-          totalTPC: number;
+        // Mock stats for now - will be implemented later
+        const mockStats = {
+          total_users: 0,
+          pending_review: 0
         };
-
-        setStats({
-          total_users: 0, // Will be fetched separately if needed
-          pending_review: statsData.totalPending || 0
-        });
+        
+        setStats(mockStats);
       } catch (e) {
         console.error('[ADMIN] sidebar stats error', e);
       }
