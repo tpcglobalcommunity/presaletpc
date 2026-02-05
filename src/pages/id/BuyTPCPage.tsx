@@ -55,9 +55,6 @@ export default function BuyTPCPage() {
   const { toast } = useToast();
   const { user } = useAuth(); // Optional: untuk CTA logic, bukan page guard
   
-  // DEBUG: Log ketika BuyTPCPage dimount
-  console.log('[BUYTPC] Page mounted, path:', location.pathname, 'user:', !!user);
-  
   // Presale configuration from environment variables
   const endAt = import.meta.env.VITE_PRESALE_END_AT ?? "2026-08-02T19:49:30+08:00";
   const label = import.meta.env.VITE_PRESALE_LABEL ?? "Presale Stage 1 Berakhir Dalam";

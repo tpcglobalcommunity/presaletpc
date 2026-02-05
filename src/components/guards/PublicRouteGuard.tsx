@@ -1,11 +1,11 @@
 import { Navigate, useLocation, useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
-interface RequireAuthProps {
+interface PublicRouteGuardProps {
   children: React.ReactNode;
 }
 
-export function RequireAuth({ children }: RequireAuthProps) {
+export function PublicRouteGuard({ children }: PublicRouteGuardProps) {
   const { user, isLoading } = useAuth();
   const location = useLocation();
   const { lang } = useParams();

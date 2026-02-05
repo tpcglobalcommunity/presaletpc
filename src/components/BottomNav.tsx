@@ -22,7 +22,7 @@ export function BottomNav() {
       label: 'BUY TPC', 
       path: '/id/buytpc',
       isPrimary: true,
-      requiresAuth: true 
+      requiresAuth: false // ✅ PUBLIC - tidak memerlukan auth
     },
     { 
       icon: User, 

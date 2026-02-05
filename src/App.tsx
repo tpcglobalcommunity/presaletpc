@@ -12,6 +12,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { PublicRouteGuard } from "@/components/guards/PublicRouteGuard";
+import { RequireAdmin } from "@/components/guards/RequireAdmin";
 
 // Contexts & Error Boundaries
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -99,7 +101,7 @@ function App() {
               <Route path="/" element={<Navigate replace to="/id" />} />
                 
                 {/* Language shell */}
-                <Route path="/:lang" element={<MobileLayout />}>
+                <Route path="/:lang" element={<PublicRouteGuard><MobileLayout /></PublicRouteGuard>}>
                 {/* Index route */}
                 <Route index element={<LangIndexPage />} />
                 
@@ -345,7 +347,7 @@ function App() {
                 
                 {/* 404 - MUST BE LAST */}
                 <Route path="*" element={<NotFound />} />
-              </Route>
+              </Route> {/* End of /:lang */}
               
               {/* Global 404 */}
               <Route path="*" element={<NotFound />} />
