@@ -123,10 +123,10 @@ declare
   v_normalized_code text;
   v_sponsor_id uuid;
 begin
-  -- Normalize code
-  v_normalized_code := upper(trim(coalesce(p_referral_code, '')));
+  -- Normalize code and handle empty/null
+  v_normalized_code := trim(coalesce(p_referral_code, ''));
   
-  -- If empty -> return null
+  -- If empty or only whitespace -> return null (never return empty string)
   if v_normalized_code = '' then
     return null;
   end if;
@@ -134,9 +134,10 @@ begin
   -- Find sponsor by member code
   select user_id into v_sponsor_id
   from public.profiles
-  where member_code = v_normalized_code
+  where member_code = upper(v_normalized_code)
     and coalesce(is_active, true) = true
     and user_id is not null
+    and user_id != '00000000-0000-0000-0000-000000000000'::uuid -- Exclude invalid UUID
   limit 1;
   
   return v_sponsor_id;

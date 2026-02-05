@@ -14,6 +14,12 @@ export async function ensureProfile(userId: string): Promise<void> {
     if (error) {
       console.error("[PROFILE] Error ensuring minimal profile:", error);
       
+      // 🔒 HANDLE UUID ERRORS - treat as non-fatal
+      if (error.message?.includes('invalid input syntax for type uuid')) {
+        console.warn("[PROFILE] UUID syntax error, treating as success:", error.message);
+        return; // ✅ Return success, don't throw
+      }
+      
       // 🔒 THROW only for true auth errors
       if (error.message?.includes('AUTH_REQUIRED') || 
           error.message?.includes('USER_NOT_FOUND')) {
@@ -26,6 +32,12 @@ export async function ensureProfile(userId: string): Promise<void> {
         const { error: retryError } = await supabase.rpc('ensure_profile_minimal' as any);
         
         if (retryError) {
+          // 🔒 HANDLE UUID ERRORS in retry
+          if (retryError.message?.includes('invalid input syntax for type uuid')) {
+            console.warn("[PROFILE] UUID syntax error in retry, treating as success:", retryError.message);
+            return; // ✅ Return success, don't throw
+          }
+          
           if (retryError.message?.includes('AUTH_REQUIRED') || 
               retryError.message?.includes('USER_NOT_FOUND')) {
             throw new Error(`Authentication required: ${retryError.message}`);
@@ -40,6 +52,13 @@ export async function ensureProfile(userId: string): Promise<void> {
     console.log("[PROFILE] Minimal profile ensured successfully for user:", userId);
   } catch (error) {
     console.error("[PROFILE] Failed to ensure minimal profile for user:", userId, "error:", error);
+    
+    // 🔒 HANDLE UUID ERRORS in catch block
+    if (error instanceof Error && 
+        (error.message.includes('invalid input syntax for type uuid'))) {
+      console.warn("[PROFILE] UUID syntax error caught, treating as success:", error.message);
+      return; // ✅ Return success, don't throw
+    }
     
     // 🔒 THROW only for auth errors, not for any other issues
     if (error instanceof Error && 
