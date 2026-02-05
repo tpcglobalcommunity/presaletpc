@@ -42,10 +42,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const safetyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isLoadingRef = useRef(true); // ✅ NEW: Ref untuk safety timeout
 
-  // Update ref setiap kali isLoading berubah
-  useEffect(() => {
-    isLoadingRef.current = isLoading;
-  }, [isLoading]);
+  // Helper functions untuk konsistensi
+  const setLoadingSafe = (value: boolean) => {
+    isLoadingRef.current = value;
+    setIsLoading(value);
+  };
+
+  const markInitialized = () => {
+    setLoadingSafe(false);
+    setSessionInitialized(true);
+  };
 
   const isAdmin = isAdminUserId(user?.id);
 
@@ -183,16 +189,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (!session?.user) {
             setProfile(null);
             // ✅ UI READY segera (tidak menunggu profile init)
-            setIsLoading(false);
-            isLoadingRef.current = false;
-            setSessionInitialized(true);
+            markInitialized();
             return;
           }
 
           // ✅ UI READY segera (tidak menunggu profile init)
-          setIsLoading(false);
-          isLoadingRef.current = false;
-          setSessionInitialized(true);
+          markInitialized();
 
           // ✅ Background init - fire-and-forget
           initProfileOnce(session, event).catch((e) =>
@@ -203,9 +205,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } catch (err) {
           console.error('[AUTH] fatal:', err);
           // ✅ Force UI ready pada error
-          setIsLoading(false);
-          isLoadingRef.current = false;
-          setSessionInitialized(true);
+          markInitialized();
         }
       }
     );
@@ -217,27 +217,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('[AUTH] Initial session received:', initialSession ? 'exists' : 'null');
         if (!initialSession) {
           console.log('[AUTH] No initial session, setting isLoading to false');
-          setIsLoading(false);
-          isLoadingRef.current = false;
-          setSessionInitialized(true);
+          markInitialized();
         }
         // ❌ HAPUS: Tidak panggil initProfileOnce manual
         // Biarkan onAuthStateChange yang handle init dengan non-blocking
       })
       .catch((error) => {
         console.error('[AUTH] getSession failed:', error);
-        setIsLoading(false);
-        isLoadingRef.current = false;
-        setSessionInitialized(true);
+        markInitialized();
       });
 
     // 🛡️ SAFETY NET - Gunakan ref yang sudah ada
     safetyTimeoutRef.current = setTimeout(() => {
       if (isLoadingRef.current) {
         console.warn('[AUTH] SAFETY TIMEOUT - forcing loading to false');
-        setIsLoading(false);
-        isLoadingRef.current = false;
-        setSessionInitialized(true); // ✅ Biar layout tidak gating
+        markInitialized();
       }
     }, 3000);
 
@@ -246,7 +240,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         clearTimeout(safetyTimeoutRef.current);
       }
       subscription.unsubscribe();
-      authListenerMountedRef.current = false;
+      // ✅ JANGAN set authListenerMountedRef.current=false (hindari re-register listener)
       profileInitForUserRef.current = null;
       profileInitInFlightRef.current = false;
     };
