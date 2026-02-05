@@ -12,10 +12,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { SimpleReferralStats, Referral } from '@/types/referral';
 
 interface FinancialStats {
-  direct_total_tpc_bought: number;
-  direct_total_commission_tpc: number;
-  total_withdrawn_tpc: number;
-  pending_withdrawn_tpc: number;
+  total_invoice: number;
+  total_tpc: number;
+  total_commission: number;
 }
 
 export default function MemberReferralPage() {
@@ -317,7 +316,7 @@ export default function MemberReferralPage() {
                   </div>
                   <div>
                     <p className="text-lg font-bold text-white">
-                      {financialStats ? formatNumberID(financialStats.direct_total_tpc_bought) : '0'}
+                      {financialStats ? formatNumberID(financialStats.total_tpc) : '0'}
                     </p>
                     <p className="text-xs text-[#848E9C]">TPC</p>
                   </div>
@@ -337,7 +336,7 @@ export default function MemberReferralPage() {
                   </div>
                   <div>
                     <p className="text-lg font-bold text-white">
-                      {financialStats ? formatNumberID(financialStats.direct_total_commission_tpc) : '0'}
+                      {financialStats ? formatNumberID(financialStats.total_commission) : '0'}
                     </p>
                     <p className="text-xs text-[#848E9C]">TPC</p>
                   </div>
@@ -357,7 +356,7 @@ export default function MemberReferralPage() {
                   </div>
                   <div>
                     <p className="text-lg font-bold text-white">
-                      {financialStats ? formatNumberID(financialStats.total_withdrawn_tpc) : '0'}
+                      {financialStats ? formatNumberID(financialStats.total_commission) : '0'}
                     </p>
                     <p className="text-xs text-[#848E9C]">TPC</p>
                   </div>
@@ -377,14 +376,7 @@ export default function MemberReferralPage() {
                   </div>
                   <div>
                     <p className="text-lg font-bold text-white">
-                      {financialStats 
-                        ? formatNumberID(
-                            financialStats.direct_total_commission_tpc - 
-                            financialStats.total_withdrawn_tpc - 
-                            financialStats.pending_withdrawn_tpc
-                          )
-                        : '0'
-                      }
+                      {financialStats ? formatNumberID(financialStats.total_commission) : '0'}
                     </p>
                     <p className="text-xs text-[#848E9C]">TPC</p>
                   </div>
@@ -392,12 +384,6 @@ export default function MemberReferralPage() {
               </CardContent>
             </Card>
           </div>
-          {financialStats?.pending_withdrawn_tpc && financialStats.pending_withdrawn_tpc > 0 && (
-            <div className="mt-4 text-sm text-[#848E9C]">
-              <Clock className="h-4 w-4 inline mr-1" />
-              {formatNumberID(financialStats.pending_withdrawn_tpc)} TPC sedang dalam proses penarikan
-            </div>
-          )}
         </div>
 
         {/* Referral Stats by Level */}
