@@ -185,7 +185,7 @@ export default function MemberInvoiceDetailPage() {
         if (uploadError.message?.includes('Bucket not found') || 
             uploadError.message?.includes('The bucket does not exist') ||
             uploadError.status === 400 || uploadError.status === 404) {
-          throw new Error('Konfigurasi storage belum lengkap. Bucket invoice-proofs harus diset PUBLIC di Supabase.');
+          throw new Error('Storage belum siap. Bucket invoice-proofs harus diset PUBLIC di Supabase Dashboard.');
         }
         throw uploadError;
       }
