@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { PROOF_BUCKET } from '@/config/storage';
+import { normalizeProofUrl } from '@/lib/normalizeProofUrl';
 
 /**
  * Get public URL for an invoice proof
@@ -11,18 +12,13 @@ import { PROOF_BUCKET } from '@/config/storage';
 export function getInvoiceProofUrl(proofValue: string | null | undefined): string | null {
   if (!proofValue) return null;
   
-  // Legacy: if it's already a full URL, validate it's from correct bucket
+  // Legacy: if it's already a full URL, normalize it
   if (proofValue.startsWith('http://') || proofValue.startsWith('https://')) {
-    // Backend safety: ensure URL is from proofs bucket
-    if (proofValue.includes('/storage/v1/object/public/proofs/')) {
-      return proofValue;
-    }
+    const normalizedUrl = normalizeProofUrl(proofValue);
     
-    // Fallback for old data: replace invoice-proofs with proofs
-    if (proofValue.includes('/storage/v1/object/public/invoice-proofs/')) {
-      const fallbackUrl = proofValue.replace('/invoice-proofs/', '/proofs/');
-      console.warn('[STORAGE] Using fallback URL for old invoice-proofs data:', fallbackUrl);
-      return fallbackUrl;
+    // Backend safety: ensure URL is from proofs bucket
+    if (normalizedUrl?.includes('/storage/v1/object/public/proofs/')) {
+      return normalizedUrl;
     }
     
     console.error('[STORAGE] Invalid proof URL - not from proofs bucket:', proofValue);

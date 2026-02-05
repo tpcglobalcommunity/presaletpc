@@ -12,6 +12,7 @@ import { formatRupiah, formatNumberID } from '@/lib/number';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { generateProofFilePath, getInvoiceProofUrl } from '@/lib/storage/getInvoiceProofUrl';
+import { normalizeProofUrl } from '@/lib/normalizeProofUrl';
 import { getDestination } from '@/config/paymentDestinations';
 import { ErrorCard, LoadingCard } from '@/components/member/MemberUIStates';
 
@@ -172,15 +173,30 @@ export default function MemberInvoiceDetailPage() {
 
     setUploadingFile(true);
     try {
-      // Generate file path with correct structure: {user_id}/{invoice_id}/{timestamp}-{filename}
-      const filePath = generateProofFilePath(user.id, invoice.id, selectedFile);
+      // Generate file path with correct structure: proofs/{user_id}/{invoice_id}/{timestamp-filename}
+      const bucket = "proofs";
+      const timestamp = Date.now();
+      const path = `${bucket}/${user.id}/${invoice.id}/${timestamp}-${selectedFile.name}`;
+      
+      console.log('[PROOF_UPLOAD] Starting upload:', {
+        bucket,
+        path,
+        fileName: selectedFile.name,
+        fileSize: selectedFile.size,
+        invoiceId: invoice.id
+      });
 
       // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
-        .from('proofs')
-        .upload(filePath, selectedFile);
+        .from(bucket)
+        .upload(path, selectedFile, { 
+          upsert: false, 
+          contentType: selectedFile.type 
+        });
 
       if (uploadError) {
+        console.error('[PROOF_UPLOAD] Upload failed:', uploadError);
+        
         // Check if error is related to bucket configuration
         if (uploadError.message?.includes('Bucket not found') || 
             uploadError.message?.includes('The bucket does not exist') ||
@@ -190,11 +206,20 @@ export default function MemberInvoiceDetailPage() {
         throw uploadError;
       }
 
+      console.log('[PROOF_UPLOAD] Upload successful, getting public URL...');
+
       // Get public URL with validation
-      const publicUrl = getInvoiceProofUrl(filePath);
+      const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+      const publicUrl = data.publicUrl;
+      
+      console.log('[PROOF_UPLOAD] Generated public URL:', {
+        path,
+        publicUrl,
+        bucket
+      });
       
       // VALIDASI KETAT: Abort jika publicUrl invalid
-      if (!publicUrl) {
+      if (!publicUrl || !publicUrl.includes('/storage/v1/object/public/proofs/')) {
         throw new Error('Gagal generate public URL untuk bukti pembayaran. Silakan coba lagi.');
       }
 
@@ -202,7 +227,7 @@ export default function MemberInvoiceDetailPage() {
       const { data: submitResult, error: submitError } = await supabase.rpc('member_submit_invoice_proof' as any, {
         p_invoice_id: invoice.id,
         p_user_id: user.id,
-        p_proof_url: publicUrl,
+        p_proof_url: publicUrl, // Store full public URL in DB
         p_proof_uploaded_at: new Date().toISOString()
       });
 
@@ -215,6 +240,8 @@ export default function MemberInvoiceDetailPage() {
       if (!result || result.length === 0 || !result[0]?.success) {
         throw new Error(result?.[0]?.message || 'Gagal submit bukti pembayaran');
       }
+
+      console.log('[PROOF_UPLOAD] RPC submission successful:', result[0]);
 
       // Clear selected file and preview
       setSelectedFile(null);
@@ -505,7 +532,7 @@ export default function MemberInvoiceDetailPage() {
 
         {/* Proof Display - Show if proof exists */}
         {invoice.proof_url && (() => {
-          const proofUrl = getInvoiceProofUrl(invoice.proof_url);
+          const proofUrl = normalizeProofUrl(invoice.proof_url);
           if (!proofUrl) {
             return (
               <div className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4">
