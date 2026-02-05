@@ -8,7 +8,7 @@ import { calculateSponsorBonus } from '@/config/pricing';
 import { formatIdr, parseIdr, formatUsdc, parseUsdc, formatSol, parseSol, formatTpc, clampDecimals } from '@/lib/formatters';
 import { getSolUsdPrice } from '@/lib/prices';
 import { calcTpc, USD_IDR, TPC_PRICE_USDC, TPC_PRICING, getTPCPriceInIDR } from '@/lib/tpcPricing';
-import { getUsdToIdrRate } from '@/lib/fx';
+import { USDC_IDR_RATE, idrToUsdc, usdcToIdr, formatIdr as formatIdrFixed, formatUsdc as formatUsdcFixed } from '@/config/rates';
 import { getSolToUsdPrice } from '@/lib/cryptoPrice';
 import { parseCurrencyInput, formatCurrencyInput, getCurrencyPlaceholder, getCurrencyHint, normalizeForSubmit, type Currency as MoneyCurrency } from '@/lib/money';
 import { isValidSolanaAddress } from '@/lib/validators';
@@ -82,10 +82,10 @@ export default function BuyTPCPage() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [presaleConfig, setPresaleConfig] = useState<PresaleConfig | null>(null);
   
-  // FX Rate state
-  const [usdIdrRate, setUsdIdrRate] = useState<number>(17000); // Start with fallback
-  const [rateSource, setRateSource] = useState<'realtime' | 'fallback'>('fallback');
-  const [rateUpdatedAt, setRateUpdatedAt] = useState<number>(Date.now());
+  // ✅ FIXED RATE - Single source of truth
+  const usdIdrRate = USDC_IDR_RATE;
+  const rateSource = 'fixed' as const;
+  const rateUpdatedAt = Date.now();
   
   // SOL Price state
   const [solUsdPrice, setSolUsdPrice] = useState<number>(100); // Start with fallback
@@ -230,33 +230,6 @@ export default function BuyTPCPage() {
     getCurrentUser();
   }, []);
 
-  // Fetch FX rate (non-blocking)
-  useEffect(() => {
-    let cancelled = false;
-    
-    const fetchFxRate = async () => {
-      try {
-        const result = await getUsdToIdrRate();
-        
-        if (!cancelled) {
-          setUsdIdrRate(result.rate);
-          setRateSource(result.source);
-          setRateUpdatedAt(Date.now());
-        }
-      } catch (error) {
-        if (import.meta.env.DEV) {
-          console.debug('[FX] Rate fetch failed:', error);
-        }
-        // Keep fallback values if fetch fails
-      }
-    };
-    
-    // Start with fallback, then fetch realtime
-    fetchFxRate();
-    
-    return () => { cancelled = true; };
-  }, []);
-
   // Fetch SOL price (non-blocking)
   useEffect(() => {
     let cancelled = false;
@@ -314,25 +287,23 @@ export default function BuyTPCPage() {
   useEffect(() => {
     let usd = 0;
     
-    // Calculate USD based on currency
+    // Calculate USD value based on currency
     switch (currency) {
       case 'USDC':
         usd = amountValue;
         break;
       case 'IDR':
-        usd = amountValue / usdIdrRate;
+        usd = idrToUsdc(amountValue); // ✅ Use helper function
         break;
       case 'SOL':
         usd = amountValue * solUsdPrice;
         break;
     }
-    
-    setAmountUsd(usd);
-    
+
     // Calculate TPC amount (using stage 1 price)
     const tpc = usd / TPC_PRICING.stage1_usdc;
     setTpcAmount(tpc);
-  }, [amountValue, currency, usdIdrRate, solUsdPrice]);
+  }, [amountValue, currency, solUsdPrice]);
 
   // Handle currency switching while preserving USD value
   useEffect(() => {
@@ -345,7 +316,7 @@ export default function BuyTPCPage() {
         newValue = amountUsd;
         break;
       case 'IDR':
-        newValue = amountUsd * usdIdrRate;
+        newValue = usdcToIdr(amountUsd); // ✅ Use helper function
         break;
       case 'SOL':
         newValue = amountUsd / solUsdPrice;
@@ -394,7 +365,7 @@ export default function BuyTPCPage() {
         newValue = targetUsd;
         break;
       case 'IDR':
-        newValue = targetUsd * usdIdrRate;
+        newValue = usdcToIdr(targetUsd); // ✅ Use helper function
         break;
       case 'SOL':
         newValue = targetUsd / solUsdPrice;
@@ -981,25 +952,28 @@ export default function BuyTPCPage() {
 
           {/* Right Column - Info */}
           <div className="space-y-6">
-            {/* Token Info */}
-            <Card className="bg-[#1E2329]/50 backdrop-blur-xl border border-[#1F2A33]">
+            {/* Token Info Card */}
+            <Card className="bg-[#1A1D29] border-[#2B3139]">
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle className="text-white text-lg">Token Info</CardTitle>
                   <Badge 
-                    variant={rateSource === 'realtime' ? 'default' : 'secondary'}
-                    className={cn(
-                      "text-xs px-2 py-1",
-                      rateSource === 'realtime' 
-                        ? "bg-green-500/20 text-green-400 border-green-500/30" 
-                        : "bg-orange-500/20 text-orange-400 border-orange-500/30"
-                    )}
+                    variant="default"
+                    className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-xs px-2 py-1"
                   >
-                    {rateSource === 'realtime' ? 'Realtime FX' : 'Fallback FX'}
+                    Fixed Rate
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Fixed Rate Info */}
+                <div className="bg-[#0D0F1D] rounded-lg p-3 border border-[#2B3139]">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#848E9C] text-sm">Kurs internal (fixed)</span>
+                    <span className="text-white font-semibold text-sm">1 USDC = Rp17.000</span>
+                  </div>
+                </div>
+                
                 <div className="flex justify-between items-center">
                   <span className="text-[#848E9C]">Harga Stage 1</span>
                   <div className="text-right">
@@ -1085,17 +1059,6 @@ export default function BuyTPCPage() {
                   
                   {/* Price source badges */}
                   <div className="flex gap-2 pt-2">
-                    <Badge 
-                      variant={rateSource === 'realtime' ? 'default' : 'secondary'}
-                      className={cn(
-                        "text-xs px-2 py-1",
-                        rateSource === 'realtime' 
-                          ? "bg-green-500/20 text-green-400 border-green-500/30" 
-                          : "bg-orange-500/20 text-orange-400 border-orange-500/30"
-                      )}
-                    >
-                      FX: {rateSource === 'realtime' ? 'Realtime FX' : 'Fallback FX'}
-                    </Badge>
                     <Badge 
                       variant={solSource === 'realtime' ? 'default' : 'secondary'}
                       className={cn(
