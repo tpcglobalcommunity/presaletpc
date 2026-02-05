@@ -86,7 +86,7 @@ begin
   where user_id = v_uid;
 
   if existing_profile is null then
-    -- NEW USER: Insert minimal profile
+    -- NEW USER: Insert minimal profile (NO UUID FIELDS EXCEPT user_id)
     insert into public.profiles (
       user_id,
       email,
@@ -103,7 +103,7 @@ begin
       now()
     );
   else
-    -- EXISTING USER: Update email and timestamp
+    -- EXISTING USER: Update email and timestamp (NO UUID FIELDS)
     update public.profiles set
       email = coalesce(v_email, email),
       updated_at = now()
