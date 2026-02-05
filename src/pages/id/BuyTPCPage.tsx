@@ -614,8 +614,8 @@ export default function BuyTPCPage() {
       <div className="py-8">
         <div className="max-w-6xl mx-auto px-4">
           <CountdownCard
-            targetDate={new Date(endAt)}
-            title={label}
+            targetIso={endAt}
+            label={label}
             className="bg-[#1E2329]/50 backdrop-blur-xl border border-[#1F2A33]"
           />
         </div>
