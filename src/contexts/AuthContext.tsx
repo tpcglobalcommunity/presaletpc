@@ -4,6 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { isAdminUserId } from '@/config/admin';
 import { ensureProfile } from "@/lib/ensureProfile";
 
+// Logging hygiene
+const DEV = import.meta.env.DEV;
+const log = (...args: any[]) => DEV && console.log(...args);
+const warn = (...args: any[]) => DEV && console.warn(...args);
+
 interface Profile {
   user_id: string;
   email_initial: string;
@@ -101,18 +106,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return data as unknown as Profile;
   };
 
-  const linkInvoicesToUser = async (userId: string, email: string) => {
-    const { error } = await supabase
-      .from('invoices')
-      .update({ user_id: userId })
-      .eq('email', email)
-      .is('user_id', null);
-
-    if (error) {
-      console.error('Error linking invoices:', error);
-    }
-  };
-
   const refreshProfile = async () => {
     if (!user) return;
     const newProfile = await fetchProfile(user.id);
@@ -153,19 +146,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         let userProfile = await fetchProfile(uid);
 
         if (!userProfile && currentSession.user.email) {
-          const { data: firstInvoice } = await supabase
-            .from('invoices')
-            .select('referral_code')
-            .eq('email', currentSession.user.email)
-            .order('created_at', { ascending: true })
-            .limit(1)
-            .maybeSingle();
-
-          userProfile = await createProfile(currentSession.user, firstInvoice?.referral_code);
-        }
-
-        if (currentSession.user.email) {
-          await linkInvoicesToUser(uid, currentSession.user.email);
+          // ✅ Bootstrap tanpa invoice dependency
+          userProfile = await createProfile(currentSession.user, null);
         }
 
         setProfile(userProfile);
@@ -181,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         try {
-          console.log('[AUTH] Auth state changed:', event, session ? 'session exists' : 'no session');
+          log('[AUTH] Auth state changed:', event, session ? 'session exists' : 'no session');
           
           setSession(session);
           setUser(session?.user ?? null);
@@ -211,12 +193,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     // Initial session - cukup untuk fallback, tidak panggil initProfileOnce manual
-    console.log('[AUTH] Getting initial session...');
+    log('[AUTH] Getting initial session...');
     supabase.auth.getSession()
       .then(({ data: { session: initialSession } }) => {
-        console.log('[AUTH] Initial session received:', initialSession ? 'exists' : 'null');
+        log('[AUTH] Initial session received:', initialSession ? 'exists' : 'null');
         if (!initialSession) {
-          console.log('[AUTH] No initial session, setting isLoading to false');
+          log('[AUTH] No initial session, setting isLoading to false');
           markInitialized();
         }
         // ❌ HAPUS: Tidak panggil initProfileOnce manual
@@ -230,7 +212,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 🛡️ SAFETY NET - Gunakan ref yang sudah ada
     safetyTimeoutRef.current = setTimeout(() => {
       if (isLoadingRef.current) {
-        console.warn('[AUTH] SAFETY TIMEOUT - forcing loading to false');
+        warn('[AUTH] SAFETY TIMEOUT - forcing loading to false');
         markInitialized();
       }
     }, 3000);
