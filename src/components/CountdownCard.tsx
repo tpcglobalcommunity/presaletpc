@@ -94,7 +94,7 @@ export default function CountdownCard({ label, targetIso, className }: Countdown
       {/* Subtle Helper Text */}
       <div className="mt-4 pt-4 border-t border-[#1F2A33]">
         <p className="text-xs text-[#848E9C] text-center">
-          Waktu dihitung otomatis berdasarkan zona waktu Asia/Makassar (UTC+8)
+          Waktu dihitung otomatis berdasarkan zona waktu Jakarta (WIB / UTC+7)
         </p>
       </div>
     </div>
