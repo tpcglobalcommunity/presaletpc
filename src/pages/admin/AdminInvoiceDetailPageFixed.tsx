@@ -27,7 +27,7 @@ interface Invoice {
 
 export default function AdminInvoiceDetailPage() {
   const navigate = useNavigate();
-  const { lang, id: invoiceKey } = useParams();
+  const { lang, invoiceKey } = useParams();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);

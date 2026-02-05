@@ -312,7 +312,7 @@ function App() {
                     } 
                   />
                   <Route 
-                    path="invoices/:id" 
+                    path="invoices/:invoiceKey" 
                     element={
                       <Suspense fallback={<PageLoader />}>
                         <AdminInvoiceDetailPage />
