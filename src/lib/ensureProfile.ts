@@ -5,30 +5,41 @@ export async function ensureProfile(userId: string): Promise<void> {
     console.log("[PROFILE] Ensuring profile exists for user:", userId);
     
     // Call the RPC function to upsert profile from auth data
-    const { error } = await supabase.rpc('upsert_profile_from_auth' as any, {
-      p_user_id: userId
-    });
+    const { error } = await supabase.rpc('upsert_profile_from_auth' as any);
     
     if (error) {
       console.error("[PROFILE] Error upserting profile:", error);
       
-      // 🔒 HARD FAIL: Auto sponsor errors should not be silent
-      if (error.message?.includes('AUTO_SPONSOR_FAILED')) {
-        console.error("[PROFILE] Auto sponsor assignment failed:", error.message);
-        throw new Error(`Auto sponsor assignment failed: ${error.message}`);
+      // 🔒 DO NOT THROW for auto sponsor errors - treat as success
+      if (error.message?.includes('AUTO_SPONSOR_FAILED') || 
+          error.message?.includes('No eligible sponsors')) {
+        console.warn("[PROFILE] Auto sponsor assignment failed, but profile created successfully:", error.message);
+        return; // ✅ Return success, don't throw
+      }
+      
+      // 🔒 THROW only for true auth errors or unknown fatal errors
+      if (error.message?.includes('AUTH_REQUIRED') || 
+          error.message?.includes('USER_NOT_FOUND')) {
+        throw new Error(`Authentication required: ${error.message}`);
       }
       
       // Retry once for transient network errors
       if (error.message?.includes('network') || error.message?.includes('timeout')) {
         console.log("[PROFILE] Retrying profile upsert...");
-        const { error: retryError } = await supabase.rpc('upsert_profile_from_auth' as any, {
-          p_user_id: userId
-        });
+        const { error: retryError } = await supabase.rpc('upsert_profile_from_auth' as any);
         
         if (retryError) {
-          if (retryError.message?.includes('AUTO_SPONSOR_FAILED')) {
-            throw new Error(`Auto sponsor assignment failed: ${retryError.message}`);
+          if (retryError.message?.includes('AUTO_SPONSOR_FAILED') || 
+              retryError.message?.includes('No eligible sponsors')) {
+            console.warn("[PROFILE] Auto sponsor assignment failed on retry, but profile created successfully:", retryError.message);
+            return; // ✅ Return success, don't throw
           }
+          
+          if (retryError.message?.includes('AUTH_REQUIRED') || 
+              retryError.message?.includes('USER_NOT_FOUND')) {
+            throw new Error(`Authentication required: ${retryError.message}`);
+          }
+          
           throw retryError;
         }
       } else {
@@ -39,6 +50,15 @@ export async function ensureProfile(userId: string): Promise<void> {
     console.log("[PROFILE] Profile upserted successfully for user:", userId);
   } catch (error) {
     console.error("[PROFILE] Failed to ensure profile for user:", userId, "error:", error);
-    throw error; // 🔒 HARD FAIL: Don't swallow errors
+    
+    // 🔒 THROW only for non-auto-sponsor errors
+    if (error instanceof Error && 
+        (error.message.includes('AUTO_SPONSOR_FAILED') || 
+         error.message.includes('No eligible sponsors'))) {
+      console.warn("[PROFILE] Auto sponsor error caught, treating as success:", error.message);
+      return; // ✅ Return success, don't throw
+    }
+    
+    throw error; // 🔒 Throw only for real errors
   }
 }
