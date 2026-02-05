@@ -50,14 +50,36 @@ export default function AdminInvoiceDetailPage() {
 
       try {
         setIsLoading(true);
-        const { data, error } = await supabase
+        // First try to get invoice by invoice_no
+        const { data: invoiceData, error: invoiceError } = await supabase
           .from('invoices')
-          .select('*')
+          .select('id')
           .eq('invoice_no', invoiceNo)
           .single();
 
+        if (invoiceError) {
+          console.error('Error fetching invoice by invoice_no:', invoiceError);
+          setNotFound(true);
+          setIsLoading(false);
+          return;
+        }
+
+        if (!invoiceData) {
+          setNotFound(true);
+          setIsLoading(false);
+          return;
+        }
+
+        // Then get full invoice details by id
+        const { data, error } = await supabase
+          .from('invoices')
+          .select('*')
+          .eq('id', invoiceData.id)
+          .single();
+
         if (error) {
-          console.error('Error fetching invoice:', error);
+          console.error('Error fetching invoice details:', error);
+          setNotFound(true);
           return;
         }
 
