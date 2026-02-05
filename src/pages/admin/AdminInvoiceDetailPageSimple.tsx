@@ -65,6 +65,7 @@ export default function AdminInvoiceDetailPage() {
         
         const mode = isUUID(invoiceKey) ? 'id' : 'invoice_no';
         console.debug('[ADMIN_INVOICE_DETAIL] mode', { invoiceKey, mode });
+        console.debug('[ADMIN_INVOICE_DETAIL] will query', { mode, invoiceKey });
 
         // Primary query
         const { data, error } = await supabase
