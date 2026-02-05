@@ -2,6 +2,37 @@
 -- Purpose: Create pick_sponsor_b1() RPC function for auto sponsor assignment
 -- Safety: Idempotent migration, can be run multiple times
 
+-- 0) Safety
+set search_path = public;
+
+-- 0.1) Ensure required columns exist in profiles table
+do $$
+begin
+  -- Add role column if not exists
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='profiles' and column_name='role'
+  ) then
+    alter table public.profiles add column role text default 'member';
+  end if;
+  
+  -- Add is_active column if not exists
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='profiles' and column_name='is_active'
+  ) then
+    alter table public.profiles add column is_active boolean default true;
+  end if;
+  
+  -- Add sponsor_user_id column if not exists
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='profiles' and column_name='sponsor_user_id'
+  ) then
+    alter table public.profiles add column sponsor_user_id uuid;
+  end if;
+end$$;
+
 -- 1) Create the pick_sponsor_b1 function
 create or replace function public.pick_sponsor_b1()
 returns uuid
