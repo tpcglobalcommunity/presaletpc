@@ -292,7 +292,7 @@ export default function BuyTPCPage() {
         const config = {
           stage1_started_at: FALLBACK_STAGE1_STARTED_AT,
           stage1_duration_days: 30,
-          stage1_supply: 100000000,
+          stage1_supply: 200000000,
           stage1_price_usd: TPC_PRICING.stage1_usdc,
           stage2_supply: 50000000,
           stage2_price_usd: TPC_PRICING.stage2_usdc,
@@ -944,7 +944,7 @@ export default function BuyTPCPage() {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-[#848E9C]">Total Supply Stage 1</span>
-                  <span className="text-white font-semibold">100M TPC</span>
+                  <span className="text-white font-semibold">200M TPC</span>
                 </div>
                 <Separator className="bg-[#2B3139]" />
                 <div className="flex justify-between items-center">
