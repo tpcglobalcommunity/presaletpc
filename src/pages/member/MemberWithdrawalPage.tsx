@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabase } from '@/integrations/supabase/client';
+import { callEdgeFunction } from '@/lib/edge';
 
 interface BankAccount {
   id: string;
@@ -217,12 +219,57 @@ export default function MemberWithdrawalPage() {
     setIsSubmitting(true);
     
     try {
-      // Mock API call - replace with actual implementation
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const amount = parseFloat(formData.amount);
+      
+      // Get user profile for wallet address
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('wallet_address, tpc_wallet_address')
+        .eq('user_id', user?.id)
+        .single();
+      
+      if (profileError || !profile) {
+        throw new Error('Profile not found');
+      }
+      
+      const walletAddress = profile.wallet_address || profile.tpc_wallet_address;
+      if (!walletAddress) {
+        toast({
+          title: 'Error',
+          description: 'Alamat wallet belum diatur. Silakan lengkapi profil Anda terlebih dahulu.',
+          variant: 'destructive'
+        });
+        return;
+      }
+      
+      // Call RPC to request withdrawal
+      const { data: withdrawalData, error: withdrawalError } = await supabase.rpc('member_request_withdrawal' as any, {
+        p_amount_tpc: amount
+      });
+      
+      if (withdrawalError) {
+        throw new Error(withdrawalError.message);
+      }
+      
+      // Send email notification to admin
+      try {
+        const session = await supabase.auth.getSession();
+        const accessToken = session.data.session?.access_token;
+        
+        if (accessToken) {
+          await callEdgeFunction('send-withdrawal-request-email', {
+            amount_tpc: amount,
+            wallet_address: walletAddress
+          }, accessToken);
+        }
+      } catch (emailError) {
+        console.error('Email notification failed:', emailError);
+        // Don't fail the withdrawal if email fails
+      }
       
       toast({
         title: 'Berhasil',
-        description: 'Permintaan penarikan telah diajukan',
+        description: 'Permintaan penarikan telah diajukan. Notifikasi email dikirim ke admin.',
       });
       
       // Reset form
@@ -239,7 +286,7 @@ export default function MemberWithdrawalPage() {
       console.error('Error submitting withdrawal:', error);
       toast({
         title: 'Error',
-        description: 'Gagal mengajukan penarikan',
+        description: error instanceof Error ? error.message : 'Gagal mengajukan penarikan',
         variant: 'destructive'
       });
     } finally {
