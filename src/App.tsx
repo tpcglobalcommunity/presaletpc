@@ -66,6 +66,7 @@ const MemberProfilePage = lazy(() => import("@/pages/member/MemberProfilePage"))
 const MemberSettingsPage = lazy(() => import("@/pages/member/MemberSettingsPage"));
 const MemberWalletPage = lazy(() => import("@/pages/member/MemberWalletPage"));
 const MemberWithdrawalPage = lazy(() => import("@/pages/member/MemberWithdrawalPage"));
+const BuyTPCMemberPage = lazy(() => import("@/pages/id/member/BuyTPCMemberPage"));
 
 // Admin Pages (Lazy Loaded)
 const AdminDashboardPage = lazy(() => import("@/pages/admin/AdminDashboardPage"));
@@ -284,6 +285,14 @@ function App() {
                     element={
                       <Suspense fallback={<PageLoader />}>
                         <MemberWithdrawalPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="buytpc"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <BuyTPCMemberPage />
                       </Suspense>
                     }
                   />
