@@ -66,16 +66,15 @@ export default function MemberInvoicesPage() {
   };
 
   const fetchInvoices = async () => {
-    if (!user) {
-      setIsLoading(false);
-      setError('User tidak terautentikasi');
-      return;
-    }
-
     try {
-      setError(null);
       setIsLoading(true);
-      
+
+      if (!user) {
+        setInvoices([]);
+        setError('User tidak terautentikasi');
+        return;
+      }
+
       // Query dengan user_id primary dan email fallback
       let query = supabase
         .from('invoices')
@@ -93,19 +92,17 @@ export default function MemberInvoicesPage() {
       const { data, error } = await query;
       
       if (error) {
-        console.error('Error fetching invoices:', error);
-        setError('Akses ditolak atau data tidak ditemukan.');
-        setInvoices([]);
-        return;
+        throw error;
       }
       
-      setInvoices(data || []);
-    } catch (error) {
-      console.error('Error:', error);
-      setError('Terjadi kesalahan yang tidak terduga.');
+      setInvoices(data ?? []);
+      setError(null);
+    } catch (err) {
+      console.error('[INVOICES] fetch failed:', err);
       setInvoices([]);
+      setError('Gagal memuat invoice. Silakan coba lagi.');
     } finally {
-      // WAJIB: Selalu set loading false
+      // ⛔ WAJIB, TANPA SYARAT
       setIsLoading(false);
     }
   };
@@ -139,6 +136,26 @@ export default function MemberInvoicesPage() {
             title="Gagal Memuat Invoice" 
             message={error}
             onRetry={handleRetry}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state - tidak ada invoice
+  if (invoices.length === 0) {
+    return (
+      <div className="min-h-screen bg-[#0B0E11] pb-20">
+        {/* Header */}
+        <div className="bg-[#1E2329] border-b border-[#2B3139] px-4 py-3">
+          <h1 className="text-white font-semibold text-lg">Invoice Saya</h1>
+        </div>
+
+        <div className="p-4">
+          <EmptyStateCard
+            title="Belum Ada Invoice"
+            message="Belum ada invoice. Silakan beli TPC untuk memulai."
+            icon={<FileText className="h-12 w-12 text-slate-600" />}
           />
         </div>
       </div>
@@ -216,68 +233,56 @@ export default function MemberInvoicesPage() {
       </Tabs>
 
       <div className="p-4 space-y-4">
-        {filteredInvoices.length === 0 ? (
-          <EmptyStateCard
-            title="Belum Ada Invoice"
-            message={
-              activeTab === 'ALL' 
-                ? "Belum ada invoice. Silakan beli TPC untuk memulai."
-                : `Belum ada invoice dengan status "${TAB_LABELS[activeTab]}".`
-            }
-            icon={<FileText className="h-12 w-12 text-slate-600" />}
-          />
-        ) : (
-          filteredInvoices.map((invoice) => {
-            const statusConfig = getStatusConfig(invoice.status);
-            const Icon = statusConfig.icon;
-            
-            return (
-              <div
-                key={invoice.id}
-                onClick={() => navigate(`/id/member/invoices/${invoice.invoice_no}`)}
-                className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4 cursor-pointer hover:border-[#F0B90B]/50 transition-colors"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <div className="text-white font-medium">{invoice.invoice_no}</div>
-                    <div className="text-[#848E9C] text-xs">
-                      {new Date(invoice.created_at).toLocaleString('id-ID', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </div>
-                  </div>
-                  <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium border ${statusConfig.bgColor} ${statusConfig.color} ${statusConfig.borderColor}`}>
-                    <Icon className="h-3 w-3" />
-                    {statusConfig.label}
+        {invoices.map((invoice) => {
+          const statusConfig = getStatusConfig(invoice.status);
+          const Icon = statusConfig.icon;
+          
+          return (
+            <div
+              key={invoice.id}
+              onClick={() => navigate(`/id/member/invoices/${invoice.invoice_no}`)}
+              className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4 cursor-pointer hover:border-[#F0B90B]/50 transition-colors"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="text-white font-medium">{invoice.invoice_no}</div>
+                  <div className="text-[#848E9C] text-xs">
+                    {new Date(invoice.created_at).toLocaleString('id-ID', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
                   </div>
                 </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-[#848E9C] text-xs mb-1">Nominal</div>
-                    <div className="text-white font-medium">
-                      {invoice.base_currency === 'IDR'
-                        ? formatRupiah(invoice.amount_input)
-                        : formatNumberID(invoice.amount_input) + ' ' + invoice.base_currency
-                    }
-                    </div>
-                    <div className="text-[#848E9C] text-xs mt-1">
-                      ≈ {Number(invoice.amount_usd || 0).toFixed(2)}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[#848E9C] text-xs mb-1">TPC</div>
-                    <div className="text-white font-medium">{formatNumberID(invoice.tpc_amount)}</div>
-                  </div>
+                <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium border ${statusConfig.bgColor} ${statusConfig.color} ${statusConfig.borderColor}`}>
+                  <Icon className="h-3 w-3" />
+                  {statusConfig.label}
                 </div>
               </div>
-            );
-          })
-        )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-[#848E9C] text-xs mb-1">Nominal</div>
+                  <div className="text-white font-medium">
+                    {invoice.base_currency === 'IDR'
+                      ? formatRupiah(invoice.amount_input)
+                      : formatNumberID(invoice.amount_input) + ' ' + invoice.base_currency
+                    }
+                  </div>
+                  <div className="text-[#848E9C] text-xs mt-1">
+                    ≈ {Number(invoice.amount_usd || 0).toFixed(2)}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[#848E9C] text-xs mb-1">TPC</div>
+                  <div className="text-white font-medium">{formatNumberID(invoice.tpc_amount)}</div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
