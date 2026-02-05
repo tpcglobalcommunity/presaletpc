@@ -17,8 +17,6 @@ import {
   Calendar,
   Globe,
   Shield,
-  ArrowRight,
-  CheckCircle,
   Star
 } from 'lucide-react';
 import tpcLogo from '@/assets/tpc.png';
@@ -37,7 +35,6 @@ export default function PresaleInfoPage() {
   const { lang = 'id' } = useParams<{ lang: string }>();
   const [presaleConfig, setPresaleConfig] = useState<PresaleConfig | null>(null);
   const [loading, setLoading] = useState(true);
-  const [currentStage, setCurrentStage] = useState(1);
 
   // Fallback configuration
   const fallbackConfig: PresaleConfig = {
@@ -102,16 +99,19 @@ export default function PresaleInfoPage() {
     return () => clearInterval(timer);
   }, [config]);
 
-  const t = (key: string, en: string, id: string) => lang === 'en' ? en : id;
+  const t = (en: string, id: string) => (lang === 'en' ? en : id);
 
-  // Calculate progress
-  const stage1Progress = Math.min(100, ((180 - countdown.days) / 180) * 100);
+  // Calculate progress using config values
+  const stage1Progress = countdown.expired ? 100 : Math.min(100, ((config.stage1_duration_days - countdown.days) / config.stage1_duration_days) * 100);
   const stage1Raised = (200000000 * stage1Progress) / 100;
   const stage2Raised = 0; // Stage 2 hasn't started
 
   // Calculate ROI
   const stage1ROI = ((config.listing_price_usd - config.stage1_price_usd) / config.stage1_price_usd) * 100;
   const stage2ROI = ((config.listing_price_usd - config.stage2_price_usd) / config.stage2_price_usd) * 100;
+
+  // Helper functions
+  const formatMillions = (n: number) => `${(n / 1_000_000).toFixed(0)}M`;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 relative overflow-hidden">
@@ -131,10 +131,10 @@ export default function PresaleInfoPage() {
           <div className="text-center mb-12">
             <div className="inline-flex items-center justify-center mb-6">
               <div className="relative">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-600/20 border border-amber-500/30 p-4 shadow-2xl backdrop-blur-sm">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-600/20 border border-amber-500/30 p-4 shadow-2xl backdrop-blur-sm ring-2 ring-amber-500/20">
                   <img
                     src={tpcLogo}
-                    alt="TPC"
+                    alt="TPC Logo"
                     className="h-12 w-12 object-contain"
                     loading="lazy"
                     draggable={false}
@@ -154,42 +154,85 @@ export default function PresaleInfoPage() {
             </p>
           </div>
 
+          {/* Key Highlights */}
+          <div className="grid md:grid-cols-4 gap-6 mb-12">
+            <Card className="bg-gradient-to-br from-green-500/10 to-green-600/10 backdrop-blur-xl border border-green-500/30 text-white overflow-hidden">
+              <CardContent className="p-6 text-center">
+                <div className="w-12 h-12 rounded-full bg-green-500/20 border border-green-500/30 flex items-center justify-center mx-auto mb-4">
+                  <Shield className="w-6 h-6 text-green-400" />
+                </div>
+                <h3 className="font-semibold text-green-400 mb-2">{t('Verified On-Chain', 'Terverifikasi On-Chain')}</h3>
+                <p className="text-sm text-gray-400">{t('Smart contract audited and verified', 'Kontrak pintar diaudit dan terverifikasi')}</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 backdrop-blur-xl border border-blue-500/30 text-white overflow-hidden">
+              <CardContent className="p-6 text-center">
+                <div className="w-12 h-12 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center mx-auto mb-4">
+                  <Globe className="w-6 h-6 text-blue-400" />
+                </div>
+                <h3 className="font-semibold text-blue-400 mb-2">{t('Transparent Wallets', 'Wallet Transparan')}</h3>
+                <p className="text-sm text-gray-400">{t('All transactions are publicly visible', 'Semua transaksi terlihat publik')}</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 backdrop-blur-xl border border-purple-500/30 text-white overflow-hidden">
+              <CardContent className="p-6 text-center">
+                <div className="w-12 h-12 rounded-full bg-purple-500/20 border border-purple-500/30 flex items-center justify-center mx-auto mb-4">
+                  <Star className="w-6 h-6 text-purple-400" />
+                </div>
+                <h3 className="font-semibold text-purple-400 mb-2">{t('Anti-Scam Policy', 'Kebijakan Anti-Scam')}</h3>
+                <p className="text-sm text-gray-400">{t('Zero tolerance for fraudulent activities', 'Toleransi nol untuk aktivitas penipuan')}</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/10 backdrop-blur-xl border border-amber-500/30 text-white overflow-hidden">
+              <CardContent className="p-6 text-center">
+                <div className="w-12 h-12 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mx-auto mb-4">
+                  <Rocket className="w-6 h-6 text-amber-400" />
+                </div>
+                <h3 className="font-semibold text-amber-400 mb-2">{t('Community First', 'Komunitas Utama')}</h3>
+                <p className="text-sm text-gray-400">{t('Built for and by the community', 'Dibangun untuk dan oleh komunitas')}</p>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Countdown Timer */}
           <div className="mb-12">
-            <Card className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-slate-700/50 text-white overflow-hidden">
+            <Card className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-slate-700/50 text-white overflow-hidden shadow-2xl">
               <CardContent className="p-8">
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-3 mb-6">
                     <Clock className="w-8 h-8 text-amber-400" />
                     <h2 className="text-2xl font-bold">
-                      {t('Presale Ends In', 'Presale Ends In', 'Presale Berakhir Dalam')}
+                      {t('Presale Ends In', 'Presale Berakhir Dalam')}
                     </h2>
                     <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">
-                      {t('Jakarta Timezone', 'Jakarta Timezone', 'Waktu Jakarta')}
+                      {t('Jakarta Timezone', 'Waktu Jakarta')}
                     </Badge>
                   </div>
                   
                   <div className="grid grid-cols-4 gap-4 mb-6">
-                    <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
-                      <div className="text-3xl font-bold text-amber-400">{countdown.days}</div>
-                      <div className="text-sm text-gray-400">{t('Days', 'Days', 'Hari')}</div>
+                    <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/80 rounded-2xl p-6 border border-slate-700/50 shadow-lg">
+                      <div className="text-4xl font-bold text-amber-400 mb-2">{countdown.days}</div>
+                      <div className="text-sm text-gray-400">{t('Days', 'Hari')}</div>
                     </div>
-                    <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
-                      <div className="text-3xl font-bold text-amber-400">{countdown.hours}</div>
-                      <div className="text-sm text-gray-400">{t('Hours', 'Hours', 'Jam')}</div>
+                    <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/80 rounded-2xl p-6 border border-slate-700/50 shadow-lg">
+                      <div className="text-4xl font-bold text-amber-400 mb-2">{countdown.hours}</div>
+                      <div className="text-sm text-gray-400">{t('Hours', 'Jam')}</div>
                     </div>
-                    <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
-                      <div className="text-3xl font-bold text-amber-400">{countdown.minutes}</div>
-                      <div className="text-sm text-gray-400">{t('Minutes', 'Minutes', 'Menit')}</div>
+                    <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/80 rounded-2xl p-6 border border-slate-700/50 shadow-lg">
+                      <div className="text-4xl font-bold text-amber-400 mb-2">{countdown.minutes}</div>
+                      <div className="text-sm text-gray-400">{t('Minutes', 'Menit')}</div>
                     </div>
-                    <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
-                      <div className="text-3xl font-bold text-amber-400">{countdown.seconds}</div>
-                      <div className="text-sm text-gray-400">{t('Seconds', 'Seconds', 'Detik')}</div>
+                    <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/80 rounded-2xl p-6 border border-slate-700/50 shadow-lg">
+                      <div className="text-4xl font-bold text-amber-400 mb-2">{countdown.seconds}</div>
+                      <div className="text-sm text-gray-400">{t('Seconds', 'Detik')}</div>
                     </div>
                   </div>
 
                   <div className="text-sm text-gray-400">
-                    {t('Total Duration: 6 Months', 'Total Duration: 6 Months', 'Total Durasi: 6 Bulan')}
+                    {t('Total Duration: 6 Months', 'Total Durasi: 6 Bulan')}
                   </div>
                 </div>
               </CardContent>
@@ -199,7 +242,7 @@ export default function PresaleInfoPage() {
           {/* Presale Stages */}
           <div className="grid md:grid-cols-2 gap-8 mb-12">
             {/* Stage 1 */}
-            <Card className="bg-gradient-to-br from-green-500/10 to-green-600/10 backdrop-blur-xl border border-green-500/30 text-white overflow-hidden">
+            <Card className="bg-gradient-to-br from-green-500/10 to-green-600/10 backdrop-blur-xl border border-green-500/30 text-white overflow-hidden shadow-xl">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xl font-bold flex items-center gap-2">
@@ -216,7 +259,7 @@ export default function PresaleInfoPage() {
                   <div>
                     <div className="text-sm text-gray-400 mb-1">{t('Supply', 'Suplai')}</div>
                     <div className="text-2xl font-bold text-green-400">
-                      {(config.stage1_supply / 1000000).toFixed(0)}M TPC
+                      {formatMillions(config.stage1_supply)} TPC
                     </div>
                   </div>
                   <div>
@@ -229,12 +272,12 @@ export default function PresaleInfoPage() {
 
                 <div>
                   <div className="flex justify-between text-sm mb-2">
-                    <span>{t('Progress', 'Progress', 'Progres')}</span>
+                    <span>{t('Progress', 'Progres')}</span>
                     <span>{stage1Progress.toFixed(1)}%</span>
                   </div>
                   <Progress value={stage1Progress} className="h-3 bg-slate-700" />
                   <div className="text-xs text-gray-400 mt-1">
-                    {t(`${(stage1Raised / 1000000).toFixed(1)}M / ${(config.stage1_supply / 1000000).toFixed(0)}M TPC raised`, `${(stage1Raised / 1000000).toFixed(1)}M / ${(config.stage1_supply / 1000000).toFixed(0)}M TPC raised`, `${(stage1Raised / 1000000).toFixed(1)}M / ${(config.stage1_supply / 1000000).toFixed(0)}M TPC terkumpul`)}
+                    {t(`${formatMillions(stage1Raised)} / ${formatMillions(config.stage1_supply)} TPC raised`, `${formatMillions(stage1Raised)} / ${formatMillions(config.stage1_supply)} TPC terkumpul`)}
                   </div>
                 </div>
 
@@ -254,7 +297,7 @@ export default function PresaleInfoPage() {
             </Card>
 
             {/* Stage 2 */}
-            <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 backdrop-blur-xl border border-blue-500/30 text-white overflow-hidden">
+            <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 backdrop-blur-xl border border-blue-500/30 text-white overflow-hidden shadow-xl">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xl font-bold flex items-center gap-2">
@@ -271,7 +314,7 @@ export default function PresaleInfoPage() {
                   <div>
                     <div className="text-sm text-gray-400 mb-1">{t('Supply', 'Suplai')}</div>
                     <div className="text-2xl font-bold text-blue-400">
-                      {(config.stage2_supply / 1000000).toFixed(0)}M TPC
+                      {formatMillions(config.stage2_supply)} TPC
                     </div>
                   </div>
                   <div>
@@ -285,10 +328,10 @@ export default function PresaleInfoPage() {
                 <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700/50">
                   <div className="flex items-center gap-2 mb-2">
                     <Calendar className="w-5 h-5 text-blue-400" />
-                    <span className="font-semibold">{t('Starts After Stage 1', 'Starts After Stage 1', 'Dimulai Setelah Tahap 1')}</span>
+                    <span className="font-semibold">{t('Starts After Stage 1', 'Dimulai Setelah Tahap 1')}</span>
                   </div>
                   <div className="text-sm text-gray-400">
-                    {t('Duration: 3 months', 'Duration: 3 months', 'Durasi: 3 bulan')}
+                    {t('Duration: 3 months', 'Durasi: 3 bulan')}
                   </div>
                 </div>
 
@@ -309,7 +352,7 @@ export default function PresaleInfoPage() {
           </div>
 
           {/* Listing Target */}
-          <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/10 backdrop-blur-xl border border-amber-500/30 text-white overflow-hidden mb-12">
+          <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/10 backdrop-blur-xl border border-amber-500/30 text-white overflow-hidden mb-12 shadow-xl">
             <CardHeader>
               <CardTitle className="text-2xl font-bold flex items-center gap-3">
                 <Target className="w-8 h-8 text-amber-400" />
@@ -333,7 +376,7 @@ export default function PresaleInfoPage() {
                 <div className="text-center">
                   <div className="text-sm text-gray-400 mb-2">{t('Total Supply', 'Total Suplai')}</div>
                   <div className="text-2xl font-bold text-amber-400">
-                    {((config.stage1_supply + config.stage2_supply) / 1000000).toFixed(0)}M TPC
+                    {formatMillions(config.stage1_supply + config.stage2_supply)} TPC
                   </div>
                 </div>
               </div>
@@ -346,8 +389,7 @@ export default function PresaleInfoPage() {
                   </div>
                   <div className="text-xl font-bold text-green-400 mb-1">+{stage1ROI.toFixed(0)}%</div>
                   <div className="text-sm text-gray-400">
-                    {t(`$${config.stage1_price_usd.toFixed(3)} → $${config.listing_price_usd.toFixed(3)}`, 
-                      `$${config.stage1_price_usd.toFixed(3)} → $${config.listing_price_usd.toFixed(3)}`)}
+                    {t(`$${config.stage1_price_usd.toFixed(3)} → $${config.listing_price_usd.toFixed(3)}`, `$${config.stage1_price_usd.toFixed(3)} → $${config.listing_price_usd.toFixed(3)}`)}
                   </div>
                 </div>
 
@@ -358,8 +400,7 @@ export default function PresaleInfoPage() {
                   </div>
                   <div className="text-xl font-bold text-blue-400 mb-1">+{stage2ROI.toFixed(0)}%</div>
                   <div className="text-sm text-gray-400">
-                    {t(`$${config.stage2_price_usd.toFixed(3)} → $${config.listing_price_usd.toFixed(3)}`, 
-                      `$${config.stage2_price_usd.toFixed(3)} → $${config.listing_price_usd.toFixed(3)}`)}
+                    {t(`$${config.stage2_price_usd.toFixed(3)} → $${config.listing_price_usd.toFixed(3)}`, `$${config.stage2_price_usd.toFixed(3)} → $${config.listing_price_usd.toFixed(3)}`)}
                   </div>
                 </div>
               </div>
@@ -367,7 +408,7 @@ export default function PresaleInfoPage() {
           </Card>
 
           {/* Tokenomics */}
-          <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 backdrop-blur-xl border border-purple-500/30 text-white overflow-hidden mb-12">
+          <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 backdrop-blur-xl border border-purple-500/30 text-white overflow-hidden mb-12 shadow-xl">
             <CardHeader>
               <CardTitle className="text-2xl font-bold flex items-center gap-3">
                 <BarChart3 className="w-8 h-8 text-purple-400" />
@@ -381,21 +422,21 @@ export default function PresaleInfoPage() {
                     <span className="text-2xl font-bold text-green-400">66.7%</span>
                   </div>
                   <div className="font-semibold">{t('Stage 1', 'Tahap 1')}</div>
-                  <div className="text-sm text-gray-400">{(config.stage1_supply / 1000000).toFixed(0)}M TPC</div>
+                  <div className="text-sm text-gray-400">{formatMillions(config.stage1_supply)} TPC</div>
                 </div>
                 <div className="text-center">
                   <div className="w-16 h-16 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center mx-auto mb-3">
                     <span className="text-2xl font-bold text-blue-400">33.3%</span>
                   </div>
                   <div className="font-semibold">{t('Stage 2', 'Tahap 2')}</div>
-                  <div className="text-sm text-gray-400">{(config.stage2_supply / 1000000).toFixed(0)}M TPC</div>
+                  <div className="text-sm text-gray-400">{formatMillions(config.stage2_supply)} TPC</div>
                 </div>
                 <div className="text-center">
                   <div className="w-16 h-16 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mx-auto mb-3">
                     <span className="text-2xl font-bold text-amber-400">100%</span>
                   </div>
                   <div className="font-semibold">{t('Total Presale', 'Total Presale')}</div>
-                  <div className="text-sm text-gray-400">{((config.stage1_supply + config.stage2_supply) / 1000000).toFixed(0)}M TPC</div>
+                  <div className="text-sm text-gray-400">{formatMillions(config.stage1_supply + config.stage2_supply)} TPC</div>
                 </div>
               </div>
 
@@ -428,7 +469,7 @@ export default function PresaleInfoPage() {
 
           {/* CTA Section */}
           <div className="text-center">
-            <Card className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-slate-700/50 text-white overflow-hidden">
+            <Card className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-slate-700/50 text-white overflow-hidden shadow-xl">
               <CardContent className="p-8">
                 <h2 className="text-2xl font-bold mb-4">
                   {t('Ready to Join the Presale?', 'Siap Bergabung dengan Presale?')}
