@@ -4,11 +4,12 @@ import { Loader2 } from 'lucide-react';
 import { MemberBottomNav } from '@/components/MemberBottomNav';
 
 export function MemberLayout() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, sessionInitialized } = useAuth();
   const { lang } = useParams();
   const safeLang = lang === 'en' ? 'en' : 'id';
 
-  if (isLoading) {
+  // Hanya render loader saat initial auth bootstrap
+  if (isLoading && !sessionInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

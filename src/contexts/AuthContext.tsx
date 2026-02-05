@@ -18,6 +18,7 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   isLoading: boolean;
+  sessionInitialized: boolean;
   isAdmin: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -32,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [sessionInitialized, setSessionInitialized] = useState(false);
 
   // ✅ guard yang benar - SEMUA ref di top-level
   const authListenerMountedRef = useRef(false);
@@ -185,6 +187,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } finally {
           // 🔒 HARD LOCK — APAPUN KONDISINYA
           setIsLoading(false);
+          // ✅ Tandai session sudah di-initialize
+          setSessionInitialized(true);
         }
       }
     );
@@ -197,6 +201,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!initialSession) {
           console.log('[AUTH] No initial session, setting isLoading to false');
           setIsLoading(false);
+          setSessionInitialized(true);
         }
         // ❌ HAPUS: Tidak panggil initProfileOnce manual
         // Biarkan onAuthStateChange yang handle init
@@ -204,6 +209,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .catch((error) => {
         console.error('[AUTH] getSession failed:', error);
         setIsLoading(false);
+        setSessionInitialized(true);
       });
 
     // 🛡️ SAFETY NET - Gunakan ref yang sudah ada
@@ -262,6 +268,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         profile,
         isLoading,
+        sessionInitialized,
         isAdmin,
         signInWithGoogle,
         signOut,
