@@ -120,11 +120,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const initProfileOnce = async (currentSession: Session, event: string) => {
       const uid = currentSession.user.id;
 
-      // ✅ HANYA init pada event penting
-      const shouldInit =
-        event === 'INITIAL_SESSION' ||
-        event === 'SIGNED_IN' ||
-        profileInitForUserRef.current !== uid; // user berubah
+      // ✅ HANYA init saat user SIGNED_IN (login sukses)
+      // ❌ JANGAN init saat INITIAL_SESSION atau TOKEN_REFRESHED
+      const shouldInit = event === 'SIGNED_IN' || profileInitForUserRef.current !== uid;
 
       // Skip event seperti TOKEN_REFRESHED yang sering banget
       if (!shouldInit) {
@@ -134,14 +132,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // ✅ cegah init paralel / berulang
       if (profileInitInFlightRef.current) return;
-      if (profileInitForUserRef.current === uid && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) {
+      if (profileInitForUserRef.current === uid && event === 'SIGNED_IN') {
         return;
       }
 
       profileInitInFlightRef.current = true;
 
       try {
-        await ensureProfile(uid);
+        // ✅ HANYA panggil ensureProfile saat user SIGNED_IN
+        if (event === 'SIGNED_IN') {
+          await ensureProfile(uid);
+        }
 
         let userProfile = await fetchProfile(uid);
 

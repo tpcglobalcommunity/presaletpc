@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { buildLoginUrl } from '@/lib/authRedirect';
 import { saveBuyDraft, loadBuyDraft, clearBuyDraft } from '@/lib/buyDraft';
+import { ensureProfile } from '@/lib/ensureProfile';
 import { cn } from '@/lib/utils';
 import CountdownCard from '@/components/CountdownCard';
 import tpcLogo from '@/assets/tpc.png';
@@ -194,65 +195,31 @@ export default function BuyTPCPage() {
       if (import.meta.env.DEV) {
         console.log('[SPONSOR] fetching random sponsor via RPC...');
       }
-      const { data, error } = await supabase.rpc('get_random_referral_code' as any);
+      // ❌ JANGAN panggil RPC di public flow
+      // const { data, error } = await supabase.rpc('get_random_referral_code' as any);
 
-      if (cancelled) return;
+      // ✅ Fallback langsung ke TPC-GLOBAL untuk public flow
+      const fallbackCode = 'TPC-GLOBAL';
+      if (import.meta.env.DEV) {
+        console.log('[SPONSOR] Using fallback code (public flow):', fallbackCode);
+      }
 
-      if (error) {
-        console.error('[SPONSOR] RPC error:', error);
-        console.error('[SPONSOR] RPC error details:', error.message);
-        
-        // Fallback to TPC-GLOBAL if RPC fails
-        const fallbackCode = 'TPC-GLOBAL';
-        if (import.meta.env.DEV) {
-          console.log('[SPONSOR] Using fallback code:', fallbackCode);
-        }
+      if (!cancelled) {
         localStorage.setItem(LS_KEY, fallbackCode);
         setSponsorCode(fallbackCode);
         setSponsorFallback(true);
         setSponsorLoading(false);
-        return;
       }
-
-      const code = (data || '').toString().trim().toUpperCase();
-      if (import.meta.env.DEV) {
-        console.log('[SPONSOR] RPC returned data:', data);
-        console.log('[SPONSOR] Processed code:', code);
-      }
-
-      if (!code) {
-        console.error('[SPONSOR] RPC returned empty data');
-        
-        // Fallback to TPC-GLOBAL if empty
-        const fallbackCode = 'TPC-GLOBAL';
-        if (import.meta.env.DEV) {
-          console.log('[SPONSOR] Using fallback code for empty response:', fallbackCode);
-        }
-        localStorage.setItem(LS_KEY, fallbackCode);
-        setSponsorCode(fallbackCode);
-        setSponsorFallback(true);
-        setSponsorLoading(false);
-        return;
-      }
-
-      // Check if returned code is fallback
-      const isFallback = code === 'TPC-GLOBAL';
-      setSponsorFallback(isFallback);
-      
-      if (import.meta.env.DEV) {
-        console.log('[SPONSOR] random sponsor result:', code, isFallback ? '(fallback)' : '(random)');
-      }
-      localStorage.setItem(LS_KEY, code);
-      setSponsorCode(code);
-      setSponsorLoading(false);
     }
 
     initSponsor();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // Get current user
+  // Fetch user email for authenticated users
   useEffect(() => {
     const getCurrentUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -554,8 +521,37 @@ export default function BuyTPCPage() {
         return;
       }
 
+      // ✅ ENSURE PROFILE HANYA DI CTA
+      await ensureProfile(user.id);
+
+      // ✅ SPONSOR LOGIC HANYA DI CTA
+      let finalSponsorCode = sponsorCode.trim().toUpperCase();
+      
+      // Jika sponsor adalah fallback (TPC-GLOBAL), panggil pick_sponsor_b1
+      if (finalSponsorCode === 'TPC-GLOBAL') {
+        const { data: sponsorId, error: sponsorError } = await supabase.rpc('pick_sponsor_b1' as any);
+        
+        if (sponsorError || !sponsorId) {
+          throw new Error("AUTO_SPONSOR_FAILED");
+        }
+        
+        // Get sponsor code dari sponsor_id
+        const { data: sponsorData, error: sponsorDataError } = await supabase
+          .from('profiles')
+          .select('member_code')
+          .eq('id', sponsorId)
+          .single();
+          
+        if (sponsorDataError || !sponsorData?.member_code) {
+          throw new Error("SPONSOR_CODE_NOT_FOUND");
+        }
+        
+        finalSponsorCode = sponsorData.member_code;
+        console.log('[SPONSOR] Auto-assigned sponsor:', finalSponsorCode);
+      }
+
       // Create invoice using existing RPC
-      const referralClean = sponsorCode.trim().toUpperCase();
+      const referralClean = finalSponsorCode;
       
       const { data, error } = await supabase.rpc('create_invoice_locked', {
         p_email: userEmail.toLowerCase().trim(),
