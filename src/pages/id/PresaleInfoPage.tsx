@@ -162,7 +162,7 @@ export default function PresaleInfoPage() {
                   <Shield className="w-6 h-6 text-green-400" />
                 </div>
                 <h3 className="font-semibold text-green-400 mb-2">{t('Verified On-Chain', 'Terverifikasi On-Chain')}</h3>
-                <p className="text-sm text-gray-400">{t('Smart contract audited and verified', 'Kontrak pintar diaudit dan terverifikasi')}</p>
+                <p className="text-sm text-gray-400">{t('Audit Smart Contract (Q2 2026)', 'Audit Smart Contract (Q2 2026)')}</p>
               </CardContent>
             </Card>
 
@@ -445,7 +445,7 @@ export default function PresaleInfoPage() {
               <div className="grid md:grid-cols-4 gap-4 text-center">
                 <div className="bg-slate-900/50 rounded-lg p-3 border border-slate-700/50">
                   <Shield className="w-6 h-6 text-purple-400 mx-auto mb-2" />
-                  <div className="text-sm font-semibold">{t('Audited', 'Diaudit')}</div>
+                  <div className="text-sm font-semibold">{t('In Progress', 'Dalam Proses')}</div>
                   <div className="text-xs text-gray-400">{t('Smart Contract', 'Kontrak Pintar')}</div>
                 </div>
                 <div className="bg-slate-900/50 rounded-lg p-3 border border-slate-700/50">

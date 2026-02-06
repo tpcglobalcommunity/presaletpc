@@ -32,7 +32,7 @@ export function getDestination(baseCurrency: string): Destination {
   }
 
   // For SOL and USDC (and any other crypto)
-  const solAddress = import.meta.env.VITE_TPC_PAYMENT_SOL_ADDRESS || '9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM';
+  const solAddress = import.meta.env.VITE_TPC_PAYMENT_SOL_ADDRESS || '5AeayrU2pdy6yNBeiUpTXkfMxw3VpDQGUHC6kXrBt5vw';
   
   if (currency === 'SOL') {
     return {
