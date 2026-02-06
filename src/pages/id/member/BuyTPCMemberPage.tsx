@@ -149,18 +149,24 @@ export default function BuyTPCMemberPage() {
         return;
       }
 
-      if (data) {
-        const invoice = data;
-        clearBuyDraft();
-        
+      const invoiceData = Array.isArray(data) ? data[0] : data;
+      
+      if (!invoiceData) {
         toast({
-          title: lang === 'id' ? "Berhasil" : "Success",
-          description: lang === 'id' ? `Invoice ${invoice.invoice_no} dibuat` : `Invoice ${invoice.invoice_no} created`,
+          title: lang === 'id' ? "Error" : "Error",
+          description: lang === 'id' ? "Invoice tidak dibuat" : "Invoice not created",
+          variant: "destructive",
         });
-
-        // Redirect to invoice detail/payment flow
-        navigate(`/${lang}/invoice/${invoice.invoice_no}`);
+        return;
       }
+
+      clearBuyDraft();
+      toast({
+        title: lang === 'id' ? "Invoice Berhasil" : "Invoice Created",
+        description: lang === 'id' ? `Invoice ${invoiceData.invoice_no} berhasil dibuat` : `Invoice ${invoiceData.invoice_no} created successfully`,
+      });
+
+      navigate(`/${lang}/member/invoices/${invoiceData.invoice_no}`);
     } catch (error) {
       console.error("[INVOICE] Fatal error:", error);
       toast({
