@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
@@ -31,7 +31,19 @@ function sanitizeReturnTo(raw: string | null) {
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { signInWithGoogle, isLoading, user } = useAuth();
+
+  // Handle next parameter from URL on component mount
+  useEffect(() => {
+    const nextParam = searchParams.get('next');
+    if (nextParam) {
+      const sanitizedNext = sanitizeReturnTo(nextParam);
+      if (sanitizedNext) {
+        sessionStorage.setItem('returnTo', sanitizedNext);
+      }
+    }
+  }, [searchParams]);
 
   // Redirect if already logged in
   useEffect(() => {

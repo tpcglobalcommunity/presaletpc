@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   Clock, 
   TrendingUp, 
@@ -31,6 +32,8 @@ interface PresaleConfig {
 
 export default function PresaleInfoPage() {
   const { lang = 'id' } = useParams<{ lang: string }>();
+  const navigate = useNavigate();
+  const { user, isLoading } = useAuth();
   const [presaleConfig, setPresaleConfig] = useState<PresaleConfig | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -110,6 +113,20 @@ export default function PresaleInfoPage() {
 
   // Helper functions
   const formatMillions = (n: number) => `${(n / 1_000_000).toFixed(0)}M`;
+
+  // Handle buy button click with auth redirect
+  const handleBuyClick = () => {
+    if (isLoading) return; // Don't navigate while loading
+    
+    if (!user) {
+      // Redirect to login with next parameter
+      const nextPath = encodeURIComponent(`/${lang}/buytpc`);
+      navigate(`/${lang}/login?next=${nextPath}`);
+    } else {
+      // Direct to buy page if authenticated
+      navigate(`/${lang}/buytpc`);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900">
@@ -329,12 +346,17 @@ export default function PresaleInfoPage() {
                 <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
                   <Button 
                     size="lg"
-                    className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold px-6 md:px-8 py-3 rounded-xl shadow-lg shadow-amber-500/25 transition-all duration-300 transform hover:scale-[1.02] text-sm md:text-base"
-                    onClick={() => window.location.href = `/${lang}/buytpc`}
+                    className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold px-6 md:px-8 py-3 rounded-xl shadow-lg shadow-amber-500/25 transition-all duration-300 transform hover:scale-[1.02] text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleBuyClick}
+                    disabled={isLoading}
                   >
                     <div className="flex items-center gap-2">
-                      <Rocket className="w-4 h-4 md:w-5 md:h-5" />
-                      <span>Beli TPC Sekarang</span>
+                      {isLoading ? (
+                        <div className="w-4 h-4 md:w-5 md:h-5 animate-spin rounded-full border-2 border-black border-t-transparent" />
+                      ) : (
+                        <Rocket className="w-4 h-4 md:w-5 md:h-5" />
+                      )}
+                      <span>{isLoading ? 'Memuat...' : 'Beli TPC Sekarang'}</span>
                     </div>
                   </Button>
                   <Button 
