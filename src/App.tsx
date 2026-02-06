@@ -55,8 +55,11 @@ import InvoiceSuccessPage from "@/pages/id/InvoiceSuccessPage";
 import TermsConditionsPage from "@/pages/legal/TermsConditionsPage";
 import PrivacyPolicyPage from "@/pages/legal/PrivacyPolicyPage";
 
-// EN Public Pages
+// EN Public Pages (using same components as ID)
 import ENHomePage from "@/pages/en/HomePage";
+import EducationPage from "@/pages/en/EducationPage";
+import TransparencyPage from "@/pages/en/TransparencyPage";
+import DAOLitePage from "@/pages/en/DAOLitePage";
 
 // Shared Public Pages
 import TutorialPhantomWalletPage from "@/pages/public/TutorialPhantomWalletPage";
@@ -66,11 +69,6 @@ import OnboardingPage from "@/pages/id/OnboardingPage";
 import VerifiedCoordinatorsPage from "@/pages/chapters/VerifiedCoordinatorsPage";
 import ChaptersSopPage from "@/pages/chapters/ChaptersSopPage";
 
-// EN Public Pages
-import EducationPage from "@/pages/en/EducationPage";
-import TransparencyPage from "@/pages/en/TransparencyPage";
-import DAOLitePage from "@/pages/en/DAOLitePage";
-
 // Member Pages (Lazy Loaded)
 const MemberDashboardPage = lazy(() => import("@/pages/member/MemberDashboardPage"));
 const MemberInvoicesPage = lazy(() => import("@/pages/member/MemberInvoicesPage"));
@@ -79,7 +77,6 @@ const MemberReferralPage = lazy(() => import("@/pages/member/MemberReferralPage"
 const MemberProfilePage = lazy(() => import("@/pages/member/MemberProfilePage"));
 const MemberSettingsPage = lazy(() => import("@/pages/member/MemberSettingsPage"));
 const MemberWalletPage = lazy(() => import("@/pages/member/MemberWalletPage"));
-const MemberWithdrawalPage = lazy(() => import("@/pages/member/MemberWithdrawalPage"));
 const CompleteProfilePage = lazy(() => import("@/pages/id/CompleteProfilePage"));
 const BuyTPCMemberPage = lazy(() => import("@/pages/id/member/BuyTPCMemberPage"));
 
@@ -117,8 +114,8 @@ function App() {
               {/* Root redirect to default language */}
               <Route path="/" element={<Navigate replace to="/en" />} />
                 
-                {/* Language shell */}
-                <Route path="/:lang" element={<PublicRouteGuard><MobileLayout /></PublicRouteGuard>}>
+              {/* Language shell */}
+              <Route path="/:lang" element={<PublicRouteGuard><MobileLayout /></PublicRouteGuard>}>
                 {/* Index route */}
                 <Route index element={<LangIndexPage />} />
                 
@@ -160,7 +157,7 @@ function App() {
                 {/* PUBLIC ID ROUTES (ID-only) */}
                 <Route
                   path="presale"
-                  element={<LangRoute id={<PresaleInfoPage />} en={<PresaleInfoPage />} />}
+                  element={<IdOnly><PresaleInfoPage /></IdOnly>}
                 />
                 <Route
                   path="buytpc"
@@ -168,75 +165,71 @@ function App() {
                 />
                 <Route
                   path="anti-scam"
-                  element={<LangRoute id={<AntiScamPage />} en={<AntiScamPage />} />}
+                  element={<IdOnly><AntiScamPage /></IdOnly>}
                 />
                 <Route
                   path="edukasi"
-                  element={<LangRoute id={<EdukasiPage />} en={<EducationPage />} />}
+                  element={<IdOnly><EdukasiPage /></IdOnly>}
                 />
                 <Route
                   path="education"
-                  element={<LangRoute id={<EdukasiPage />} en={<EducationPage />} />}
+                  element={<IdOnly><EducationPage /></IdOnly>}
                 />
                 <Route
                   path="faq"
-                  element={<LangRoute id={<FAQPage />} en={<FAQPage />} />}
+                  element={<IdOnly><FAQPage /></IdOnly>}
                 />
                 <Route
                   path="whitepaper"
-                  element={<LangRoute id={<WhitepaperPage />} en={<WhitepaperPage />} />}
+                  element={<IdOnly><WhitepaperPage /></IdOnly>}
                 />
                 <Route
                   path="dao"
-                  element={<LangRoute id={<DAOPage />} en={<DAOLitePage />} />}
+                  element={<IdOnly><DAOPage /></IdOnly>}
                 />
                 <Route
                   path="dao-lite"
-                  element={<LangRoute id={<DAOPage />} en={<DAOLitePage />} />}
+                  element={<IdOnly><DAOPage /></IdOnly>}
                 />
                 <Route
                   path="transparansi"
-                  element={<LangRoute id={<TransparansiPage />} en={<TransparencyPage />} />}
-                />
-                <Route
-                  path="transparency"
-                  element={<LangRoute id={<TransparansiPage />} en={<TransparencyPage />} />}
+                  element={<IdOnly><TransparansiPage /></IdOnly>}
                 />
                 <Route
                   path="market"
-                  element={<LangRoute id={<MarketPage />} en={<MarketPage />} />}
+                  element={<IdOnly><MarketPage /></IdOnly>}
                 />
                 <Route
                   path="invoice/success"
-                  element={<LangRoute id={<InvoiceSuccessPage />} en={<InvoiceSuccessPage />} />}
+                  element={<IdOnly><InvoiceSuccessPage /></IdOnly>}
                 />
                 <Route
                   path="syarat-ketentuan"
-                  element={<LangRoute id={<TermsConditionsPage />} en={<TermsConditionsPage />} />}
+                  element={<IdOnly><TermsConditionsPage /></IdOnly>}
                 />
                 <Route
                   path="terms"
-                  element={<LangRoute id={<TermsConditionsPage />} en={<TermsConditionsPage />} />}
+                  element={<IdOnly><TermsConditionsPage /></IdOnly>}
                 />
                 <Route
                   path="kebijakan-privasi"
-                  element={<LangRoute id={<PrivacyPolicyPage />} en={<PrivacyPolicyPage />} />}
+                  element={<IdOnly><PrivacyPolicyPage /></IdOnly>}
                 />
                 <Route
                   path="privacy"
-                  element={<LangRoute id={<PrivacyPolicyPage />} en={<PrivacyPolicyPage />} />}
+                  element={<IdOnly><PrivacyPolicyPage /></IdOnly>}
                 />
                 <Route
                   path="verified-coordinators"
-                  element={<LangRoute id={<VerifiedCoordinatorsPage />} en={<VerifiedCoordinatorsPage />} />}
+                  element={<IdOnly><VerifiedCoordinatorsPage /></IdOnly>}
                 />
                 <Route
                   path="chapters"
-                  element={<LangRoute id={<ChaptersSopPage />} en={<ChaptersSopPage />} />}
+                  element={<IdOnly><ChaptersSopPage /></IdOnly>}
                 />
                 <Route
                   path="chapters/sop"
-                  element={<LangRoute id={<ChaptersSopPage />} en={<ChaptersSopPage />} />}
+                  element={<IdOnly><ChaptersSopPage /></IdOnly>}
                 />
                 
                 {/* SHARED PUBLIC ROUTES */}
@@ -246,23 +239,11 @@ function App() {
                 />
                 
                 {/* LEGACY AUTH REDIRECT */}
-                <Route
-                  path="auth"
-                  element={<LegacyAuthRedirectPage />}
-                />
+                <Route path="auth" element={<LegacyAuthRedirectPage />} />
                 
                 {/* LEGACY REDIRECTS FOR MEMBER/ADMIN */}
-                <Route
-                  path="member/*"
-                  element={<RedirectLegacyRoute to="member" />}
-                />
-                <Route
-                  path="admin/*"
-                  element={<RedirectLegacyRoute to="admin" />}
-                />
-                
-                {/* 404 - MUST BE LAST */}
-                <Route path="*" element={<NotFound />} />
+                <Route path="member/*" element={<RedirectLegacyRoute to="member" />} />
+                <Route path="admin/*" element={<RedirectLegacyRoute to="admin" />} />
               </Route> {/* End of /:lang */}
               
               {/* TOP-LEVEL MEMBER AREA (EN ONLY) */}
@@ -276,93 +257,86 @@ function App() {
                   </RouteErrorBoundary>
                 }
               >
-                <Route
-                  index
+                <Route index element={<Navigate replace to="invoices" />} />
+                <Route 
+                  path="dashboard" 
                   element={
                     <Suspense fallback={<PageLoader />}>
                       <MemberDashboardPage />
                     </Suspense>
-                  }
+                  } 
                 />
-                <Route
-                  path="dashboard"
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <MemberDashboardPage />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="complete-profile"
+                <Route 
+                  path="complete-profile" 
                   element={
                     <Suspense fallback={<PageLoader />}>
                       <CompleteProfilePage />
                     </Suspense>
-                  }
+                  } 
                 />
-                <Route
-                  path="invoices"
+                <Route 
+                  path="invoices" 
                   element={
                     <Suspense fallback={<PageLoader />}>
                       <MemberInvoicesPage />
                     </Suspense>
-                  }
+                  } 
                 />
-                <Route
-                  path="invoices/:invoiceNo"
+                <Route 
+                  path="invoices/:invoiceNo" 
                   element={
                     <Suspense fallback={<PageLoader />}>
                       <MemberInvoiceDetailPage />
                     </Suspense>
-                  }
+                  } 
                 />
-                <Route
-                  path="referrals"
+                <Route 
+                  path="referrals" 
                   element={
                     <Suspense fallback={<PageLoader />}>
                       <MemberReferralPage />
                     </Suspense>
-                  }
+                  } 
                 />
-                <Route
-                  path="profile"
+                <Route 
+                  path="profile" 
                   element={
                     <Suspense fallback={<PageLoader />}>
                       <MemberProfilePage />
                     </Suspense>
-                  }
+                  } 
                 />
-                <Route
-                  path="settings"
+                <Route 
+                  path="settings" 
                   element={
                     <Suspense fallback={<PageLoader />}>
                       <MemberSettingsPage />
                     </Suspense>
-                  }
+                  } 
                 />
-                <Route
-                  path="wallet"
+                <Route 
+                  path="wallet" 
                   element={
                     <Suspense fallback={<PageLoader />}>
                       <MemberWalletPage />
                     </Suspense>
-                  }
+                  } 
                 />
-                <Route
-                  path="withdraw"
+                <Route 
+                  path="withdraw" 
                   element={
                     <Suspense fallback={<PageLoader />}>
                       <MemberWithdrawalPage />
                     </Suspense>
-                  }
+                  } 
                 />
-                <Route
-                  path="buytpc"
+                <Route 
+                  path="buytpc" 
                   element={
                     <Suspense fallback={<PageLoader />}>
                       <BuyTPCMemberPage />
                     </Suspense>
-                  }
+                  } 
                 />
               </Route>
               
@@ -436,7 +410,7 @@ function App() {
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
-    </AppErrorBoundary>
+  </AppErrorBoundary>
   );
 }
 
