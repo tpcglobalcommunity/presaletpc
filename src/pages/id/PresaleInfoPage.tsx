@@ -16,7 +16,8 @@ import {
   BarChart3,
   Shield,
   Globe,
-  Star
+  Star,
+  AlertCircle
 } from 'lucide-react';
 import tpcLogo from '@/assets/tpc.png';
 
@@ -329,6 +330,161 @@ export default function PresaleInfoPage() {
                     <Star className="w-5 h-5 text-purple-400 mx-auto mb-2" />
                     <div className="text-sm font-semibold">Keamanan</div>
                     <div className="text-xs text-gray-400">Enterprise</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Visual Tokenomics Breakdown */}
+          <div className="mb-6 md:mb-8">
+            <Card className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-slate-700/50 text-white overflow-hidden shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-xl md:text-2xl font-bold flex items-center gap-3">
+                  <BarChart3 className="w-6 h-6 md:w-8 md:h-8 text-purple-400" />
+                  Struktur Tokenomics
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6">
+                <div className="bg-slate-900/50 rounded-lg p-4 md:p-6 border border-slate-700/50">
+                  <div className="space-y-3 md:space-y-4">
+                    {/* Total Supply */}
+                    <div className="text-center mb-4">
+                      <div className="text-lg md:text-xl font-bold text-amber-400 mb-2">Total Supply</div>
+                      <div className="text-2xl md:text-3xl font-bold text-white">1.000.000.000 TPC</div>
+                    </div>
+                    
+                    {/* Breakdown */}
+                    <div className="space-y-2 md:space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-600/30">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
+                          <span className="text-sm md:text-base">Community & Ecosystem</span>
+                        </div>
+                        <span className="text-sm md:text-base font-semibold text-blue-400">400.000.000 TPC</span>
+                      </div>
+                      
+                      <div className="ml-4 md:ml-6 space-y-2">
+                        <div className="flex items-center justify-between p-2 bg-amber-500/10 rounded border border-amber-500/30">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-amber-400 rounded-full"></div>
+                            <span className="text-sm">Presale</span>
+                          </div>
+                          <span className="text-sm font-semibold text-amber-400">300.000.000 TPC</span>
+                        </div>
+                        
+                        <div className="ml-4 md:ml-6 space-y-1">
+                          <div className="flex items-center justify-between p-2 bg-green-500/10 rounded border border-green-500/30">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                              <span className="text-xs">Tahap 1</span>
+                            </div>
+                            <span className="text-xs font-semibold text-green-400">200.000.000 TPC</span>
+                          </div>
+                          
+                          <div className="flex items-center justify-between p-2 bg-blue-500/10 rounded border border-blue-500/30">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                              <span className="text-xs">Tahap 2</span>
+                            </div>
+                            <span className="text-xs font-semibold text-blue-400">100.000.000 TPC</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-600/30">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-purple-400 rounded-full"></div>
+                          <span className="text-sm md:text-base">Development & Operations</span>
+                        </div>
+                        <span className="text-sm md:text-base font-semibold text-purple-400">250.000.000 TPC</span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-600/30">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-cyan-400 rounded-full"></div>
+                          <span className="text-sm md:text-base">Liquidity</span>
+                        </div>
+                        <span className="text-sm md:text-base font-semibold text-cyan-400">200.000.000 TPC</span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-600/30">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                          <span className="text-sm md:text-base">Reserve</span>
+                        </div>
+                        <span className="text-sm md:text-base font-semibold text-gray-400">150.000.000 TPC</span>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                      <p className="text-xs md:text-sm text-amber-400 text-center">
+                        Presale merupakan bagian dari alokasi Community & Ecosystem.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* FAQ Presale */}
+          <div className="mb-6 md:mb-8">
+            <Card className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-slate-700/50 text-white overflow-hidden shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-xl md:text-2xl font-bold flex items-center gap-3">
+                  <AlertCircle className="w-6 h-6 md:w-8 md:h-8 text-purple-400" />
+                  FAQ Presale
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6">
+                <div className="space-y-4 md:space-y-6">
+                  {/* Q1 */}
+                  <div className="border-b border-slate-700/30 pb-4">
+                    <h3 className="text-lg md:text-xl font-semibold text-amber-400 mb-2">Q1: Apa itu Presale TPC?</h3>
+                    <p className="text-sm md:text-base text-gray-300 leading-relaxed">
+                      Presale adalah tahap awal distribusi token TPC kepada komunitas sebelum token digunakan secara luas di dalam ekosistem.
+                    </p>
+                  </div>
+
+                  {/* Q2 */}
+                  <div className="border-b border-slate-700/30 pb-4">
+                    <h3 className="text-lg md:text-xl font-semibold text-amber-400 mb-2">Q2: Berapa total token yang dijual saat presale?</h3>
+                    <p className="text-sm md:text-base text-gray-300 leading-relaxed">
+                      Total presale adalah 300.000.000 TPC, yang terdiri dari Tahap 1 (200M) dan Tahap 2 (100M).
+                    </p>
+                  </div>
+
+                  {/* Q3 */}
+                  <div className="border-b border-slate-700/30 pb-4">
+                    <h3 className="text-lg md:text-xl font-semibold text-amber-400 mb-2">Q3: Apakah presale sama dengan total supply TPC?</h3>
+                    <p className="text-sm md:text-base text-gray-300 leading-relaxed">
+                      Tidak. Total supply TPC adalah 1.000.000.000 token. Presale hanya merupakan sebagian dari total supply, tepatnya 30%, dan termasuk dalam alokasi Community & Ecosystem.
+                    </p>
+                  </div>
+
+                  {/* Q4 */}
+                  <div className="border-b border-slate-700/30 pb-4">
+                    <h3 className="text-lg md:text-xl font-semibold text-amber-400 mb-2">Q4: Apakah membeli TPC menjamin keuntungan?</h3>
+                    <p className="text-sm md:text-base text-gray-300 leading-relaxed">
+                      Tidak. TPC adalah token utilitas dan bukan produk investasi. Pembelian token tidak menjamin keuntungan dan memiliki risiko.
+                    </p>
+                  </div>
+
+                  {/* Q5 */}
+                  <div className="border-b border-slate-700/30 pb-4">
+                    <h3 className="text-lg md:text-xl font-semibold text-amber-400 mb-2">Q5: Kapan Tahap 2 presale dimulai?</h3>
+                    <p className="text-sm md:text-base text-gray-300 leading-relaxed">
+                      Tahap 2 akan dibuka setelah Tahap 1 berakhir. Informasi resmi akan diumumkan melalui website dan kanal resmi TPC.
+                    </p>
+                  </div>
+
+                  {/* Q6 */}
+                  <div className="pb-4">
+                    <h3 className="text-lg md:text-xl font-semibold text-amber-400 mb-2">Q6: Untuk apa TPC digunakan?</h3>
+                    <p className="text-sm md:text-base text-gray-300 leading-relaxed">
+                      TPC digunakan sebagai token utilitas dalam ekosistem TPC, termasuk akses fitur, program komunitas, dan layanan terkait edukasi.
+                    </p>
                   </div>
                 </div>
               </CardContent>
