@@ -181,7 +181,7 @@ export default function PresaleInfoPage() {
                 <div className="grid grid-cols-2 gap-3 md:gap-4 mb-4">
                   <div className="text-center">
                     <div className="text-xs md:text-sm text-gray-400 mb-1">Total Presale</div>
-                    <div className="text-xl md:text-2xl font-bold text-amber-400">200M TPC</div>
+                    <div className="text-xl md:text-2xl font-bold text-amber-400">300M TPC</div>
                   </div>
                   <div className="text-center">
                     <div className="text-xs md:text-sm text-gray-400 mb-1">Harga Tahap 1</div>
@@ -273,14 +273,14 @@ export default function PresaleInfoPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                   <div className="bg-slate-900/50 rounded-lg p-3 md:p-4 border border-slate-700/50">
                     <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-green-500/20 border border-green-500/30 flex items-center justify-center mx-auto mb-2">
-                      <span className="text-lg md:text-xl font-bold text-green-400">100%</span>
+                      <span className="text-lg md:text-xl font-bold text-green-400">66.7%</span>
                     </div>
                     <div className="font-semibold text-sm md:text-base">Tahap 1</div>
                     <div className="text-sm md:text-base text-gray-400">200M TPC</div>
                   </div>
                   <div className="bg-slate-900/50 rounded-lg p-3 md:p-4 border border-slate-700/50">
                     <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center mx-auto mb-2">
-                      <span className="text-lg md:text-xl font-bold text-blue-400">0%</span>
+                      <span className="text-lg md:text-xl font-bold text-blue-400">33.3%</span>
                     </div>
                     <div className="font-semibold text-sm md:text-base">Tahap 2</div>
                     <div className="text-sm md:text-base text-gray-400">100M TPC</div>
@@ -291,7 +291,7 @@ export default function PresaleInfoPage() {
                       <span className="text-lg md:text-xl font-bold text-amber-400">100%</span>
                     </div>
                     <div className="font-semibold text-sm md:text-base">Total Presale</div>
-                    <div className="text-sm md:text-base text-gray-400">200M TPC</div>
+                    <div className="text-sm md:text-base text-gray-400">300M TPC</div>
                   </div>
                 </div>
 
@@ -302,7 +302,7 @@ export default function PresaleInfoPage() {
                     <span className="text-sm md:text-base font-semibold">Informasi Tahap 2</span>
                   </div>
                   <p className="text-xs md:text-sm text-gray-400 leading-relaxed">
-                    Tahap 2 akan dibuka setelah Tahap 1 berakhir.
+                    Total Presale terdiri dari Tahap 1 (200M TPC) dan Tahap 2 (100M TPC). Tahap 2 akan dibuka setelah Tahap 1 berakhir.
                   </p>
                 </div>
 

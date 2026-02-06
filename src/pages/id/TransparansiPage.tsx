@@ -114,7 +114,7 @@ export default function TransparansiPage() {
         'Digunakan hanya untuk kebutuhan likuiditas',
         'Bukan wallet penampung keuntungan'
       ],
-      stats: { total: '200M TPC', status: 'Active' }
+      stats: { total: '300M TPC', status: 'Active' }
     },
     {
       id: 'buyback',
