@@ -12,16 +12,61 @@ import {
   Upload,
   BadgeCheck,
   AlertTriangle,
-  ChevronRight
+  ChevronRight,
+  Star,
+  Crown,
+  Zap,
+  Award,
+  Settings,
+  Calendar,
+  TrendingUp
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { handlePublicNavLogin } from '@/lib/authReturnTo';
 import { Helmet } from 'react-helmet-async';
 
 // i18n translations
 const translations = {
+  en: {
+    title: 'TPC Global - Blockchain Education Ecosystem',
+    description: 'TPC Global is a transparent, secure, and verified blockchain education ecosystem. Join our community for crypto learning.',
+    heroTitle: 'Trader Professional\nCommunity (TPC)',
+    heroSubtitle: 'Trusted trading education platform with full transparency system',
+    educationFirst: 'Education-first',
+    communityDriven: 'Community-driven',
+    buyTpc: 'Buy TPC',
+    learnTpc: 'Learn TPC',
+    whatIsTpc: 'What is TPC?',
+    whatIsTpcDesc: 'TPC Global is a transparent, secure, and verified blockchain education ecosystem. Join our community for crypto learning.',
+    noFinancialAdvice: 'No financial advice',
+    noProfitPromise: 'No profit promise',
+    educationCommunity: 'Education & community',
+    important: 'Important:',
+    importantDesc: 'TPC does not promise any profits. Participation in the TPC ecosystem involves risk and each decision is solely the user\'s responsibility. Always do your own research (DYOR).',
+    whyTpcDifferent: 'Why is TPC Different?',
+    transparency: 'Transparency',
+    transparencyDesc: 'Public wallets & transactions can be verified',
+    verification: 'Manual Verification',
+    verificationDesc: 'Anti-bot & anti-scam with admin review',
+    trustQuote: '"TPC does not promise any profits."',
+    trustDesc: 'We are committed to full transparency. All transactions can be verified and our wallet addresses are public.',
+    viewTransparency: 'View Transparency',
+    antiScamNotice: 'Anti-Scam Notice',
+    communityEducation: 'Community & Education',
+    telegramCommunity: 'Telegram Community',
+    telegramDesc: 'Join trader community',
+    educationMaterial: 'Education Materials',
+    educationDesc: 'Learn trading basics',
+    faq: 'FAQ',
+    faqDesc: 'Frequently asked questions',
+    readyToJoin: 'Ready to Join?',
+    readyToJoinDesc: 'Join thousands of traders who have trusted TPC as a trusted trading education platform.',
+    loginToDashboard: 'Go to Dashboard',
+    loginRegister: 'Sign In / Register',
+    footerDisclaimer: 'TPC (Trader Professional Community) is a community education platform. Not a financial advisor and does not promise any profits. All user decisions are entirely their own responsibility.'
+  },
   id: {
     title: 'TPC Global - Ekosistem Edukasi Blockchain',
     description: 'TPC Global adalah ekosistem edukasi blockchain yang transparan, aman, dan terverifikasi. Bergabung dengan komunitas kami untuk pembelajaran crypto.',
