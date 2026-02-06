@@ -43,10 +43,9 @@ export const chaptersId = {
       title: "Koordinator Nonaktif"
     },
     chapterLead: {
-      title: "Chapter Lead"
-    },
-    chapterLead: {
-      title: "Chapter Lead"
+      title: "Chapter Lead",
+      antiScam: "Anti-Scam",
+      transparency: "Transparent"
     },
   },
   cta: {

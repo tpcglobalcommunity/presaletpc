@@ -45,7 +45,9 @@ export const chaptersEn = {
     },
     chapterLead: {
       title: "Chapter Lead",
-      description: "Leads regional chapter"
+      description: "Leads regional chapter",
+      antiScam: "Anti-Scam",
+      transparency: "Transparent"
     },
   },
   cta: {
