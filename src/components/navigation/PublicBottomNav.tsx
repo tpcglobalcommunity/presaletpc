@@ -1,5 +1,6 @@
 import { NavLink, useLocation, useParams } from 'react-router-dom';
 import { Home, Shield, LogIn } from 'lucide-react';
+import { publicBottomNavItems } from '@/config/publicBottomNav';
 
 export default function PublicBottomNav() {
   const location = useLocation();
@@ -14,66 +15,47 @@ export default function PublicBottomNav() {
     return null;
   }
 
-  // Simple inline copy
-  const navCopy = {
-    id: {
-      home: 'Beranda',
-      antiScam: 'Anti-Scam',
-      login: 'Masuk'
-    },
-    en: {
-      home: 'Home',
-      antiScam: 'Anti-Scam',
-      login: 'Login'
-    }
-  };
+  // Derive lang ONLY to build URL
+  const safeLang = lang === 'en' ? 'en' : 'id';
 
-  const t = navCopy[lang as keyof typeof navCopy];
+  // Icon mapping
+  const iconMap = {
+    Home,
+    Shield,
+    LogIn
+  } as const;
+
+  // Hardcoded English labels
+  const labels = {
+    home: 'Home',
+    'anti-scam': 'Anti-Scam',
+    login: 'Login'
+  } as const;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border z-40">
       <div className="flex items-center justify-around py-2">
-        <NavLink
-          to={`/${lang}`}
-          className={({ isActive }) =>
-            `flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
-              isActive
-                ? 'text-primary'
-                : 'text-muted-foreground hover:text-foreground'
-            }`
-          }
-        >
-          <Home className="h-5 w-5" />
-          <span className="text-xs font-medium">{t.home}</span>
-        </NavLink>
-
-        <NavLink
-          to={`/${lang}/anti-scam`}
-          className={({ isActive }) =>
-            `flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
-              isActive
-                ? 'text-primary'
-                : 'text-muted-foreground hover:text-foreground'
-            }`
-          }
-        >
-          <Shield className="h-5 w-5" />
-          <span className="text-xs font-medium">{t.antiScam}</span>
-        </NavLink>
-
-        <NavLink
-          to={`/${lang}/login`}
-          className={({ isActive }) =>
-            `flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
-              isActive
-                ? 'text-primary'
-                : 'text-muted-foreground hover:text-foreground'
-            }`
-          }
-        >
-          <LogIn className="h-5 w-5" />
-          <span className="text-xs font-medium">{t.login}</span>
-        </NavLink>
+        {publicBottomNavItems.map((item) => {
+          const Icon = iconMap[item.icon as keyof typeof iconMap];
+          const href = item.hrefBase ? `/${safeLang}/${item.hrefBase}` : `/${safeLang}`;
+          
+          return (
+            <NavLink
+              key={item.id}
+              to={href}
+              className={({ isActive }) =>
+                `flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
+                  isActive
+                    ? 'text-primary'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`
+              }
+            >
+              <Icon className="h-5 w-5" />
+              <span className="text-xs font-medium">{labels[item.id as keyof typeof labels]}</span>
+            </NavLink>
+          );
+        })}
       </div>
     </div>
   );
