@@ -511,13 +511,7 @@ export default function PresalePage() {
             </div>
           </div>
 
-          {/* DEBUG BADGE */}
-          {import.meta.env.DEV && (
-            <div className="fixed top-4 right-4 z-50 px-3 py-1 bg-red-500 text-white text-xs rounded-full">
-              COUNTDOWN_MOUNTED ✓
-            </div>
-          )}
-
+          
           {/* DISCLAIMER */}
           <div className="bg-[#1C2128] border border-[#30363D]/50 rounded-xl p-6">
             <div className="flex items-start gap-3">
