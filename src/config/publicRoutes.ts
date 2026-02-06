@@ -13,12 +13,15 @@ export const PUBLIC_ROUTE_PREFIXES = [
   '/onboarding',         // Onboarding flow
   '/market',             // Market page
   '/transparansi',       // Transparency page (ID)
+  '/transparency',       // Transparency page (EN)
   '/anti-scam',          // Anti-scam guide
   '/tutorial',           // Tutorial pages
   '/edukasi',            // Education page (ID)
+  '/education',          // Education page (EN)
   '/faq',                // FAQ
   '/whitepaper',         // Whitepaper
   '/dao',                // DAO page
+  '/dao-lite',           // DAO lite (if exists)
   '/presale',            // Presale info
   '/buytpc',             // Buy TPC marketing page
   '/invoice/success',    // Invoice success page

@@ -46,17 +46,17 @@ export function MenuDrawer({ onClose }: MenuDrawerProps) {
   };
 
   const publicItems = [
-    { icon: Shield, label: lang === 'en' ? 'Transparency' : 'Transparansi', path: 'transparansi' },
+    { icon: Shield, label: lang === 'en' ? 'Transparency' : 'Transparansi', path: lang === 'en' ? 'transparency' : 'transparansi' },
     { icon: AlertTriangle, label: lang === 'en' ? 'Anti-Scam' : 'Anti-Scam', path: 'anti-scam' },
     { icon: Wallet, label: lang === 'en' ? 'Phantom Wallet Tutorial' : 'Tutorial Phantom Wallet', path: 'tutorial/phantom-wallet' },
     { icon: Crown, label: lang === 'en' ? 'Verified Coordinators' : 'Koordinator Resmi', path: 'verified-coordinators' },
     { icon: Star, label: lang === 'en' ? 'TPC Chapters' : 'TPC Chapters', path: 'chapters' },
-    { icon: BookOpen, label: lang === 'en' ? 'Education' : 'Edukasi', path: 'edukasi' },
+    { icon: BookOpen, label: lang === 'en' ? 'Education' : 'Edukasi', path: lang === 'en' ? 'education' : 'edukasi' },
     { icon: FileTextIcon, label: lang === 'en' ? 'Whitepaper' : 'Whitepaper', path: 'whitepaper' },
     { icon: Users, label: lang === 'en' ? 'DAO Lite' : 'DAO Lite', path: 'dao' },
     { icon: HelpCircle, label: lang === 'en' ? 'FAQ' : 'FAQ', path: 'faq' },
-    { icon: FileText, label: lang === 'en' ? 'Terms & Conditions' : 'Syarat dan Ketentuan', path: 'syarat-ketentuan' },
-    { icon: FileText, label: lang === 'en' ? 'Privacy Policy' : 'Kebijakan Privasi', path: 'kebijakan-privasi' },
+    { icon: FileText, label: lang === 'en' ? 'Terms & Conditions' : 'Syarat dan Ketentuan', path: lang === 'en' ? 'terms' : 'syarat-ketentuan' },
+    { icon: FileText, label: lang === 'en' ? 'Privacy Policy' : 'Kebijakan Privasi', path: lang === 'en' ? 'privacy' : 'kebijakan-privasi' },
   ];
 
   const memberItems = [

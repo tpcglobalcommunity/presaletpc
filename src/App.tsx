@@ -55,6 +55,9 @@ import InvoiceSuccessPage from "@/pages/id/InvoiceSuccessPage";
 import TermsConditionsPage from "@/pages/legal/TermsConditionsPage";
 import PrivacyPolicyPage from "@/pages/legal/PrivacyPolicyPage";
 
+// EN Public Pages
+import ENHomePage from "@/pages/en/HomePage";
+
 // Shared Public Pages
 import TutorialPhantomWalletPage from "@/pages/public/TutorialPhantomWalletPage";
 import LoginPageV2 from "@/pages/public/LoginPage"; // V2
@@ -62,6 +65,11 @@ import LegacyAuthRedirectPage from "@/pages/public/LegacyAuthRedirectPage";
 import OnboardingPage from "@/pages/id/OnboardingPage";
 import VerifiedCoordinatorsPage from "@/pages/chapters/VerifiedCoordinatorsPage";
 import ChaptersSopPage from "@/pages/chapters/ChaptersSopPage";
+
+// EN Public Pages
+import EducationPage from "@/pages/en/EducationPage";
+import TransparencyPage from "@/pages/en/TransparencyPage";
+import DAOLitePage from "@/pages/en/DAOLitePage";
 
 // Member Pages (Lazy Loaded)
 const MemberDashboardPage = lazy(() => import("@/pages/member/MemberDashboardPage"));
@@ -86,12 +94,12 @@ const AdminAnalyticsPage = lazy(() => import("@/pages/admin/AdminAnalyticsPage")
 // LangIndexPage
 function LangIndexPage() {
   const params = useParams();
-  const lang = params?.lang === "en" ? "en" : "id";
-  // Index /id atau /en render home sesuai bahasa
-  if (lang === "en") {
-    return <Navigate to="/en/login" replace />; // EN redirect ke login
+  const lang = params?.lang === "id" ? "id" : "en"; // EN default, ID fallback
+  // Index /en atau /id render home sesuai bahasa
+  if (lang === "id") {
+    return <HomePage />; // ID gunakan HomePage
   }
-  return <HomePage />; // ID gunakan HomePage
+  return <ENHomePage />; // EN gunakan ENHomePage
 }
 
 const queryClient = new QueryClient();
@@ -106,7 +114,7 @@ function App() {
             <Sonner />
             <Routes>
               {/* Root redirect to default language */}
-              <Route path="/" element={<Navigate replace to="/id" />} />
+              <Route path="/" element={<Navigate replace to="/en" />} />
                 
                 {/* Language shell */}
                 <Route path="/:lang" element={<PublicRouteGuard><MobileLayout /></PublicRouteGuard>}>
@@ -163,7 +171,11 @@ function App() {
                 />
                 <Route
                   path="edukasi"
-                  element={<LangRoute id={<EdukasiPage />} en={<EdukasiPage />} />}
+                  element={<LangRoute id={<EdukasiPage />} en={<EducationPage />} />}
+                />
+                <Route
+                  path="education"
+                  element={<LangRoute id={<EdukasiPage />} en={<EducationPage />} />}
                 />
                 <Route
                   path="faq"
@@ -175,11 +187,19 @@ function App() {
                 />
                 <Route
                   path="dao"
-                  element={<LangRoute id={<DAOPage />} en={<DAOPage />} />}
+                  element={<LangRoute id={<DAOPage />} en={<DAOLitePage />} />}
+                />
+                <Route
+                  path="dao-lite"
+                  element={<LangRoute id={<DAOPage />} en={<DAOLitePage />} />}
                 />
                 <Route
                   path="transparansi"
-                  element={<LangRoute id={<TransparansiPage />} en={<TransparansiPage />} />}
+                  element={<LangRoute id={<TransparansiPage />} en={<TransparencyPage />} />}
+                />
+                <Route
+                  path="transparency"
+                  element={<LangRoute id={<TransparansiPage />} en={<TransparencyPage />} />}
                 />
                 <Route
                   path="market"
