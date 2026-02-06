@@ -88,38 +88,16 @@ interface PublicInvoice {
 
 export default function PublicInvoiceDetailPage() {
   const { invoiceNo } = useParams<{ invoiceNo: string }>();
-  const { lang = 'en' } = useParams<{ invoiceNo: string }>();
+  const { lang: urlLang } = useParams<{ lang: string }>();
   const [invoice, setInvoice] = useState<PublicInvoice | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Get language from URL or default to 'id'
-  const lang = window.location.pathname.startsWith('/en/') ? 'en' : 'id';
+  const lang = urlLang || (window.location.pathname.startsWith('/en/') ? 'en' : 'id');
   const t = translations[lang];
 
-  // SAFETY NET: Guard against invalid invoice_no
-  if (!invoiceNo || invoiceNo === 'undefined' || invoiceNo === 'null' || invoiceNo.trim() === '') {
-    return (
-      <div className="min-h-screen bg-[#0A0B0D] flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-[#1E2329] border-[#2B3139]">
-          <CardContent className="p-6 text-center">
-            <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-white mb-2">{t.invalidInvoice}</h2>
-            <p className="text-[#848E9C] mb-6">
-              {t.invalidInvoiceDesc}
-            </p>
-            <Button 
-              asChild
-              className="w-full bg-[#F0B90B] hover:bg-[#F8D56B] text-black"
-            >
-              <Link to={`/${lang}`}>{t.backToHome}</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
+  // Fetch invoice data
   useEffect(() => {
     const fetchInvoice = async () => {
       if (!invoiceNo) {
@@ -153,6 +131,29 @@ export default function PublicInvoiceDetailPage() {
 
     fetchInvoice();
   }, [invoiceNo]);
+
+  // SAFETY NET: Guard against invalid invoice_no
+  if (!invoiceNo || invoiceNo === 'undefined' || invoiceNo === 'null' || invoiceNo.trim() === '') {
+    return (
+      <div className="min-h-screen bg-[#0A0B0D] flex items-center justify-center p-4">
+        <Card className="w-full max-w-md bg-[#1E2329] border-[#2B3139]">
+          <CardContent className="p-6 text-center">
+            <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-white mb-2">{t.invalidInvoice}</h2>
+            <p className="text-[#848E9C] mb-6">
+              {t.invalidInvoiceDesc}
+            </p>
+            <Button 
+              asChild
+              className="w-full bg-[#F0B90B] hover:bg-[#F8D56B] text-black"
+            >
+              <Link to={`/${lang}`}>{t.backToHome}</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
