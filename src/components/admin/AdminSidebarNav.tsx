@@ -16,7 +16,6 @@ const menuItems = [
     title: 'Invoice Management',
     href: (lang: string) => `/${lang}/admin/invoices`,
     icon: FileText,
-    hasBadge: true,
   },
   {
     title: 'User Management',
