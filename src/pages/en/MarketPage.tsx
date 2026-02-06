@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { publicPath } from '@/lib/publicPath';
+import { publicPath } from '@/lib/publicPath';
 
 interface ProductItem {
   id: string;
@@ -73,7 +74,7 @@ export default function MarketPage() {
       cta: 'Details'
     },
     {
-      id: 'advertising',
+      id: 'adverting',
       title: 'Digital Advertising Services',
       description: 'TikTok / YouTube / Instagram Ads for business',
       icon: Megaphone,
