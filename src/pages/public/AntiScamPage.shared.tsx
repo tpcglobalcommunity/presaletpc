@@ -24,6 +24,7 @@ import {
   TrendingUp,
   Star,
   ExternalLink,
+  LucideIcon
 } from "lucide-react";
 import TokenMintInfoCard from '@/components/trust/TokenMintInfoCard';
 
@@ -175,7 +176,7 @@ export default function AntiScamPageShared({ lang }: AntiScamPageSharedProps) {
   };
 
   type InfoCard = {
-    icon: any;
+    icon: LucideIcon;
     title: string;
     description: string;
     tone?: "safe" | "warning" | "danger" | "neutral";
