@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { sanitizeReturnTo } from '@/lib/authReturnTo';
-import { Loader2 } from 'lucide-react';
 
 // i18n translations
 const translations = {
@@ -26,7 +25,7 @@ const translations = {
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { signInWithGoogle, isLoading, user } = useAuth();
+  const { signInWithGoogle, user } = useAuth();
 
   // Get language from URL or default to 'id'
   const lang = window.location.pathname.startsWith('/en/') ? 'en' : 'id';
@@ -34,7 +33,7 @@ export default function LoginPage() {
 
   // Redirect if already logged in
   useEffect(() => {
-    if (!isLoading && user) {
+    if (user) {
       const returnToRaw = sessionStorage.getItem('returnTo');
       const returnTo = sanitizeReturnTo(returnToRaw);
 
@@ -49,15 +48,7 @@ export default function LoginPage() {
         navigate(`/${lang}/member/dashboard`, { replace: true });
       }
     }
-  }, [user, isLoading, navigate]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  }, [user, navigate]);
 
   const handleLogin = async () => {
     try {
@@ -90,14 +81,10 @@ export default function LoginPage() {
 
         <button
           onClick={handleLogin}
-          disabled={isLoading}
           className="btn-gold w-full text-lg py-5 mb-4"
         >
-          {isLoading ? (
-            <Loader2 className="h-6 w-6 animate-spin" />
-          ) : (
-            <>
-              <svg className="h-6 w-6" viewBox="0 0 24 24">
+          <>
+            <svg className="h-6 w-6" viewBox="0 0 24 24">
                 <path
                   fill="currentColor"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -117,7 +104,6 @@ export default function LoginPage() {
               </svg>
               {t.signInWithGoogle}
             </>
-          )}
         </button>
 
         <p className="text-center text-xs text-muted-foreground">
