@@ -260,12 +260,6 @@ export default function PresalePage() {
                   <p className="text-sm font-semibold text-blue-500 uppercase tracking-wider">
                     {c.stageEndsIn}
                   </p>
-                  {/* DEV MARKER */}
-                  {import.meta.env.DEV && (
-                    <span className="ml-2 px-2 py-1 bg-red-500 text-white text-xs rounded-full">
-                      COUNTDOWN_RENDERED ✓
-                    </span>
-                  )}
                 </div>
 
                 {currentStage.status === 'ACTIVE' ? (
