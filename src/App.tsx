@@ -13,6 +13,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PublicRouteGuard } from "@/components/guards/PublicRouteGuard";
+import { PublicCanonicalGuard } from "@/components/guards/PublicCanonicalGuard";
 import { RequireAdmin } from "@/components/guards/RequireAdmin";
 
 // Contexts & Error Boundaries
@@ -23,6 +24,7 @@ import PageLoader from "@/components/PageLoader";
 import AppErrorBoundary from "@/components/system/AppErrorBoundary";
 import LangRoute from "@/components/system/LangRoute";
 import IdOnly from "@/components/system/IdOnly";
+import { PublicNotFoundPage } from "@/pages/public/PublicNotFoundPage";
 import RedirectLegacyRoute from "@/components/system/RedirectLegacyRoute";
 
 // Layouts
@@ -115,8 +117,8 @@ function App() {
               {/* Root redirect to default language */}
               <Route path="/" element={<Navigate replace to="/en" />} />
                 
-              {/* Language shell */}
-              <Route path="/:lang" element={<PublicRouteGuard><MobileLayout /></PublicRouteGuard>}>
+              {/* Language shell with Public Canonical Guard */}
+              <Route path="/:lang/*" element={<PublicCanonicalGuard><MobileLayout /></PublicCanonicalGuard>}>
                 {/* Index route */}
                 <Route index element={<LangIndexPage />} />
                 
@@ -245,6 +247,9 @@ function App() {
                 {/* LEGACY REDIRECTS FOR MEMBER/ADMIN */}
                 <Route path="member/*" element={<RedirectLegacyRoute to="member" />} />
                 <Route path="admin/*" element={<RedirectLegacyRoute to="admin" />} />
+                
+                {/* PUBLIC 404 */}
+                <Route path="404" element={<PublicNotFoundPage />} />
               </Route> {/* End of /:lang */}
               
               {/* TOP-LEVEL MEMBER AREA (EN ONLY) */}
