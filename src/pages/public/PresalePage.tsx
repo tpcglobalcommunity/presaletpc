@@ -250,6 +250,10 @@ export default function PresalePage() {
                   <div className="flex items-center justify-center gap-2 mb-4">
                     <Clock className="h-5 w-5 text-blue-500" />
                     <p className="text-sm font-semibold text-blue-500 uppercase tracking-wider">{c.stageEndsIn}</p>
+                    {/* DEBUG BADGE */}
+                    <div className="mt-2 px-3 py-1 bg-red-500 text-white text-xs rounded-full">
+                      COUNTDOWN_MOUNTED ✓
+                    </div>
                   </div>
                   <div className="flex justify-center items-center gap-4 text-2xl font-bold text-white">
                     <div className="text-center">
