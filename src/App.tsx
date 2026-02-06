@@ -13,6 +13,7 @@ import MemberWithdrawalPage from "@/pages/member/MemberWithdrawalPage";
 // GUARDS
 import { RequireAuth } from "@/components/guards/RequireAuth";
 import RequirePublicLang from "@/components/system/RequirePublicLang";
+import PublicBottomNav from "@/components/navigation/PublicBottomNav";
 
 export default function App() {
   return (
@@ -42,6 +43,9 @@ export default function App() {
         <Route path="/404" element={<PublicNotFoundPage />} />
         <Route path="*" element={<Navigate to="/404" replace />} />
       </Routes>
+      
+      {/* PUBLIC BOTTOM NAV */}
+      <PublicBottomNav />
     </AuthProvider>
   );
 }
