@@ -1,5 +1,5 @@
 import { Home, TrendingUp, User, Menu, Coins } from 'lucide-react';
-import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   Sheet,
@@ -10,18 +10,19 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { MenuDrawer } from './MenuDrawer';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { buildLoginUrl } from '@/lib/authRedirect';
-import { useLangPath, setupRegressionGuard } from '@/lib/langPath';
+import { usePublicPath } from '@/lib/publicPath';
 
 export function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const { lang, buildPath } = useLangPath();
+  const { lang, buildPath } = usePublicPath();
 
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Public navigation items with RAW paths only
   const navItems = useMemo(
     () => [
       { icon: Home, label: 'Home', rawPath: '/' },
@@ -42,11 +43,6 @@ export function BottomNav() {
     ],
     [user]
   );
-
-  // Setup regression guard once
-  useEffect(() => {
-    return setupRegressionGuard();
-  }, []);
 
   return (
     <nav className="bottom-nav">

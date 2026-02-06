@@ -19,8 +19,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Separator } from '@/components/ui/separator';
-import { useEffect } from 'react';
-import { useLangPath, setupRegressionGuard } from '@/lib/langPath';
+import { usePublicPath } from '@/lib/publicPath';
 
 interface MenuDrawerProps {
   onClose: () => void;
@@ -29,7 +28,7 @@ interface MenuDrawerProps {
 export function MenuDrawer({ onClose }: MenuDrawerProps) {
   const navigate = useNavigate();
   const { user, isAdmin, signOut } = useAuth();
-  const { lang, buildPath } = useLangPath();
+  const { lang, buildPath } = usePublicPath();
 
   const handleNav = (rawPath: string) => {
     navigate(buildPath(rawPath));
@@ -42,12 +41,7 @@ export function MenuDrawer({ onClose }: MenuDrawerProps) {
     navigate(buildPath('/')); // ✅ kembali ke home sesuai lang
   };
 
-  // Setup regression guard once
-  useEffect(() => {
-    return setupRegressionGuard();
-  }, []);
-
-  // Public menu items with consistent paths
+  // Public menu items with consistent RAW paths
   const publicItems = [
     { icon: Shield, label: lang === 'en' ? 'Transparency' : 'Transparansi', path: '/transparency' },
     { icon: AlertTriangle, label: 'Anti-Scam', path: '/anti-scam' },
