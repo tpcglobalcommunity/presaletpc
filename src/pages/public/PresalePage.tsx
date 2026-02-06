@@ -62,15 +62,6 @@ const useCountdown = (endTime: Date) => {
 export default function PresalePage() {
   const navigate = useNavigate();
   const { lang = 'id' } = useParams<{ lang: string }>();
-  const { user } = useAuth();
-  
-  // Strict lang validation: only "en" or "id" allowed
-  const safeLang = lang === 'en' ? 'en' : 'id';
-  const c = presaleCopy[safeLang];
-
-  // Get countdown for active stage
-  const activeStage = presaleData.stage1.status === 'ACTIVE' ? presaleData.stage1 : presaleData.stage2;
-  const countdown = useCountdown(activeStage.endTime);
 
   const getStatusColor = (status: PresaleStageStatus) => {
     switch (status) {
@@ -244,44 +235,47 @@ export default function PresalePage() {
             </div>
 
             {/* COUNTDOWN TIMER */}
-            {presaleData.stage2.status === 'ACTIVE' && (
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-6 mb-8">
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-2 mb-4">
-                    <Clock className="h-5 w-5 text-blue-500" />
-                    <p className="text-sm font-semibold text-blue-500 uppercase tracking-wider">{c.stageEndsIn}</p>
-                    {/* DEBUG BADGE */}
-                    <div className="mt-2 px-3 py-1 bg-red-500 text-white text-xs rounded-full">
-                      COUNTDOWN_MOUNTED ✓
+            {(() => {
+              const currentStage = getCurrentStage();
+              const isStage2 = currentStage.status === 'ACTIVE' && new Date().getTime() >= new Date('2025-01-01T00:00:00Z').getTime();
+              const stageData = isStage2 ? presaleData.stage2 : presaleData.stage1;
+              const countdown = useCountdown(stageData.endTime);
+              
+              return (
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-6 mb-8">
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                      <Clock className="h-5 w-5 text-blue-500" />
+                      <p className="text-sm font-semibold text-blue-500 uppercase tracking-wider">{c.countdownLabel}</p>
                     </div>
-                  </div>
-                  <div className="flex justify-center items-center gap-4 text-2xl font-bold text-white">
-                    <div className="text-center">
-                      <div className="text-3xl font-black text-blue-500">{formatTime(countdown.days)}</div>
-                      <div className="text-sm text-blue-200">{c.days}</div>
-                    </div>
-                    <span className="text-blue-500">:</span>
-                    <div className="text-center">
-                      <div className="text-3xl font-black text-blue-500">{formatTime(countdown.hours)}</div>
-                      <div className="text-sm text-blue-200">{c.hours}</div>
-                    </div>
-                    <span className="text-blue-500">:</span>
-                    <div className="text-center">
-                      <div className="text-3xl font-black text-blue-500">{formatTime(countdown.minutes)}</div>
-                      <div className="text-sm text-blue-200">{c.minutes}</div>
-                    </div>
-                    <span className="text-blue-500">:</span>
-                    <div className="text-center">
-                      <div className="text-3xl font-black text-blue-500">{formatTime(countdown.seconds)}</div>
-                      <div className="text-sm text-blue-200">{c.seconds}</div>
+                    <div className="flex justify-center items-center gap-4 text-2xl font-bold text-white">
+                      <div className="text-center">
+                        <div className="text-3xl font-black text-blue-500">{formatTime(countdown.days)}</div>
+                        <div className="text-sm text-blue-200">{c.days}</div>
+                      </div>
+                      <span className="text-blue-500">:</span>
+                      <div className="text-center">
+                        <div className="text-3xl font-black text-blue-500">{formatTime(countdown.hours)}</div>
+                        <div className="text-sm text-blue-200">{c.hours}</div>
+                      </div>
+                      <span className="text-blue-500">:</span>
+                      <div className="text-center">
+                        <div className="text-3xl font-black text-blue-500">{formatTime(countdown.minutes)}</div>
+                        <div className="text-sm text-blue-200">{c.minutes}</div>
+                      </div>
+                      <span className="text-blue-500">:</span>
+                      <div className="text-center">
+                        <div className="text-3xl font-black text-blue-500">{formatTime(countdown.seconds)}</div>
+                        <div className="text-sm text-blue-200">{c.seconds}</div>
+                      </div>
                     </div>
                   </div>
                   <div className="mt-4">
                     <p className="text-xs text-blue-200 leading-relaxed text-center">{c.countdownDisclaimer}</p>
                   </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
             
             <div className="grid md:grid-cols-2 gap-8 mb-8">
               {/* Stage 1 */}
@@ -495,6 +489,13 @@ export default function PresalePage() {
               </button>
             </div>
           </div>
+
+          {/* DEBUG BADGE */}
+            {import.meta.env.DEV === 'development' && (
+              <div className="fixed top-4 right-4 z-50 px-3 py-1 bg-red-500 text-white text-xs rounded-full">
+                COUNTDOWN_MOUNTED ✓
+              </div>
+            )}
 
           {/* DISCLAIMER */}
           <div className="bg-[#1C2128] border border-[#30363D]/50 rounded-xl p-6">

@@ -51,15 +51,17 @@ export const presaleCopy = {
     goToMemberArea: 'Ke Member Area',
     disclaimer: 'Ini bukan penawaran investasi. Token didistribusikan untuk utilitas dan partisipasi. Tidak ada jaminan keuntungan atau nilai.',
     // Countdown timer strings
-    stageEndsIn: 'Stage berakhir dalam',
-    currentStageRemaining: 'Waktu tersisa tahap saat ini',
-    countdownDisclaimer: 'Hitung mundur ini bersifat informatif dan tidak menunjukkan apresiasi harga, imbal finansial, atau hasil yang dijamin.',
-    days: 'hari',
-    hours: 'jam',
-    minutes: 'menit',
-    seconds: 'detik',
-    stageCompleted: 'Tahap selesai',
-    stageUpcoming: 'Tahap akan datang'
+    countdownLabel: 'Stage ends in',
+    currentStageRemaining: 'Current stage remaining time',
+    countdownDisclaimer: 'This countdown is informational and does not indicate price appreciation, financial return, or guaranteed outcomes.',
+    days: 'days',
+    hours: 'hours',
+    minutes: 'minutes',
+    seconds: 'seconds',
+    stageCompleted: 'Stage completed',
+    stageUpcoming: 'Stage not started',
+    countdownMounted: 'COUNTDOWN_MOUNTED',
+    countdownNotMounted: 'COUNTDOWN_NOT_MOUNTED'
   },
   en: {
     title: 'Presale',
