@@ -1,38 +1,56 @@
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useParams } from 'react-router-dom';
-import { TrendingUp, Shield, Coins, ArrowRight, Info, Eye, Globe } from 'lucide-react';
+import { TrendingUp, Shield, ArrowRight, BookOpen, Users, Wrench, Calendar, CheckCircle, AlertTriangle, Info } from 'lucide-react';
 
 // Market page copy
 const marketCopy = {
   id: {
     title: 'Market',
-    subtitle: 'Segera hadir',
-    supporting: 'Halaman ini akan menampilkan informasi pasar resmi saat tersedia.',
-    whatYouWillSee: 'Apa yang akan Anda lihat',
-    tokenInfo: 'Detail token, utilitas, dan suplai resmi.',
-    officialLinks: 'Tautan resmi ke sumber pasar yang terverifikasi.',
-    marketStatus: 'Status ketersediaan pasar dan pengumuman resmi.',
-    safetyVerification: 'Keamanan & Verifikasi',
-    safetyDesc: 'Selalu verifikasi informasi melalui sumber resmi.',
+    subtitle: 'Produk & layanan TPC',
+    supporting: 'Jelajahi produk edukasi dan akses resmi TPC.',
+    products: 'Produk',
+    tpcAkademi: 'TPC Akademi',
+    tpcAkademiDesc: 'Kelas dan materi edukasi trading & literasi market.',
+    membershipAccess: 'Membership Access',
+    membershipDesc: 'Akses komunitas belajar dan konten premium.',
+    learningTools: 'Learning Tools',
+    learningToolsDesc: 'Alat bantu belajar seperti jurnal dan template.',
+    eventsPrograms: 'Events & Programs',
+    eventsProgramsDesc: 'Workshop, bootcamp, dan kelas live (edukasi).',
+    available: 'Tersedia',
+    comingSoon: 'Segera hadir',
+    viewDetails: 'Lihat detail',
+    learnMore: 'Pelajari lebih lanjut',
+    explore: 'Jelajahi',
+    seePrograms: 'Lihat program',
+    safetyTransparency: 'Keamanan & Transparansi',
+    safetyDesc: 'Produk TPC bersifat edukasi. Selalu verifikasi informasi melalui sumber resmi.',
     antiScam: 'Anti-Scam',
-    guidance: 'Untuk informasi penawaran awal, kunjungi halaman presale.',
-    presale: 'Presale',
-    disclaimer: 'Informasi ini bersifat edukasi dan tidak merupakan ajakan atau jaminan keuntungan.'
+    disclaimer: 'Semua informasi di halaman ini bersifat edukasi dan tidak menjanjikan hasil finansial.'
   },
   en: {
     title: 'Market',
-    subtitle: 'Coming soon',
-    supporting: 'This page will display official market information when available.',
-    whatYouWillSee: 'What you will see',
-    tokenInfo: 'Token details, utility, and official supply.',
-    officialLinks: 'Official links to verified market sources.',
-    marketStatus: 'Market availability status and official announcements.',
-    safetyVerification: 'Safety & Verification',
-    safetyDesc: 'Always verify information through official sources.',
+    subtitle: 'TPC products & services',
+    supporting: 'Explore TPC educational products and official access.',
+    products: 'Products',
+    tpcAkademi: 'TPC Akademi',
+    tpcAkademiDesc: 'Courses and learning materials for trading & market literacy.',
+    membershipAccess: 'Membership Access',
+    membershipDesc: 'Access to learning community and premium content.',
+    learningTools: 'Learning Tools',
+    learningToolsDesc: 'Learning tools such as journals and templates.',
+    eventsPrograms: 'Events & Programs',
+    eventsProgramsDesc: 'Workshops, bootcamps, and live classes (educational).',
+    available: 'Available',
+    comingSoon: 'Coming soon',
+    viewDetails: 'View details',
+    learnMore: 'Learn more',
+    explore: 'Explore',
+    seePrograms: 'See programs',
+    safetyTransparency: 'Safety & Transparency',
+    safetyDesc: 'TPC products are educational. Always verify information through official sources.',
     antiScam: 'Anti-Scam',
-    guidance: 'For early access information, visit the presale page.',
-    presale: 'Presale',
-    disclaimer: 'This information is for educational purposes only and does not constitute an offer or profit guarantee.'
+    disclaimer: 'All information on this page is educational and does not promise financial outcomes.'
   }
 };
 
@@ -43,6 +61,69 @@ export default function MarketPage() {
   // Strict lang validation: only "en" or "id" allowed
   const safeLang = lang === 'en' ? 'en' : 'id';
   const c = marketCopy[safeLang];
+
+  const products = [
+    {
+      id: 'akademi',
+      title: c.tpcAkademi,
+      description: c.tpcAkademiDesc,
+      icon: BookOpen,
+      status: c.available,
+      cta: c.viewDetails,
+      color: 'emerald'
+    },
+    {
+      id: 'membership',
+      title: c.membershipAccess,
+      description: c.membershipDesc,
+      icon: Users,
+      status: c.comingSoon,
+      cta: c.learnMore,
+      color: 'purple'
+    },
+    {
+      id: 'tools',
+      title: c.learningTools,
+      description: c.learningToolsDesc,
+      icon: Wrench,
+      status: c.comingSoon,
+      cta: c.explore,
+      color: 'blue'
+    },
+    {
+      id: 'events',
+      title: c.eventsPrograms,
+      description: c.eventsProgramsDesc,
+      icon: Calendar,
+      status: c.comingSoon,
+      cta: c.seePrograms,
+      color: 'orange'
+    }
+  ];
+
+  const getStatusColor = (status: string) => {
+    return status === c.available ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30';
+  };
+
+  const getIconColor = (color: string) => {
+    const colors = {
+      emerald: 'text-emerald-500',
+      purple: 'text-purple-500',
+      blue: 'text-blue-500',
+      orange: 'text-orange-500'
+    };
+    return colors[color as keyof typeof colors] || 'text-primary';
+  };
+
+  const getBgColor = (color: string) => {
+    const colors = {
+      emerald: 'bg-emerald-500/10',
+      purple: 'bg-purple-500/10',
+      blue: 'bg-blue-500/10',
+      orange: 'bg-orange-500/10'
+    };
+    return colors[color as keyof typeof colors] || 'bg-primary/10';
+  };
 
   return (
     <>
@@ -63,42 +144,33 @@ export default function MarketPage() {
             <p className="text-[#848E9C] text-lg max-w-2xl mx-auto">{c.supporting}</p>
           </div>
 
-          {/* INFORMATION CARDS */}
+          {/* PRODUCT CATEGORIES */}
           <div className="mb-16">
-            <h2 className="text-2xl font-semibold text-white mb-8 text-center">{c.whatYouWillSee}</h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              {/* Token Information */}
-              <div className="bg-[#1C2128] border border-[#30363D] rounded-2xl p-6 hover:border-[#F0B90B]/30 transition-colors">
-                <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-[#F0B90B]/10 flex items-center justify-center">
-                  <Info className="h-7 w-7 text-[#F0B90B]" />
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-3 text-center">{c.tokenInfo}</h3>
-                <p className="text-[#848E9C] text-sm leading-relaxed text-center">
-                  Comprehensive token details, utility information, and official supply data
-                </p>
-              </div>
-
-              {/* Official Market Links */}
-              <div className="bg-[#1C2128] border border-[#30363D] rounded-2xl p-6 hover:border-[#F0B90B]/30 transition-colors">
-                <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-[#F0B90B]/10 flex items-center justify-center">
-                  <Globe className="h-7 w-7 text-[#F0B90B]" />
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-3 text-center">{c.officialLinks}</h3>
-                <p className="text-[#848E9C] text-sm leading-relaxed text-center">
-                  Verified market sources and official trading platform links
-                </p>
-              </div>
-
-              {/* Market Status */}
-              <div className="bg-[#1C2128] border border-[#30363D] rounded-2xl p-6 hover:border-[#F0B90B]/30 transition-colors">
-                <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-[#F0B90B]/10 flex items-center justify-center">
-                  <Eye className="h-7 w-7 text-[#F0B90B]" />
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-3 text-center">{c.marketStatus}</h3>
-                <p className="text-[#848E9C] text-sm leading-relaxed text-center">
-                  Real-time availability status and official announcements
-                </p>
-              </div>
+            <h2 className="text-2xl font-semibold text-white mb-8 text-center">{c.products}</h2>
+            <div className="grid md:grid-cols-2 gap-6">
+              {products.map((product) => {
+                const Icon = product.icon;
+                return (
+                  <div key={product.id} className="bg-[#1C2128] border border-[#30363D] rounded-2xl p-6 hover:border-[#F0B90B]/30 transition-colors">
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className={`w-14 h-14 rounded-xl ${getBgColor(product.color)} flex items-center justify-center flex-shrink-0`}>
+                        <Icon className={`h-7 w-7 ${getIconColor(product.color)}`} />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold text-white mb-2">{product.title}</h3>
+                        <p className="text-[#848E9C] text-sm leading-relaxed mb-3">{product.description}</p>
+                        <div className={`inline-flex px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(product.status)}`}>
+                          {product.status}
+                        </div>
+                      </div>
+                    </div>
+                    <button className="w-full mt-4 px-4 py-3 bg-[#F0B90B]/10 hover:bg-[#F0B90B]/20 text-[#F0B90B] rounded-xl transition-colors font-medium flex items-center justify-center gap-2">
+                      {product.cta}
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -109,7 +181,7 @@ export default function MarketPage() {
                 <Shield className="h-8 w-8 text-emerald-500" />
               </div>
               <div className="flex-1">
-                <h2 className="text-2xl font-bold text-white mb-3">{c.safetyVerification}</h2>
+                <h2 className="text-2xl font-bold text-white mb-3">{c.safetyTransparency}</h2>
                 <p className="text-[#C9D1D9] text-lg mb-6">{c.safetyDesc}</p>
                 <button
                   onClick={() => navigate(`/${safeLang}/anti-scam`)}
@@ -117,27 +189,6 @@ export default function MarketPage() {
                 >
                   <Shield className="h-5 w-5" />
                   {c.antiScam}
-                  <ArrowRight className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* NAVIGATION SECTION */}
-          <div className="bg-gradient-to-r from-purple-500/10 to-purple-600/10 border border-purple-500/30 rounded-2xl p-8 mb-12">
-            <div className="flex items-start gap-6">
-              <div className="w-16 h-16 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
-                <Coins className="h-8 w-8 text-purple-500" />
-              </div>
-              <div className="flex-1">
-                <h2 className="text-2xl font-bold text-white mb-3">{c.presale}</h2>
-                <p className="text-[#C9D1D9] text-lg mb-6">{c.guidance}</p>
-                <button
-                  onClick={() => navigate(`/${safeLang}/presale`)}
-                  className="inline-flex items-center gap-3 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl transition-colors font-medium"
-                >
-                  <Coins className="h-5 w-5" />
-                  {c.presale}
                   <ArrowRight className="h-5 w-5" />
                 </button>
               </div>
