@@ -61,7 +61,25 @@ const useCountdown = (endTime: Date) => {
 
 export default function PresalePage() {
   const navigate = useNavigate();
-  const { lang = 'id' } = useParams<{ lang: string }>();
+  const { lang } = useParams<{ lang: string }>();
+
+  // 🔒 HARD LANGUAGE LOCK
+  const safeLang: 'id' | 'en' = lang === 'en' ? 'en' : 'id';
+  const c = presaleCopy[safeLang];
+
+  // 🔒 AUTH
+  const { user } = useAuth();
+
+  // Get current stage data
+  const getCurrentStage = () => {
+    if (presaleData.stage2.status === 'ACTIVE') return presaleData.stage2;
+    if (presaleData.stage1.status === 'ACTIVE') return presaleData.stage1;
+    if (presaleData.stage1.status === 'COMPLETED') return presaleData.stage2;
+    return presaleData.stage1;
+  };
+
+  const currentStage = getCurrentStage();
+  const countdown = useCountdown(currentStage.endTime);
 
   const getStatusColor = (status: PresaleStageStatus) => {
     switch (status) {
@@ -218,7 +236,7 @@ export default function PresalePage() {
           <div className="mb-20">
             <div className="text-center mb-8">
               <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{c.stages}</p>
-              <h2 className="text-3xl font-bold text-white">{safeLang === 'id' ? 'Tahapan Akses Dini' : 'Early Access Stages'}</h2>
+              <h2 className="text-3xl font-bold text-white">{c.stagesTitle}</h2>
             </div>
             
             {/* LISTING DISCLAIMER */}
@@ -235,47 +253,50 @@ export default function PresalePage() {
             </div>
 
             {/* COUNTDOWN TIMER */}
-            {(() => {
-              const currentStage = getCurrentStage();
-              const isStage2 = currentStage.status === 'ACTIVE' && new Date().getTime() >= new Date('2025-01-01T00:00:00Z').getTime();
-              const stageData = isStage2 ? presaleData.stage2 : presaleData.stage1;
-              const countdown = useCountdown(stageData.endTime);
-              
-              return (
-                <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-6 mb-8">
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-2 mb-4">
-                      <Clock className="h-5 w-5 text-blue-500" />
-                      <p className="text-sm font-semibold text-blue-500 uppercase tracking-wider">{c.countdownLabel}</p>
-                    </div>
-                    <div className="flex justify-center items-center gap-4 text-2xl font-bold text-white">
-                      <div className="text-center">
-                        <div className="text-3xl font-black text-blue-500">{formatTime(countdown.days)}</div>
-                        <div className="text-sm text-blue-200">{c.days}</div>
-                      </div>
-                      <span className="text-blue-500">:</span>
-                      <div className="text-center">
-                        <div className="text-3xl font-black text-blue-500">{formatTime(countdown.hours)}</div>
-                        <div className="text-sm text-blue-200">{c.hours}</div>
-                      </div>
-                      <span className="text-blue-500">:</span>
-                      <div className="text-center">
-                        <div className="text-3xl font-black text-blue-500">{formatTime(countdown.minutes)}</div>
-                        <div className="text-sm text-blue-200">{c.minutes}</div>
-                      </div>
-                      <span className="text-blue-500">:</span>
-                      <div className="text-center">
-                        <div className="text-3xl font-black text-blue-500">{formatTime(countdown.seconds)}</div>
-                        <div className="text-sm text-blue-200">{c.seconds}</div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-4">
-                    <p className="text-xs text-blue-200 leading-relaxed text-center">{c.countdownDisclaimer}</p>
-                  </div>
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-6 mb-8">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <Clock className="h-5 w-5 text-blue-500" />
+                  <p className="text-sm font-semibold text-blue-500 uppercase tracking-wider">
+                    {c.stageEndsIn}
+                  </p>
                 </div>
-              );
-            })()}
+
+                {currentStage.status === 'ACTIVE' ? (
+                  <div className="flex justify-center items-center gap-4 text-2xl font-bold text-white">
+                    <div className="text-center">
+                      <div className="text-3xl font-black text-blue-500">{formatTime(countdown.days)}</div>
+                      <div className="text-sm text-blue-200">{c.days}</div>
+                    </div>
+                    <span className="text-blue-500">:</span>
+                    <div className="text-center">
+                      <div className="text-3xl font-black text-blue-500">{formatTime(countdown.hours)}</div>
+                      <div className="text-sm text-blue-200">{c.hours}</div>
+                    </div>
+                    <span className="text-blue-500">:</span>
+                    <div className="text-center">
+                      <div className="text-3xl font-black text-blue-500">{formatTime(countdown.minutes)}</div>
+                      <div className="text-sm text-blue-200">{c.minutes}</div>
+                    </div>
+                    <span className="text-blue-500">:</span>
+                    <div className="text-center">
+                      <div className="text-3xl font-black text-blue-500">{formatTime(countdown.seconds)}</div>
+                      <div className="text-sm text-blue-200">{c.seconds}</div>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-blue-200">
+                    {currentStage.status === 'COMPLETED'
+                      ? c.stageCompleted
+                      : c.stageUpcoming}
+                  </p>
+                )}
+
+                <p className="mt-4 text-xs text-blue-200">
+                  {c.countdownDisclaimer}
+                </p>
+              </div>
+            </div>
             
             <div className="grid md:grid-cols-2 gap-8 mb-8">
               {/* Stage 1 */}
@@ -329,7 +350,7 @@ export default function PresalePage() {
           <div className="mb-20">
             <div className="text-center mb-8">
               <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{c.utility}</p>
-              <h2 className="text-3xl font-bold text-white">{safeLang === 'id' ? 'Utilitas TPC' : 'TPC Utility'}</h2>
+              <h2 className="text-3xl font-bold text-white">{c.utilityTitle}</h2>
             </div>
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-6">
@@ -407,7 +428,7 @@ export default function PresalePage() {
           <div className="mb-20">
             <div className="text-center mb-8">
               <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{c.howItWorks}</p>
-              <h2 className="text-3xl font-bold text-white">{safeLang === 'id' ? 'Cara Kerja' : 'How It Works'}</h2>
+              <h2 className="text-3xl font-bold text-white">{c.howItWorksTitle}</h2>
             </div>
             <div className="space-y-6">
               {steps.map((step, index) => {
@@ -431,7 +452,7 @@ export default function PresalePage() {
           <div className="mb-20">
             <div className="text-center mb-8">
               <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{c.riskAntiScam}</p>
-              <h2 className="text-3xl font-bold text-white">{safeLang === 'id' ? 'Risiko & Anti-Scam' : 'Risk & Anti-Scam'}</h2>
+              <h2 className="text-3xl font-bold text-white">{c.riskTitle}</h2>
             </div>
             <div className="bg-gradient-to-br from-red-500/10 to-red-600/10 border border-red-500/30 rounded-2xl p-10 shadow-xl">
               <div className="space-y-6">
@@ -439,7 +460,7 @@ export default function PresalePage() {
                 <div className="flex items-start gap-4">
                   <AlertTriangle className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-white mb-2">{safeLang === 'id' ? 'Bukan Nasihat Keuangan' : 'Not Financial Advice'}</h3>
+                    <h3 className="text-lg font-bold text-white mb-2">{c.financialDisclaimer}</h3>
                     <p className="text-red-200 leading-relaxed">{c.riskDisclaimer}</p>
                   </div>
                 </div>
@@ -448,7 +469,7 @@ export default function PresalePage() {
                 <div className="flex items-start gap-4">
                   <AlertTriangle className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-white mb-2">{safeLang === 'id' ? 'Risiko Cryptocurrency' : 'Cryptocurrency Risk'}</h3>
+                    <h3 className="text-lg font-bold text-white mb-2">{c.cryptoRiskTitle}</h3>
                     <p className="text-red-200 leading-relaxed">{c.cryptoRisk}</p>
                   </div>
                 </div>
@@ -457,7 +478,7 @@ export default function PresalePage() {
                 <div className="flex items-start gap-4">
                   <Shield className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-white mb-2">{safeLang === 'id' ? 'Peringatan Anti-Scam' : 'Anti-Scam Warning'}</h3>
+                    <h3 className="text-lg font-bold text-white mb-2">{c.antiScamTitle}</h3>
                     <p className="text-red-200 leading-relaxed">{c.antiScamWarning}</p>
                   </div>
                 </div>
@@ -466,7 +487,7 @@ export default function PresalePage() {
                 <div className="flex items-start gap-4">
                   <CheckCircle className="h-6 w-6 text-emerald-500 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-white mb-2">{safeLang === 'id' ? 'Saluran Resmi' : 'Official Channels'}</h3>
+                    <h3 className="text-lg font-bold text-white mb-2">{c.officialChannelsTitle}</h3>
                     <p className="text-emerald-200 leading-relaxed">{c.officialChannels}</p>
                   </div>
                 </div>
@@ -477,7 +498,7 @@ export default function PresalePage() {
           {/* ACCESS CTA */}
           <div className="mb-20">
             <div className="text-center mb-8">
-              <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{safeLang === 'id' ? 'Akses Partisipasi' : 'Access Participation'}</p>
+              <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{c.accessParticipation}</p>
             </div>
             <div className="text-center">
               <button
@@ -491,11 +512,11 @@ export default function PresalePage() {
           </div>
 
           {/* DEBUG BADGE */}
-            {import.meta.env.DEV === 'development' && (
-              <div className="fixed top-4 right-4 z-50 px-3 py-1 bg-red-500 text-white text-xs rounded-full">
-                COUNTDOWN_MOUNTED ✓
-              </div>
-            )}
+          {import.meta.env.DEV && (
+            <div className="fixed top-4 right-4 z-50 px-3 py-1 bg-red-500 text-white text-xs rounded-full">
+              COUNTDOWN_MOUNTED ✓
+            </div>
+          )}
 
           {/* DISCLAIMER */}
           <div className="bg-[#1C2128] border border-[#30363D]/50 rounded-xl p-6">

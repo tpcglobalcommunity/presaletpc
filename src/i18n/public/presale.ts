@@ -51,17 +51,27 @@ export const presaleCopy = {
     goToMemberArea: 'Ke Member Area',
     disclaimer: 'Ini bukan penawaran investasi. Token didistribusikan untuk utilitas dan partisipasi. Tidak ada jaminan keuntungan atau nilai.',
     // Countdown timer strings
-    countdownLabel: 'Stage ends in',
-    currentStageRemaining: 'Current stage remaining time',
-    countdownDisclaimer: 'This countdown is informational and does not indicate price appreciation, financial return, or guaranteed outcomes.',
-    days: 'days',
-    hours: 'hours',
-    minutes: 'minutes',
-    seconds: 'seconds',
-    stageCompleted: 'Stage completed',
-    stageUpcoming: 'Stage not started',
+    stageEndsIn: 'Sisa waktu tahap ini',
+    currentStageRemaining: 'Waktu tersisa tahap saat ini',
+    countdownDisclaimer: 'Hitung mundur ini bersifat informatif dan bukan indikasi keuntungan atau kenaikan harga.',
+    days: 'hari',
+    hours: 'jam',
+    minutes: 'menit',
+    seconds: 'detik',
+    stageCompleted: 'Tahap selesai',
+    stageUpcoming: 'Tahap belum dimulai',
     countdownMounted: 'COUNTDOWN_MOUNTED',
-    countdownNotMounted: 'COUNTDOWN_NOT_MOUNTED'
+    countdownNotMounted: 'COUNTDOWN_NOT_MOUNTED',
+    // Title strings
+    stagesTitle: 'Tahapan Akses Dini',
+    utilityTitle: 'Utilitas TPC',
+    howItWorksTitle: 'Cara Kerja',
+    riskTitle: 'Risiko & Anti-Scam',
+    financialDisclaimer: 'Bukan Nasihat Keuangan',
+    cryptoRiskTitle: 'Risiko Cryptocurrency',
+    antiScamTitle: 'Peringatan Anti-Scam',
+    officialChannelsTitle: 'Saluran Resmi',
+    accessParticipation: 'Akses Partisipasi'
   },
   en: {
     title: 'Presale',
@@ -112,7 +122,7 @@ export const presaleCopy = {
     menu: 'Menu',
     loginToParticipate: 'Login to Participate',
     goToMemberArea: 'Go to Member Area',
-    disclaimer: 'This is not an investment offering. Tokens are distributed for utility and participation. No profit or value guarantees.',
+    disclaimer: 'This is not an investment offer. Tokens are distributed for utility and participation. No profit or value guarantees.',
     // Countdown timer strings
     stageEndsIn: 'Stage ends in',
     currentStageRemaining: 'Current stage remaining time',
@@ -122,6 +132,18 @@ export const presaleCopy = {
     minutes: 'minutes',
     seconds: 'seconds',
     stageCompleted: 'Stage completed',
-    stageUpcoming: 'Stage upcoming'
+    stageUpcoming: 'Stage not started',
+    countdownMounted: 'COUNTDOWN_MOUNTED',
+    countdownNotMounted: 'COUNTDOWN_NOT_MOUNTED',
+    // Title strings
+    stagesTitle: 'Early Access Stages',
+    utilityTitle: 'TPC Utility',
+    howItWorksTitle: 'How It Works',
+    riskTitle: 'Risk & Anti-Scam',
+    financialDisclaimer: 'Not Financial Advice',
+    cryptoRiskTitle: 'Cryptocurrency Risk',
+    antiScamTitle: 'Anti-Scam Warning',
+    officialChannelsTitle: 'Official Channels',
+    accessParticipation: 'Access Participation'
   }
 };
