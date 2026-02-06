@@ -2,7 +2,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { handlePublicNavLogin } from '@/lib/authReturnTo';
 import { Helmet } from 'react-helmet-async';
-import PublicLangSwitch from '@/components/system/PublicLangSwitch';
 import { 
   GraduationCap, 
   Shield, 
@@ -120,7 +119,6 @@ export default function HomePageShared({ lang }: HomePageSharedProps) {
 
   return (
     <>
-      <PublicLangSwitch currentLang={lang} />
       <Helmet>
         <title>{t.title}</title>
         <meta name="description" content={t.description} />

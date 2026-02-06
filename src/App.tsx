@@ -13,7 +13,7 @@ import MemberWithdrawalPage from "@/pages/member/MemberWithdrawalPage";
 // GUARDS
 import { RequireAuth } from "@/components/guards/RequireAuth";
 import RequirePublicLang from "@/components/system/RequirePublicLang";
-import PublicBottomNav from "@/components/navigation/PublicBottomNav";
+import PublicLayout from "@/layouts/PublicLayout";
 
 export default function App() {
   return (
@@ -24,9 +24,11 @@ export default function App() {
 
         {/* PUBLIC (LANG BASED) */}
         <Route path="/:lang" element={<RequirePublicLang />}>
-          <Route index element={<HomePage />} />
-          <Route path="login" element={<LoginPage />} />
-          <Route path="anti-scam" element={<AntiScamPage />} />
+          <Route element={<PublicLayout />}>
+            <Route index element={<HomePage />} />
+            <Route path="login" element={<LoginPage />} />
+            <Route path="anti-scam" element={<AntiScamPage />} />
+          </Route>
         </Route>
 
         {/* MEMBER */}
@@ -43,9 +45,6 @@ export default function App() {
         <Route path="/404" element={<PublicNotFoundPage />} />
         <Route path="*" element={<Navigate to="/404" replace />} />
       </Routes>
-      
-      {/* PUBLIC BOTTOM NAV */}
-      <PublicBottomNav />
     </AuthProvider>
   );
 }
