@@ -94,9 +94,9 @@ const AdminAnalyticsPage = lazy(() => import("@/pages/admin/AdminAnalyticsPage")
 // LangIndexPage
 function LangIndexPage() {
   const params = useParams();
-  // Default to "id", only use "en" if explicitly requested
-  const lang = params?.lang === "en" ? "en" : "id";
-  // Index /id atau /en render home sesuai bahasa
+  // Default to "en", only use "id" if explicitly requested
+  const lang = params?.lang === "id" ? "id" : "en";
+  // Index /en atau /id render home sesuai bahasa
   if (lang === "id") {
     return <HomePage />; // ID gunakan HomePage
   }
@@ -115,7 +115,7 @@ function App() {
             <Sonner />
             <Routes>
               {/* Root redirect to default language */}
-              <Route path="/" element={<Navigate replace to="/id" />} />
+              <Route path="/" element={<Navigate replace to="/en" />} />
                 
                 {/* Language shell */}
                 <Route path="/:lang" element={<PublicRouteGuard><MobileLayout /></PublicRouteGuard>}>

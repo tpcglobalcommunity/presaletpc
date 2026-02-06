@@ -31,7 +31,7 @@ interface Step {
 }
 
 export default function TutorialPhantomWalletPage() {
-  const { lang = 'id' } = useParams();
+  const { lang = 'en' } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [copiedAddress, setCopiedAddress] = useState(false);

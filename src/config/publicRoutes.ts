@@ -5,35 +5,6 @@
  * Everything else is public by default.
  */
 
-// Public route prefixes (both /id and /en will be checked)
-export const PUBLIC_ROUTE_PREFIXES = [
-  '/',                    // Root (redirects to /id)
-  '/login',              // Login pages
-  '/auth',               // Auth callbacks
-  '/onboarding',         // Onboarding flow
-  '/market',             // Market page
-  '/transparansi',       // Transparency page (ID)
-  '/transparency',       // Transparency page (EN)
-  '/anti-scam',          // Anti-scam guide
-  '/tutorial',           // Tutorial pages
-  '/edukasi',            // Education page (ID)
-  '/education',          // Education page (EN)
-  '/faq',                // FAQ
-  '/whitepaper',         // Whitepaper
-  '/dao',                // DAO page
-  '/dao-lite',           // DAO lite (if exists)
-  '/presale',            // Presale info
-  '/buytpc',             // Buy TPC marketing page
-  '/invoice/success',    // Invoice success page
-  '/syarat-ketentuan',   // Terms (ID)
-  '/terms',              // Terms (EN)
-  '/kebijakan-privasi',  // Privacy policy (ID)
-  '/privacy',            // Privacy policy (EN)
-  '/verified-coordinators', // Verified coordinators
-  '/chapters',           // Chapters
-  '/chapters/sop',       // Chapters SOP
-];
-
 /**
  * Normalize path for consistent matching
  */
@@ -117,20 +88,91 @@ export function isProtectedPath(pathname: string): boolean {
   return isMemberProtectedPath(pathname) || isAdminProtectedPath(pathname);
 }
 
+// Public route prefixes (both /id and /en will be checked)
+export const PUBLIC_ROUTE_PREFIXES = [
+  '/',                    // Root (redirects to /id)
+  '/login',              // Login pages
+  '/auth',               // Auth callbacks
+  '/onboarding',         // Onboarding flow
+  '/market',             // Market page
+  '/transparansi',       // Transparency page (ID)
+  '/transparency',       // Transparency page (EN)
+  '/anti-scam',          // Anti-scam guide
+  '/tutorial',           // Tutorial pages
+  '/edukasi',            // Education page (ID)
+  '/education',          // Education page (EN)
+  '/faq',                // FAQ
+  '/whitepaper',         // Whitepaper
+  '/dao',                // DAO page
+  '/dao-lite',           // DAO lite (if exists)
+  '/presale',            // Presale info
+  '/buytpc',             // Buy TPC marketing page
+  '/invoice/success',    // Invoice success page
+  '/syarat-ketentuan',   // Terms (ID)
+  '/terms',              // Terms (EN)
+  '/kebijakan-privasi',  // Privacy policy (ID)
+  '/privacy',            // Privacy policy (EN)
+  '/verified-coordinators', // Verified coordinators
+  '/chapters',           // Chapters
+  '/chapters/sop',       // Chapters SOP
+];
+
 // Dev-only regression check (minimal and safe)
 if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+  // Runtime test list for public paths
+  const PUBLIC_PATH_TEST_LIST = [
+    '/en/syarat-ketentuan',
+    '/en/verified-coordinators',
+    '/en/chapters',
+    '/en/whitepaper',
+    '/en/faq',
+    '/en/anti-scam',
+    '/en/transparency',
+    '/en/education',
+    '/en/market',
+    '/en/presale',
+    '/en/buytpc',
+    '/en/invoice/success',
+    '/en/terms',
+    '/en/privacy',
+    '/id/syarat-ketentuan',
+    '/id/verified-coordinators',
+    '/id/chapters',
+    '/id/whitepaper',
+    '/id/faq',
+    '/id/anti-scam',
+    '/id/transparansi',
+    '/id/edukasi',
+    '/id/market',
+    '/id/presale',
+    '/id/buytpc',
+    '/id/invoice/success',
+    '/id/kebijakan-privasi'
+  ];
+  
   let lastPathname = window.location.pathname;
   
   const checkRegression = () => {
     const currentPathname = window.location.pathname;
     
     // If we're on a public page but got redirected through login
-    if (isPublicPath(lastPathname) && currentPathname.includes('/login?returnTo=')) {
-      console.error('🚨 REGRESSION: Public page redirected to login!', {
+    if (PUBLIC_PATH_TEST_LIST.some(path => currentPathname.startsWith(path)) && 
+        currentPathname.includes('/login?returnTo=')) {
+      console.error('🚨 REGRESSION: public page redirected to login!', {
         publicPath: lastPathname,
         currentPath: currentPathname
       });
     }
+    
+    // Assert public paths are not protected
+    PUBLIC_PATH_TEST_LIST.forEach(path => {
+      if (currentPathname.startsWith(path) && isProtectedPath(currentPathname)) {
+        console.error('🚨 REGRESSION: public path marked as protected!', {
+          publicPath: path,
+          currentPath: currentPathname
+        });
+      }
+    });
     
     lastPathname = currentPathname;
   };
@@ -140,4 +182,18 @@ if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
   
   // Also check immediately
   setTimeout(checkRegression, 100);
+  
+  // Assert invalid language routes
+  const checkInvalidLanguage = () => {
+    const currentPathname = window.location.pathname;
+    if (!currentPathname.startsWith('/en/') && !currentPathname.startsWith('/id/')) {
+      console.error('🚨 INVALID LANGUAGE ROUTE', { pathname: currentPathname });
+    }
+  };
+  
+  // Check immediately
+  setTimeout(checkInvalidLanguage, 100);
+  
+  // Check on route changes
+  window.addEventListener('popstate', checkInvalidLanguage);
 }

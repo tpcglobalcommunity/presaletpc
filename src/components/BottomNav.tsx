@@ -15,19 +15,19 @@ export function BottomNav() {
   const isActive = (path: string) => location.pathname === path;
 
   const navItems = [
-    { icon: Home, label: 'Home', path: '/id' },
-    { icon: TrendingUp, label: 'Market', path: '/id/market' },
+    { icon: Home, label: 'Home', path: '/en' },
+    { icon: TrendingUp, label: 'Market', path: '/en/market' },
     { 
       icon: Coins, 
       label: 'Presale', 
-      path: '/id/presale',
+      path: '/en/presale',
       isPrimary: true,
       requiresAuth: false // ✅ PUBLIC - tidak memerlukan auth
     },
     { 
       icon: User, 
-      label: user ? 'Akun' : 'Login', 
-      path: user ? '/id/dashboard' : '/id/login' 
+      label: user ? 'Account' : 'Login', 
+      path: user ? '/en/member' : '/en/login' 
     },
   ];
 

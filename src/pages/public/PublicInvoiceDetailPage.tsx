@@ -88,6 +88,7 @@ interface PublicInvoice {
 
 export default function PublicInvoiceDetailPage() {
   const { invoiceNo } = useParams<{ invoiceNo: string }>();
+  const { lang = 'en' } = useParams<{ invoiceNo: string }>();
   const [invoice, setInvoice] = useState<PublicInvoice | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

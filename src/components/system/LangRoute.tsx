@@ -8,7 +8,7 @@ type LangRouteProps = {
 
 export default function LangRoute({ id, en }: LangRouteProps) {
   const { lang } = useParams();
-  // Default to "id", only use "en" if explicitly requested
-  const safeLang = lang === "en" ? "en" : "id";
+  // Default to "en", only use "id" if explicitly requested
+  const safeLang = lang === "id" ? "id" : "en";
   return safeLang === "en" ? en : id;
 }

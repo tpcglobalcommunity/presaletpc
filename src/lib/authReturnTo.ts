@@ -51,8 +51,8 @@ export function getCurrentPathReturnTo(): string {
  * Build login URL with returnTo parameter
  */
 export function buildLoginUrl(lang: string, returnTo?: string): string {
-  // Default to "id", only use "en" if explicitly requested
-  const safeLang = lang === 'en' ? 'en' : 'id';
+  // Default to "en", only use "id" if explicitly requested
+  const safeLang = lang === 'id' ? 'id' : 'en';
   
   if (returnTo) {
     const sanitized = sanitizeReturnTo(returnTo);
@@ -81,8 +81,8 @@ export function navigateToLogin(
  * Get safe fallback returnTo based on language
  */
 export function getFallbackReturnTo(lang: string): string {
-  // Default to "id", only use "en" if explicitly requested
-  const safeLang = lang === 'en' ? 'en' : 'id';
+  // Default to "en", only use "id" if explicitly requested
+  const safeLang = lang === 'id' ? 'id' : 'en';
   return `/${safeLang}/member/dashboard`;
 }
 

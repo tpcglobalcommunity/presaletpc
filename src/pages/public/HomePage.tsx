@@ -127,9 +127,9 @@ const translations = {
 export default function HomePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { lang = 'en' } = useParams();
 
-  // Get language from URL or default to 'id'
-  const lang = window.location.pathname.startsWith('/en/') ? 'en' : 'id';
+  // Get language from URL or default to 'en'
   const t = translations[lang];
 
   return (
