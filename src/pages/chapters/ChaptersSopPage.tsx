@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Users,
   ArrowRight,
@@ -15,9 +15,15 @@ import {
   TrendingUp,
   FileText,
 } from "lucide-react";
+import { getChaptersTranslations, tChapters } from "@/i18n/chapters";
 
 export default function ChaptersSopPage() {
   const navigate = useNavigate();
+  const { lang = 'id' } = useParams<{ lang: string }>();
+  
+  // Strict language enforcement: ID is canonical, EN follows ID
+  const safeLang = lang === 'en' ? 'en' : 'id';
+  const t = getChaptersTranslations(safeLang);
 
   return (
     <div className="min-h-screen bg-[radial-gradient(1000px_500px_at_50%_-100px,rgba(240,185,11,0.10),transparent),linear-gradient(to_bottom,#0B0E11,black)]">
@@ -86,11 +92,11 @@ export default function ChaptersSopPage() {
               </span>
               <span className="inline-flex items-center gap-1 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2">
                 <AlertTriangle className="h-4 w-4 text-red-400" />
-                <span className="text-red-400 font-semibold text-sm">Anti-scam</span>
+                <span className="text-red-400 font-semibold text-sm">{t.sections.orgStructure.chapterLead.antiScam}</span>
               </span>
               <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-2">
                 <Shield className="h-4 w-4 text-emerald-400" />
-                <span className="text-emerald-400 font-semibold text-sm">Transparan</span>
+                <span className="text-emerald-400 font-semibold text-sm">{t.sections.orgStructure.chapterLead.transparency}</span>
               </span>
             </div>
           </div>
@@ -99,7 +105,7 @@ export default function ChaptersSopPage() {
         {/* Organization Structure */}
         <div className="mb-12">
           <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-8 text-center">
-            Struktur Organisasi
+            {t.sections.orgStructure.title}
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
@@ -112,49 +118,49 @@ export default function ChaptersSopPage() {
                   <Crown className="h-8 w-8 text-black" />
                 </div>
                 
-                <h4 className="text-xl font-extrabold text-white mb-2">Chapter Lead</h4>
-                <p className="text-[#F0B90B] font-semibold mb-4">Negara/Regional</p>
+                <h4 className="text-xl font-extrabold text-white mb-2">{t.sections.orgStructure.chapterLead.title}</h4>
+                <p className="text-[#F0B90B] font-semibold mb-4">{t.sections.orgStructure.chapterLead.focus}</p>
                 
                 <div className="space-y-4">
                   <div>
-                    <h5 className="text-white font-semibold mb-2">Fokus</h5>
+                    <h5 className="text-white font-semibold mb-2">{t.sections.orgStructure.chapterLead.tasks.title}</h5>
                     <p className="text-[#848E9C] text-sm leading-relaxed">
-                      Koordinasi nasional, representasi TPC, dan pengembangan ekosistem di level negara.
+                      {t.sections.orgStructure.chapterLead.tasks.description}
                     </p>
                   </div>
                   
                   <div>
-                    <h5 className="text-white font-semibold mb-2">Tugas Utama</h5>
+                    <h5 className="text-white font-semibold mb-2">{t.sections.orgStructure.chapterLead.tasks.list.title}</h5>
                     <ul className="space-y-2">
                       <li className="flex items-start gap-2">
                         <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-                        <span className="text-[#848E9C] text-sm">Mengkoordinasi semua Chapter Lead regional</span>
+                        <span className="text-[#848E9C] text-sm">{t.sections.orgStructure.chapterLead.tasks.list.item1}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-                        <span className="text-[#848E9C] text-sm">Menjadi representasi resmi TPC</span>
+                        <span className="text-[#848E9C] text-sm">{t.sections.orgStructure.chapterLead.tasks.list.item2}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-                        <span className="text-[#848E9C] text-sm">Melaporkan ke admin pusat</span>
+                        <span className="text-[#848E9C] text-sm">{t.sections.orgStructure.chapterLead.tasks.list.item3}</span>
                       </li>
                     </ul>
                   </div>
                   
                   <div>
-                    <h5 className="text-white font-semibold mb-2">Batasan Keras</h5>
+                    <h5 className="text-white font-semibold mb-2">{t.sections.orgStructure.chapterLead.boundaries.title}</h5>
                     <ul className="space-y-2">
                       <li className="flex items-start gap-2">
                         <XCircle className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
-                        <span className="text-[#848E9C] text-sm">Tidak boleh meminta transfer pribadi</span>
+                        <span className="text-[#848E9C] text-sm">{t.sections.orgStructure.chapterLead.boundaries.item1}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <XCircle className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
-                        <span className="text-[#848E9C] text-sm">Tidak boleh menjanjikan profit/ROI</span>
+                        <span className="text-[#848E9C] text-sm">{t.sections.orgStructure.chapterLead.boundaries.item2}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <XCircle className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
-                        <span className="text-[#848E9C] text-sm">Tidak boleh mengelola dana member</span>
+                        <span className="text-[#848E9C] text-sm">{t.sections.orgStructure.chapterLead.boundaries.item3}</span>
                       </li>
                     </ul>
                   </div>
@@ -171,12 +177,12 @@ export default function ChaptersSopPage() {
                   <Award className="h-8 w-8 text-white" />
                 </div>
                 
-                <h4 className="text-xl font-extrabold text-white mb-2">Koordinator Wilayah</h4>
-                <p className="text-purple-300 font-semibold mb-4">Kota/Provinsi</p>
+                <h4 className="text-xl font-extrabold text-white mb-2">{t.sections.orgStructure.koordinator.title}</h4>
+                <p className="text-purple-300 font-semibold mb-4">{t.sections.orgStructure.koordinator.focus}</p>
                 
                 <div className="space-y-4">
                   <div>
-                    <h5 className="text-white font-semibold mb-2">Fokus</h5>
+                    <h5 className="text-white font-semibold mb-2">{t.sections.orgStructure.koordinator.tasks.title}</h5>
                     <p className="text-[#848E9C] text-sm leading-relaxed">
                       Manajemen komunitas lokal, edukasi, dan support member di area tertentu.
                     </p>

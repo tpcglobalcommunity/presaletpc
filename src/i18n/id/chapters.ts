@@ -41,7 +41,13 @@ export const chaptersId = {
     },
     inactive: {
       title: "Koordinator Nonaktif"
-    }
+    },
+    chapterLead: {
+      title: "Chapter Lead"
+    },
+    chapterLead: {
+      title: "Chapter Lead"
+    },
   },
   cta: {
     primary: "Lihat Transparansi Wallet",

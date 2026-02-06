@@ -40,8 +40,13 @@ export const chaptersEn = {
       }
     },
     inactive: {
-      title: "Inactive Coordinators"
-    }
+      title: "Inactive Coordinators",
+      description: "List of inactive coordinators"
+    },
+    chapterLead: {
+      title: "Chapter Lead",
+      description: "Leads regional chapter"
+    },
   },
   cta: {
     primary: "View Wallet Transparency",
