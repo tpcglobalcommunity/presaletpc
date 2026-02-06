@@ -27,7 +27,7 @@ interface MenuDrawerProps {
 export function MenuDrawer({ onClose }: MenuDrawerProps) {
   const navigate = useNavigate();
   const { user, isAdmin, signOut } = useAuth();
-  const { lang = 'id' } = useParams();
+  const { lang = 'id' } = useParams(); // Default to 'id', will be overridden by URL if present
 
   const withLang = (path: string) => {
     const cleanPath = path.startsWith('/') ? path.slice(1) : path;

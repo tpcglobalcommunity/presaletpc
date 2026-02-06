@@ -41,7 +41,7 @@ export function sanitizeReturnTo(raw: string | null): string | null {
  * Returns full current location (pathname + search + hash)
  */
 export function getCurrentPathReturnTo(): string {
-  if (typeof window === 'undefined') return '/id/dashboard/member';
+  if (typeof window === "undefined") return "/id/dashboard/member";
   
   const { pathname, search, hash } = window.location;
   return pathname + search + hash;
@@ -51,6 +51,7 @@ export function getCurrentPathReturnTo(): string {
  * Build login URL with returnTo parameter
  */
 export function buildLoginUrl(lang: string, returnTo?: string): string {
+  // Default to "id", only use "en" if explicitly requested
   const safeLang = lang === 'en' ? 'en' : 'id';
   
   if (returnTo) {
@@ -80,6 +81,7 @@ export function navigateToLogin(
  * Get safe fallback returnTo based on language
  */
 export function getFallbackReturnTo(lang: string): string {
+  // Default to "id", only use "en" if explicitly requested
   const safeLang = lang === 'en' ? 'en' : 'id';
   return `/${safeLang}/member/dashboard`;
 }
