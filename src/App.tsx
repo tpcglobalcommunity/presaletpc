@@ -9,6 +9,7 @@ import MarketPage from "@/pages/public/MarketPage";
 import PresalePage from "@/pages/public/PresalePage";
 import PublicMenuPage from "@/pages/public/PublicMenuPage";
 import TpcAkademiPage from "@/pages/public/products/TpcAkademiPage";
+import AcademyPage from "@/pages/public/AcademyPage";
 import { PublicNotFoundPage } from "@/pages/public/PublicNotFoundPage";
 
 // MEMBER
@@ -25,6 +26,10 @@ export default function App() {
       <Routes>
         {/* ROOT REDIRECT */}
         <Route path="/" element={<Navigate to="/id" replace />} />
+        
+        {/* CANONICAL REDIRECTS */}
+        <Route path="/academy" element={<Navigate to="/en/academy" replace />} />
+        <Route path="/en/education" element={<Navigate to="/en/academy" replace />} />
 
         {/* PUBLIC (LANG BASED) */}
         <Route path="/:lang" element={<RequirePublicLang />}>
@@ -35,6 +40,7 @@ export default function App() {
             <Route path="market" element={<MarketPage />} />
             <Route path="market/tpc-akademi" element={<TpcAkademiPage />} />
             <Route path="presale" element={<PresalePage />} />
+            <Route path="academy" element={<AcademyPage />} />
             <Route path="menu" element={<PublicMenuPage />} />
           </Route>
         </Route>

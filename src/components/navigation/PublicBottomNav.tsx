@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useParams } from 'react-router-dom';
-import { Home, TrendingUp, Coins, LogIn, Menu } from 'lucide-react';
+import { Home, GraduationCap, Coins, LogIn, Menu } from 'lucide-react';
 import { publicBottomNavItems } from '@/config/publicBottomNav';
 
 export default function PublicBottomNav() {
@@ -21,7 +21,7 @@ export default function PublicBottomNav() {
   // Icon mapping
   const iconMap = {
     Home,
-    TrendingUp,
+    GraduationCap,
     Coins,
     LogIn,
     Menu
@@ -30,7 +30,7 @@ export default function PublicBottomNav() {
   // Hardcoded English labels
   const labels = {
     home: 'Home',
-    market: 'Market',
+    academy: 'Academy',
     presale: 'Presale',
     login: 'Login',
     menu: 'Menu'

@@ -6,8 +6,8 @@ export const publicBottomNavItems = [
     icon: 'Home'
   },
   {
-    id: 'market',
-    hrefBase: 'market', // Will become /{lang}/market
+    id: 'academy',
+    hrefBase: 'academy', // Will become /{lang}/academy
     icon: 'TrendingUp'
   },
   {
