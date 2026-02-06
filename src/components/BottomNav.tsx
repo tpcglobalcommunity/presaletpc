@@ -12,31 +12,15 @@ import {
 import { MenuDrawer } from './MenuDrawer';
 import { useEffect, useMemo, useState } from 'react';
 import { buildLoginUrl } from '@/lib/authRedirect';
-
-type Lang = 'en' | 'id';
+import { useLangPath, setupRegressionGuard } from '@/lib/langPath';
 
 export function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const params = useParams();
-  const lang = ((params.lang as Lang) || 'en') as Lang;
+  const { lang, buildPath } = useLangPath();
 
   const [menuOpen, setMenuOpen] = useState(false);
-
-  // Build "/{lang}/{path}" dengan aman, tanpa "/en/en" dan tanpa "/enmarket"
-  const withLang = (path: string) => {
-    // normalisasi input
-    let p = path.trim();
-    if (!p.startsWith('/')) p = `/${p}`;
-    // dedupe prefix kalau sudah ada /en atau /id
-    p = p.replace(/^\/(en|id)(?=\/|$)/, '');
-    // root case
-    if (p === '') p = '/';
-    return `/${lang}${p}`;
-  };
-
-  const isActive = (rawPath: string) => location.pathname === withLang(rawPath);
 
   const navItems = useMemo(
     () => [
@@ -59,43 +43,22 @@ export function BottomNav() {
     [user]
   );
 
-  // Dev-only regression guard (jangan bikin listener tiap render)
+  // Setup regression guard once
   useEffect(() => {
-    if (process.env.NODE_ENV !== 'development') return;
-
-    const checkRegression = () => {
-      const currentPathname = window.location.pathname;
-
-      // Kalau route sudah /en atau /id, pastikan kita tidak menghasilkan /en/en atau /id/id
-      if (/^\/(en|id)\//.test(currentPathname) && /^\/(en|id)\/\1\//.test(currentPathname)) {
-        console.error('🚨 REGRESSION: duplicate language prefix detected', {
-          componentName: 'BottomNav',
-          currentPathname,
-        });
-      }
-    };
-
-    window.addEventListener('popstate', checkRegression);
-    const t = window.setTimeout(checkRegression, 50);
-
-    return () => {
-      window.removeEventListener('popstate', checkRegression);
-      window.clearTimeout(t);
-    };
+    return setupRegressionGuard();
   }, []);
 
   return (
     <nav className="bottom-nav">
       <div className="flex items-center justify-around py-2">
         {navItems.map((item) => {
-          const href = withLang(item.rawPath);
+          const href = buildPath(item.rawPath);
 
           return (
             <button
               key={item.rawPath}
               onClick={() => {
                 if (item.requiresAuth && !user) {
-                  // buildLoginUrl(lang, returnTo)
                   navigate(buildLoginUrl(lang, href));
                 } else {
                   navigate(href);
@@ -104,7 +67,7 @@ export function BottomNav() {
               className={`flex flex-col items-center justify-center min-w-[56px] py-2 px-3 rounded-xl transition-all ${
                 item.isPrimary
                   ? 'relative -mt-6'
-                  : isActive(item.rawPath)
+                  : location.pathname === href
                   ? 'text-primary'
                   : 'text-muted-foreground hover:text-foreground'
               }`}

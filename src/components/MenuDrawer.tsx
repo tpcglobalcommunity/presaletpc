@@ -16,74 +16,38 @@ import {
   Star,
   Wallet,
 } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Separator } from '@/components/ui/separator';
 import { useEffect } from 'react';
+import { useLangPath, setupRegressionGuard } from '@/lib/langPath';
 
 interface MenuDrawerProps {
   onClose: () => void;
 }
 
-type Lang = 'en' | 'id';
-
 export function MenuDrawer({ onClose }: MenuDrawerProps) {
   const navigate = useNavigate();
   const { user, isAdmin, signOut } = useAuth();
-  const params = useParams();
-  const lang = ((params.lang as Lang) || 'en') as Lang;
-
-  // ✅ Build "/{lang}{path}" aman:
-  // - memastikan path selalu diawali "/"
-  // - dedupe jika path sudah ada /en atau /id
-  // - tidak menghasilkan /en//market atau /en/en/market
-  const withLang = (path: string) => {
-    let p = (path || '').trim();
-    if (!p.startsWith('/')) p = `/${p}`;
-    p = p.replace(/^\/(en|id)(?=\/|$)/, ''); // remove existing lang prefix
-    if (p === '') p = '/';
-    return `/${lang}${p}`;
-  };
+  const { lang, buildPath } = useLangPath();
 
   const handleNav = (rawPath: string) => {
-    navigate(withLang(rawPath));
+    navigate(buildPath(rawPath));
     onClose();
   };
 
   const handleLogout = async () => {
     await signOut();
     onClose();
-    navigate(withLang('/')); // ✅ kembali ke home sesuai lang
+    navigate(buildPath('/')); // ✅ kembali ke home sesuai lang
   };
 
-  // ✅ Dev-only regression guard: pasang sekali, bersihin saat unmount
+  // Setup regression guard once
   useEffect(() => {
-    if (process.env.NODE_ENV !== 'development') return;
-
-    const checkRegression = () => {
-      const currentPathname = window.location.pathname;
-
-      // deteksi kasus /en/en/* atau /id/id/*
-      if (/^\/(en|id)\/\1(\/|$)/.test(currentPathname)) {
-        console.error('🚨 REGRESSION: duplicate language prefix detected', {
-          componentName: 'MenuDrawer',
-          currentPathname,
-        });
-      }
-    };
-
-    window.addEventListener('popstate', checkRegression);
-    const t = window.setTimeout(checkRegression, 50);
-
-    return () => {
-      window.removeEventListener('popstate', checkRegression);
-      window.clearTimeout(t);
-    };
+    return setupRegressionGuard();
   }, []);
 
-  // ✅ REKOMENDASI: slug path dibuat konsisten EN/ID.
-  // Kalau sudah terlanjur beda slug, kamu bisa tetap pakai conditional seperti dulu,
-  // tapi lebih aman diseragamkan.
+  // Public menu items with consistent paths
   const publicItems = [
     { icon: Shield, label: lang === 'en' ? 'Transparency' : 'Transparansi', path: '/transparency' },
     { icon: AlertTriangle, label: 'Anti-Scam', path: '/anti-scam' },

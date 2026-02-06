@@ -77,6 +77,7 @@ const MemberReferralPage = lazy(() => import("@/pages/member/MemberReferralPage"
 const MemberProfilePage = lazy(() => import("@/pages/member/MemberProfilePage"));
 const MemberSettingsPage = lazy(() => import("@/pages/member/MemberSettingsPage"));
 const MemberWalletPage = lazy(() => import("@/pages/member/MemberWalletPage"));
+const MemberWithdrawalPage = lazy(() => import("@/pages/member/MemberWithdrawalPage"));
 const CompleteProfilePage = lazy(() => import("@/pages/id/CompleteProfilePage"));
 const BuyTPCMemberPage = lazy(() => import("@/pages/id/member/BuyTPCMemberPage"));
 
