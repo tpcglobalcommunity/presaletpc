@@ -4,8 +4,8 @@ import HomePageShared from './HomePage.shared';
 export default function HomePage() {
   const { lang = 'id' } = useParams<{ lang: string }>();
   
-  // Validate lang parameter
-  const validLang = lang === 'en' || lang === 'id' ? lang : 'id';
+  // Strict lang validation: only "en" or "id" allowed
+  const validLang = lang === 'en' ? 'en' : 'id';
   
   return <HomePageShared lang={validLang} />;
 }

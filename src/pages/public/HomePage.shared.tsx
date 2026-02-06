@@ -55,6 +55,7 @@ const homeCopy = {
     viewTransparency: 'Lihat Transparansi',
     antiScamNotice: 'Anti-Scam Notice',
     communityEducation: 'Komunitas & Edukasi',
+    trustTransparency: 'Trust & Transparansi',
     telegramCommunity: 'Komunitas Telegram',
     telegramDesc: 'Bergabung dengan komunitas trader',
     educationMaterial: 'Materi Edukasi',
@@ -93,6 +94,7 @@ const homeCopy = {
     viewTransparency: 'View Transparency',
     antiScamNotice: 'Anti-Scam Notice',
     communityEducation: 'Community & Education',
+    trustTransparency: 'Trust & Transparency',
     telegramCommunity: 'Telegram Community',
     telegramDesc: 'Join trader community',
     educationMaterial: 'Education Materials',
@@ -208,7 +210,7 @@ export default function HomePageShared({ lang }: HomePageSharedProps) {
 
       {/* 4. TRUST & TRANSPARANSI */}
       <div className="mb-10">
-        <h2 className="text-lg font-bold text-white mb-4">Trust & Transparency</h2>
+        <h2 className="text-lg font-bold text-white mb-4">{t.trustTransparency}</h2>
         <div className="glass-card p-5">
           <blockquote className="text-sm text-primary font-medium mb-3">
             {t.trustQuote}
