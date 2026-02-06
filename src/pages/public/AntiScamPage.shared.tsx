@@ -285,56 +285,78 @@ export default function AntiScamPageShared({ lang }: AntiScamPageSharedProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0B0E11] text-white">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#0B0E11] via-[#0A0D0F] to-[#0C0F12] text-white">
+      <div className="max-w-4xl mx-auto px-4 py-6 pb-24">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-8 md:mb-12">
           <button
             onClick={() => navigate(`/${lang}`)}
-            className="flex items-center gap-2 text-[#848E9C] hover:text-white transition-colors mb-6"
+            className="flex items-center gap-2 text-[#848E9C] hover:text-white transition-colors mb-6 md:mb-8 group"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>{c.backToHome}</span>
+            <span className="text-sm md:text-base">{c.backToHome}</span>
           </button>
 
-          <div className="text-center">
-            <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-              {c.antiScamNotice}
-            </h1>
-            <p className="mt-3 text-[#C9D1D9] text-base md:text-lg">
-              {c.protectYourself}
-            </p>
-            <div className="mt-6 max-w-3xl mx-auto">
-              <div className="bg-[#1C2128] border border-[#30363D] rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <AlertTriangle className="h-6 w-6 text-yellow-500" />
-                  <h2 className="text-xl font-bold text-yellow-500">{c.warning}</h2>
-                </div>
-                <p className="text-sm md:text-base text-[#C9D1D9] leading-relaxed">
-                  {c.warningTextBefore}
-                  <span className="text-white font-semibold">{c.warningTextEmphasis}</span>
-                  {c.warningTextAfter}
-                </p>
+          <div className="relative text-center">
+            {/* Animated background gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#1C2128]/30 via-[#F0B90B]/5 to-[#161B22]/30 rounded-2xl md:rounded-3xl -z-10 backdrop-blur-xl border border-[#F0B90B]/10"></div>
+            
+            {/* Enhanced icon container */}
+            <div className="relative z-10">
+              <div className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 md:mb-8 rounded-2xl bg-gradient-to-br from-red-500/20 via-red-600/15 to-red-500/10 flex items-center justify-center border border-red-500/30 backdrop-blur-sm relative shadow-2xl shadow-red-500/20">
+                <div className="absolute inset-0 bg-gradient-to-br from-red-500/20 to-transparent rounded-2xl blur-xl md:blur-2xl"></div>
+                <div className="absolute inset-0 bg-red-500/10 rounded-2xl animate-pulse"></div>
+                <AlertTriangle className="h-10 w-10 md:h-12 md:w-12 text-red-400 relative z-10 drop-shadow-lg" />
+              </div>
+            </div>
+            
+            <div className="relative z-10">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-red-500 to-red-400 mb-2 md:mb-4 tracking-tight leading-tight">
+                {c.antiScamNotice}
+              </h1>
+              <div className="h-1 w-20 md:w-32 mx-auto bg-gradient-to-r from-red-500/50 to-red-600/50 rounded-full mb-4 md:mb-6"></div>
+              <p className="text-lg md:text-xl lg:text-2xl text-red-400 font-semibold mb-3 md:mb-4 leading-relaxed">{c.protectYourself}</p>
+            </div>
+            
+            <div className="relative z-10 mt-6 md:mt-8 max-w-3xl md:max-w-4xl mx-auto">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 via-red-600/5 to-red-500/10 rounded-xl md:rounded-2xl -z-10 backdrop-blur-xl border border-red-500/20"></div>
+                <div className="relative bg-gradient-to-br from-[#1C2128]/80 to-[#161B22]/80 rounded-xl md:rounded-2xl p-4 md:p-6 backdrop-blur-sm border border-red-500/30 shadow-2xl shadow-red-500/10">
+                  <div className="flex items-center gap-3 md:gap-4 mb-4">
+                    <div className="relative">
+                      <div className="w-10 h-10 md:w-12 md:h-12 bg-red-500/20 rounded-lg md:rounded-xl flex items-center justify-center border border-red-500/30">
+                        <AlertTriangle className="h-5 w-5 md:h-6 md:w-6 text-red-400" />
+                      </div>
+                      <div className="absolute inset-0 bg-red-500/20 rounded-lg blur-lg"></div>
+                    </div>
+                    <h2 className="text-lg md:text-xl font-bold text-red-400">{c.warning}</h2>
+                  </div>
+                  <p className="text-sm md:text-base text-[#C9D1D9]/90 leading-relaxed">
+                    <span className="text-white font-semibold">{c.warningTextBefore}</span>
+                    <span className="text-red-400 font-bold">{c.warningTextEmphasis}</span>
+                    <span className="text-white">{c.warningTextAfter}</span>
+                  </p>
 
-                {/* Official links */}
-                <div className="mt-6 flex flex-wrap justify-center gap-4">
-                  <a
-                    href="https://tpcglobal.io"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
-                  >
-                    <Globe className="h-4 w-4" />
-                    {c.websiteOfficial}
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
-                  <a
-                    href={`/${lang}/anti-scam`}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                  >
-                    <Shield className="h-4 w-4" />
-                    {c.transparencyPage}
-                  </a>
+                  {/* Official links */}
+                  <div className="mt-4 md:mt-6 flex flex-wrap justify-center gap-3 md:gap-4">
+                    <a
+                      href="https://tpcglobal.io"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-lg md:rounded-xl transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+                    >
+                      <Globe className="h-4 w-4 md:h-5 md:w-5" />
+                      {c.websiteOfficial}
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                    <a
+                      href={`/${lang}/anti-scam`}
+                      className="inline-flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg md:rounded-xl transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+                    >
+                      <Shield className="h-4 w-4 md:h-5 md:w-5" />
+                      {c.transparencyPage}
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -342,35 +364,45 @@ export default function AntiScamPageShared({ lang }: AntiScamPageSharedProps) {
         </div>
 
         {/* Official Channels */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-white mb-6">{c.officialChannels}</h2>
-          <div className="grid md:grid-cols-2 gap-4">
+        <section className="mb-8 md:mb-12">
+          <div className="text-center mb-4 md:mb-6">
+            <p className="text-xs md:text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-emerald-600 uppercase tracking-wider mb-2">{c.officialChannels}</p>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">{c.officialChannels}</h2>
+          </div>
+          <div className="grid md:grid-cols-2 gap-3 md:gap-4">
             {officialChannels.map((channel, index) => (
               <div
                 key={index}
-                className={`p-6 rounded-xl border ${
-                  channel.tone === "safe"
-                    ? "bg-emerald-500/10 border-emerald-500/30"
-                    : channel.tone === "danger"
-                    ? "bg-red-500/10 border-red-500/30"
-                    : "bg-[#1C2128] border-[#30363D]"
-                }`}
+                className="relative group"
               >
-                <div className="flex items-start gap-4">
-                  <div
-                    className={`p-3 rounded-lg ${
-                      channel.tone === "safe"
-                        ? "bg-emerald-500/20 text-emerald-500"
-                        : channel.tone === "danger"
-                        ? "bg-red-500/20 text-red-500"
-                        : "bg-[#30363D] text-[#848E9C]"
-                    }`}
-                  >
-                    <channel.icon className="h-6 w-6" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-white mb-2">{channel.title}</h3>
-                    <p className="text-[#C9D1D9] text-sm">{channel.description}</p>
+                {/* Background hover effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#1C2128]/80 to-[#161B22]/80 rounded-xl md:rounded-2xl -z-10 backdrop-blur-xl border border-[#30363D]/30 group-hover:border-emerald-500/40 transition-all duration-500"></div>
+                
+                {/* Main card */}
+                <div className={`relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-xl md:rounded-2xl p-4 md:p-6 backdrop-blur-sm border border-[#30363D]/50 group-hover:border-emerald-500/50 transition-all duration-500 shadow-lg group-hover:shadow-2xl group-hover:shadow-emerald-500/10 ${
+                  channel.tone === "safe"
+                    ? "border-emerald-500/30"
+                    : channel.tone === "danger"
+                    ? "border-red-500/30"
+                    : "border-[#30363D]/50"
+                }`}>
+                  <div className="flex items-start gap-3 md:gap-4">
+                    <div className="relative">
+                      <div className={`w-12 h-12 md:w-14 md:h-14 rounded-lg md:rounded-xl ${
+                        channel.tone === "safe"
+                          ? "bg-emerald-500/20 text-emerald-500 border-emerald-500/30"
+                          : channel.tone === "danger"
+                          ? "bg-red-500/20 text-red-500 border-red-500/30"
+                          : "bg-[#30363D] text-[#848E9C] border-[#30363D]/30"
+                      } flex items-center justify-center flex-shrink-0 shadow-lg`}>
+                        <channel.icon className="h-6 w-6 md:h-8 md:w-8" />
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-lg blur-lg"></div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg md:text-xl font-bold text-white mb-2">{channel.title}</h3>
+                      <p className="text-[#C9D1D9]/90 text-sm md:text-base leading-relaxed">{channel.description}</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -379,21 +411,30 @@ export default function AntiScamPageShared({ lang }: AntiScamPageSharedProps) {
         </section>
 
         {/* Not TPC Activities */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-white mb-6">{c.notTpcActivities}</h2>
-          <div className="grid md:grid-cols-2 gap-4">
+        <section className="mb-8 md:mb-12">
+          <div className="text-center mb-4 md:mb-6">
+            <p className="text-xs md:text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-yellow-600 uppercase tracking-wider mb-2">{c.notTpcActivities}</p>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">{c.notTpcActivities}</h2>
+          </div>
+          <div className="grid md:grid-cols-2 gap-3 md:gap-4">
             {scamMethods.map((method, index) => (
-              <div
-                key={index}
-                className="p-6 rounded-xl border bg-yellow-500/10 border-yellow-500/30"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-lg bg-yellow-500/20 text-yellow-500">
-                    <method.icon className="h-6 w-6" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-white mb-2">{method.title}</h3>
-                    <p className="text-[#C9D1D9] text-sm">{method.description}</p>
+              <div key={index} className="relative group">
+                {/* Background hover effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 via-yellow-600/5 to-yellow-500/10 rounded-xl md:rounded-2xl -z-10 backdrop-blur-xl border border-yellow-500/20"></div>
+                
+                {/* Main card */}
+                <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-xl md:rounded-2xl p-4 md:p-6 backdrop-blur-sm border border-yellow-500/30 shadow-lg group-hover:shadow-2xl group-hover:shadow-yellow-500/10">
+                  <div className="flex items-start gap-3 md:gap-4">
+                    <div className="relative">
+                      <div className="w-12 h-12 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 flex items-center justify-center flex-shrink-0 shadow-lg">
+                        <method.icon className="h-6 w-6 md:h-8 md:w-8" />
+                      </div>
+                      <div className="absolute inset-0 bg-yellow-500/20 rounded-lg blur-lg"></div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg md:text-xl font-bold text-white mb-2">{method.title}</h3>
+                      <p className="text-[#C9D1D9]/90 text-sm md:text-base leading-relaxed">{method.description}</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -402,27 +443,45 @@ export default function AntiScamPageShared({ lang }: AntiScamPageSharedProps) {
         </section>
 
         {/* How to Verify */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-white mb-6">{c.howToVerify}</h2>
-          <div className="space-y-6">
+        <section className="mb-8 md:mb-12">
+          <div className="text-center mb-4 md:mb-6">
+            <p className="text-xs md:text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-blue-600 uppercase tracking-wider mb-2">{c.howToVerify}</p>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">{c.howToVerify}</h2>
+          </div>
+          <div className="space-y-4 md:space-y-6">
             {verificationSteps.map((step, index) => (
-              <div key={index} className="flex gap-6">
-                <div className="flex-shrink-0 w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold">
-                  {step.step}
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-white mb-2">{step.title}</h3>
-                  <p className="text-[#C9D1D9] text-sm mb-3">{step.description}</p>
-                  {step.items && (
-                    <ul className="space-y-1">
-                      {step.items.map((item, itemIndex) => (
-                        <li key={itemIndex} className="flex items-center gap-2 text-[#848E9C] text-sm">
-                          <CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+              <div key={index} className="relative group">
+                {/* Background hover effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#1C2128]/80 to-[#161B22]/80 rounded-xl md:rounded-2xl -z-10 backdrop-blur-xl border border-[#30363D]/30 group-hover:border-blue-500/40 transition-all duration-500"></div>
+                
+                {/* Main card */}
+                <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-xl md:rounded-2xl p-4 md:p-6 backdrop-blur-sm border border-[#30363D]/50 group-hover:border-blue-500/50 transition-all duration-500 shadow-lg group-hover:shadow-2xl group-hover:shadow-blue-500/10 flex gap-4 md:gap-6">
+                  <div className="relative flex-shrink-0">
+                    <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-blue-500/20 via-blue-600/15 to-blue-500/10 rounded-full flex items-center justify-center border border-blue-500/30 shadow-lg">
+                      <span className="text-blue-400 font-black text-lg md:text-xl font-bold">{step.step}</span>
+                    </div>
+                    <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-lg"></div>
+                    <div className="absolute inset-0 bg-blue-500/10 rounded-full animate-pulse"></div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg md:text-xl font-bold text-white mb-2">{step.title}</h3>
+                    <p className="text-[#C9D1D9]/90 text-sm md:text-base mb-3 leading-relaxed">{step.description}</p>
+                    {step.items && (
+                      <ul className="space-y-2 md:space-y-3">
+                        {step.items.map((item, itemIndex) => (
+                          <li key={itemIndex} className="flex items-center gap-2 md:gap-3 text-[#C9D1D9]/90 text-sm md:text-base">
+                            <div className="relative">
+                              <div className="w-6 h-6 md:w-8 bg-emerald-500/20 rounded-full flex items-center justify-center border border-emerald-500/30">
+                                <CheckCircle className="h-3 w-3 md:h-4 md:w-4 text-emerald-400" />
+                              </div>
+                              <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-lg"></div>
+                            </div>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -430,21 +489,30 @@ export default function AntiScamPageShared({ lang }: AntiScamPageSharedProps) {
         </section>
 
         {/* Verification Features */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-white mb-6">Verification Features</h2>
-          <div className="grid md:grid-cols-2 gap-4">
+        <section className="mb-8 md:mb-12">
+          <div className="text-center mb-4 md:mb-6">
+            <p className="text-xs md:text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-emerald-600 uppercase tracking-wider mb-2">Verification Features</p>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">Verification Features</h2>
+          </div>
+          <div className="grid md:grid-cols-2 gap-3 md:gap-4">
             {verificationFeatures.map((feature, index) => (
-              <div
-                key={index}
-                className="p-6 rounded-xl border bg-emerald-500/10 border-emerald-500/30"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-lg bg-emerald-500/20 text-emerald-500">
-                    <feature.icon className="h-6 w-6" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-white mb-2">{feature.title}</h3>
-                    <p className="text-[#C9D1D9] text-sm">{feature.description}</p>
+              <div key={index} className="relative group">
+                {/* Background hover effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-emerald-600/5 to-emerald-500/10 rounded-xl md:rounded-2xl -z-10 backdrop-blur-xl border border-emerald-500/20"></div>
+                
+                {/* Main card */}
+                <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-xl md:rounded-2xl p-4 md:p-6 backdrop-blur-sm border border-emerald-500/30 shadow-lg group-hover:shadow-2xl group-hover:shadow-emerald-500/10">
+                  <div className="flex items-start gap-3 md:gap-4">
+                    <div className="relative">
+                      <div className="w-12 h-12 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 flex items-center justify-center flex-shrink-0 shadow-lg">
+                        <feature.icon className="h-6 w-6 md:h-8 md:w-8" />
+                      </div>
+                      <div className="absolute inset-0 bg-emerald-500/20 rounded-lg blur-lg"></div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg md:text-xl font-bold text-white mb-2">{feature.title}</h3>
+                      <p className="text-[#C9D1D9]/90 text-sm md:text-base leading-relaxed">{feature.description}</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -453,21 +521,30 @@ export default function AntiScamPageShared({ lang }: AntiScamPageSharedProps) {
         </section>
 
         {/* User Responsibilities */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-white mb-6">{c.whatToDo}</h2>
-          <div className="grid md:grid-cols-2 gap-4">
+        <section className="mb-8 md:mb-12">
+          <div className="text-center mb-4 md:mb-6">
+            <p className="text-xs md:text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] uppercase tracking-wider mb-2">{c.whatToDo}</p>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">{c.whatToDo}</h2>
+          </div>
+          <div className="grid md:grid-cols-2 gap-3 md:gap-4">
             {userResponsibilities.map((responsibility, index) => (
-              <div
-                key={index}
-                className="p-6 rounded-xl border bg-[#1C2128] border-[#30363D]"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-lg bg-[#30363D] text-[#848E9C]">
-                    <responsibility.icon className="h-6 w-6" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-white mb-2">{responsibility.title}</h3>
-                    <p className="text-[#C9D1D9] text-sm">{responsibility.description}</p>
+              <div key={index} className="relative group">
+                {/* Background hover effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#1C2128]/80 to-[#161B22]/80 rounded-xl md:rounded-2xl -z-10 backdrop-blur-xl border border-[#30363D]/30 group-hover:border-[#F0B90B]/40 transition-all duration-500"></div>
+                
+                {/* Main card */}
+                <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-xl md:rounded-2xl p-4 md:p-6 backdrop-blur-sm border border-[#30363D]/50 group-hover:border-[#F0B90B]/50 transition-all duration-500 shadow-lg group-hover:shadow-2xl group-hover:shadow-[#F0B90B]/10">
+                  <div className="flex items-start gap-3 md:gap-4">
+                    <div className="relative">
+                      <div className="w-12 h-12 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-[#30363D]/20 text-[#848E9C] border border-[#30363D]/30 flex items-center justify-center flex-shrink-0 shadow-lg">
+                        <responsibility.icon className="h-6 w-6 md:h-8 md:w-8" />
+                      </div>
+                      <div className="absolute inset-0 bg-[#30363D]/20 rounded-lg blur-lg"></div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg md:text-xl font-bold text-white mb-2">{responsibility.title}</h3>
+                      <p className="text-[#C9D1D9]/90 text-sm md:text-base leading-relaxed">{responsibility.description}</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -476,38 +553,64 @@ export default function AntiScamPageShared({ lang }: AntiScamPageSharedProps) {
         </section>
 
         {/* Report Scam */}
-        <section className="mb-12">
-          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Flag className="h-6 w-6 text-red-500" />
-              <h2 className="text-xl font-bold text-red-500">{c.reportScam}</h2>
+        <section className="mb-8 md:mb-12">
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 via-red-600/5 to-red-500/10 rounded-xl md:rounded-2xl -z-10 backdrop-blur-xl border border-red-500/20"></div>
+            <div className="relative bg-gradient-to-br from-[#1C2128]/80 to-[#161B22]/80 rounded-xl md:rounded-2xl p-4 md:p-6 backdrop-blur-sm border border-red-500/30 shadow-2xl shadow-red-500/10">
+              <div className="flex items-center gap-3 md:gap-4 mb-4">
+                <div className="relative">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-red-500/20 rounded-lg md:rounded-xl flex items-center justify-center border border-red-500/30">
+                    <Flag className="h-5 w-5 md:h-6 md:w-6 text-red-400" />
+                  </div>
+                  <div className="absolute inset-0 bg-red-500/20 rounded-lg blur-lg"></div>
+                </div>
+                <h2 className="text-lg md:text-xl font-bold text-red-400">{c.reportScam}</h2>
+              </div>
+              <p className="text-[#C9D1D9]/90 text-sm md:text-base mb-4 md:mb-6 leading-relaxed">{c.reportDesc}</p>
+              <button
+                onClick={() => window.open(`https://t.me/tpcglobal`, '_blank')}
+                className="w-full px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-lg md:rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                {c.reportButton}
+              </button>
             </div>
-            <p className="text-[#C9D1D9] mb-4">{c.reportDesc}</p>
-            <button
-              onClick={() => window.open(`https://t.me/tpcglobal`, '_blank')}
-              className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-            >
-              {c.reportButton}
-            </button>
           </div>
         </section>
 
         {/* Footer */}
-        <div className="mt-12 pt-8 border-t border-[#30363D]">
-          <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-[#848E9C]">
-            <span className="inline-flex items-center gap-1">
-              <ShieldCheck className="h-4 w-4 text-emerald-400" /> {c.verifyFirst}
+        <div className="mt-8 md:mt-12 pt-6 md:pt-8 border-t border-[#30363D]/50">
+          <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 text-xs md:text-sm text-[#848E9C]/90">
+            <span className="inline-flex items-center gap-1 md:gap-2 px-3 py-1 md:px-4 md:py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg md:rounded-xl">
+              <div className="relative">
+                <div className="w-4 h-4 md:w-5 md:h-5 bg-emerald-500/20 rounded-full flex items-center justify-center">
+                  <ShieldCheck className="h-2 w-2 md:h-3 md:w-3 text-emerald-400" />
+                </div>
+                <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-lg"></div>
+              </div>
+              {c.verifyFirst}
             </span>
-            <span>•</span>
-            <span className="inline-flex items-center gap-1">
-              <CheckCircle className="h-4 w-4 text-emerald-400" /> {c.officialOnly}
+            <span className="text-[#30363D]">•</span>
+            <span className="inline-flex items-center gap-1 md:gap-2 px-3 py-1 md:px-4 md:py-2 bg-blue-500/10 border border-blue-500/30 rounded-lg md:rounded-xl">
+              <div className="relative">
+                <div className="w-4 h-4 md:w-5 md:h-5 bg-blue-500/20 rounded-full flex items-center justify-center">
+                  <CheckCircle className="h-2 w-2 md:h-3 md:w-3 text-blue-400" />
+                </div>
+                <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-lg"></div>
+              </div>
+              {c.officialOnly}
             </span>
-            <span>•</span>
-            <span className="inline-flex items-center gap-1">
-              <AlertTriangle className="h-4 w-4 text-yellow-400" /> {c.warning}
+            <span className="text-[#30363D]">•</span>
+            <span className="inline-flex items-center gap-1 md:gap-2 px-3 py-1 md:px-4 md:py-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg md:rounded-xl">
+              <div className="relative">
+                <div className="w-4 h-4 md:w-5 md:h-5 bg-yellow-500/20 rounded-full flex items-center justify-center">
+                  <AlertTriangle className="h-2 w-2 md:h-3 md:w-3 text-yellow-400" />
+                </div>
+                <div className="absolute inset-0 bg-yellow-500/20 rounded-full blur-lg"></div>
+              </div>
+              {c.warning}
             </span>
           </div>
-          <p className="text-center text-xs text-[#6B7280] mt-4">
+          <p className="text-center text-xs md:text-sm text-[#6B7280]/80 mt-4 md:mt-6 leading-relaxed px-4">
             {c.disclaimer}
           </p>
         </div>
