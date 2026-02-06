@@ -236,14 +236,6 @@ export default function PresalePage() {
             {/* Animated background gradient */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#1C2128]/30 via-[#F0B90B]/5 to-[#161B22]/30 rounded-3xl -z-10 backdrop-blur-xl border border-[#F0B90B]/10"></div>
             
-            {/* Floating particles effect */}
-            <div className="absolute inset-0 -z-10 overflow-hidden rounded-3xl">
-              <div className="absolute top-10 left-10 w-2 h-2 bg-[#F0B90B]/30 rounded-full animate-pulse"></div>
-              <div className="absolute top-20 right-20 w-3 h-3 bg-[#F8D56B]/20 rounded-full animate-pulse delay-75"></div>
-              <div className="absolute bottom-10 left-20 w-2 h-2 bg-[#F0B90B]/25 rounded-full animate-pulse delay-150"></div>
-              <div className="absolute bottom-20 right-10 w-4 h-4 bg-[#F8D56B]/15 rounded-full animate-pulse delay-300"></div>
-            </div>
-            
             {/* Enhanced icon container */}
             <div className="relative z-10">
               <div className="w-32 h-32 mx-auto mb-8 rounded-3xl bg-gradient-to-br from-[#F0B90B]/20 via-[#F8D56B]/15 to-[#F0B90B]/10 flex items-center justify-center border border-[#F0B90B]/30 backdrop-blur-sm relative shadow-2xl shadow-[#F0B90B]/20">
@@ -430,6 +422,7 @@ export default function PresalePage() {
                 </p>
               </div>
             </div>
+          </div>
 
           {/* UTILITY-FIRST POSITIONING */}
           <div className="mb-20">
@@ -596,6 +589,7 @@ export default function PresalePage() {
             </div>
           </div>
 
+          
           {/* DISCLAIMER */}
           <div className="bg-[#1C2128] border border-[#30363D]/50 rounded-xl p-6">
             <div className="flex items-start gap-3">
