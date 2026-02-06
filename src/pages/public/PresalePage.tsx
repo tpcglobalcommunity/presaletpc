@@ -427,33 +427,46 @@ export default function PresalePage() {
           {/* UTILITY-FIRST POSITIONING */}
           <div className="mb-20">
             <div className="text-center mb-8">
-              <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{c.utility}</p>
-              <h2 className="text-3xl font-bold text-white">{c.utilityTitle}</h2>
+              <p className="text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] uppercase tracking-wider mb-2">{c.utility}</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">{c.utilityTitle}</h2>
+              <div className="h-1 w-24 mx-auto bg-gradient-to-r from-[#F0B90B]/50 to-[#F8D56B]/50 rounded-full"></div>
             </div>
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid md:grid-cols-2 gap-6 md:gap-8">
               <div className="space-y-6">
                 {/* Education Access */}
-                <div className="bg-gradient-to-br from-[#1C2128] to-[#161B22] border border-[#30363D]/50 rounded-xl p-6 hover:border-[#F0B90B]/30 transition-all duration-300 shadow-lg hover:shadow-xl">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <BookOpen className="h-6 w-6 text-blue-500" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-white mb-2">{c.utilityEducation}</h3>
-                      <p className="text-[#C9D1D9] leading-relaxed">{c.utilityEducationDesc}</p>
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#1C2128]/80 to-[#161B22]/80 rounded-2xl -z-10 backdrop-blur-xl border border-[#30363D]/30 group-hover:border-[#F0B90B]/40 transition-all duration-500"></div>
+                  <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-2xl p-6 backdrop-blur-sm border border-[#30363D]/50 group-hover:border-[#F0B90B]/50 transition-all duration-500 shadow-lg group-hover:shadow-2xl group-hover:shadow-[#F0B90B]/10">
+                    <div className="flex items-start gap-4">
+                      <div className="relative">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl flex items-center justify-center flex-shrink-0 border border-blue-500/30">
+                          <BookOpen className="h-6 w-6 text-blue-400" />
+                        </div>
+                        <div className="absolute inset-0 bg-blue-500/20 rounded-xl blur-lg"></div>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-white mb-2">{c.utilityEducation}</h3>
+                        <p className="text-[#C9D1D9]/90 leading-relaxed">{c.utilityEducationDesc}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Community Membership */}
-                <div className="bg-gradient-to-br from-[#1C2128] to-[#161B22] border border-[#30363D]/50 rounded-xl p-6 hover:border-[#F0B90B]/30 transition-all duration-300 shadow-lg hover:shadow-xl">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Users className="h-6 w-6 text-purple-500" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-white mb-2">{c.utilityCommunity}</h3>
-                      <p className="text-[#C9D1D9] leading-relaxed">{c.utilityCommunityDesc}</p>
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#1C2128]/80 to-[#161B22]/80 rounded-2xl -z-10 backdrop-blur-xl border border-[#30363D]/30 group-hover:border-[#F0B90B]/40 transition-all duration-500"></div>
+                  <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-2xl p-6 backdrop-blur-sm border border-[#30363D]/50 group-hover:border-[#F0B90B]/50 transition-all duration-500 shadow-lg group-hover:shadow-2xl group-hover:shadow-[#F0B90B]/10">
+                    <div className="flex items-start gap-4">
+                      <div className="relative">
+                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-xl flex items-center justify-center flex-shrink-0 border border-purple-500/30">
+                          <Users className="h-6 w-6 text-purple-400" />
+                        </div>
+                        <div className="absolute inset-0 bg-purple-500/20 rounded-xl blur-lg"></div>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-white mb-2">{c.utilityCommunity}</h3>
+                        <p className="text-[#C9D1D9]/90 leading-relaxed">{c.utilityCommunityDesc}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -461,27 +474,39 @@ export default function PresalePage() {
 
               <div className="space-y-6">
                 {/* DAO Lite Participation */}
-                <div className="bg-gradient-to-br from-[#1C2128] to-[#161B22] border border-[#30363D]/50 rounded-xl p-6 hover:border-[#F0B90B]/30 transition-all duration-300 shadow-lg hover:shadow-xl">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Shield className="h-6 w-6 text-emerald-500" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-white mb-2">{c.utilityGovernance}</h3>
-                      <p className="text-[#C9D1D9] leading-relaxed">{c.utilityGovernanceDesc}</p>
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#1C2128]/80 to-[#161B22]/80 rounded-2xl -z-10 backdrop-blur-xl border border-[#30363D]/30 group-hover:border-[#F0B90B]/40 transition-all duration-500"></div>
+                  <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-2xl p-6 backdrop-blur-sm border border-[#30363D]/50 group-hover:border-[#F0B90B]/50 transition-all duration-500 shadow-lg group-hover:shadow-2xl group-hover:shadow-[#F0B90B]/10">
+                    <div className="flex items-start gap-4">
+                      <div className="relative">
+                        <div className="w-12 h-12 bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 rounded-xl flex items-center justify-center flex-shrink-0 border border-emerald-500/30">
+                          <Shield className="h-6 w-6 text-emerald-400" />
+                        </div>
+                        <div className="absolute inset-0 bg-emerald-500/20 rounded-xl blur-lg"></div>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-white mb-2">{c.utilityGovernance}</h3>
+                        <p className="text-[#C9D1D9]/90 leading-relaxed">{c.utilityGovernanceDesc}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Internal Ecosystem Usage */}
-                <div className="bg-gradient-to-br from-[#1C2128] to-[#161B22] border border-[#30363D]/50 rounded-xl p-6 hover:border-[#F0B90B]/30 transition-all duration-300 shadow-lg hover:shadow-xl">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-orange-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Zap className="h-6 w-6 text-orange-500" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-white mb-2">{c.utilityEcosystem}</h3>
-                      <p className="text-[#C9D1D9] leading-relaxed">{c.utilityEcosystemDesc}</p>
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#1C2128]/80 to-[#161B22]/80 rounded-2xl -z-10 backdrop-blur-xl border border-[#30363D]/30 group-hover:border-[#F0B90B]/40 transition-all duration-500"></div>
+                  <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-2xl p-6 backdrop-blur-sm border border-[#30363D]/50 group-hover:border-[#F0B90B]/50 transition-all duration-500 shadow-lg group-hover:shadow-2xl group-hover:shadow-[#F0B90B]/10">
+                    <div className="flex items-start gap-4">
+                      <div className="relative">
+                        <div className="w-12 h-12 bg-gradient-to-br from-orange-500/20 to-orange-600/20 rounded-xl flex items-center justify-center flex-shrink-0 border border-orange-500/30">
+                          <Zap className="h-6 w-6 text-orange-400" />
+                        </div>
+                        <div className="absolute inset-0 bg-orange-500/20 rounded-xl blur-lg"></div>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-white mb-2">{c.utilityEcosystem}</h3>
+                        <p className="text-[#C9D1D9]/90 leading-relaxed">{c.utilityEcosystemDesc}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -489,14 +514,21 @@ export default function PresalePage() {
             </div>
 
             {/* Contribution & Reward Mechanics */}
-            <div className="mt-8 bg-gradient-to-br from-[#1C2128] to-[#161B22] border border-[#30363D]/50 rounded-xl p-6 hover:border-[#F0B90B]/30 transition-all duration-300 shadow-lg hover:shadow-xl">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-[#F0B90B]/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Coins className="h-6 w-6 text-[#F0B90B]" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-white mb-2">{c.utilityContribution}</h3>
-                  <p className="text-[#C9D1D9] leading-relaxed">{c.utilityContributionDesc}</p>
+            <div className="relative mt-8 group">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#F0B90B]/10 via-[#F8D56B]/5 to-[#F0B90B]/10 rounded-2xl -z-10 backdrop-blur-xl border border-[#F0B90B]/20"></div>
+              <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-2xl p-8 backdrop-blur-sm border border-[#F0B90B]/30 shadow-2xl shadow-[#F0B90B]/10">
+                <div className="flex items-start gap-6">
+                  <div className="relative">
+                    <div className="w-16 h-16 bg-gradient-to-br from-[#F0B90B]/20 via-[#F8D56B]/15 to-[#F0B90B]/10 rounded-xl flex items-center justify-center flex-shrink-0 border border-[#F0B90B]/30 shadow-xl">
+                      <Coins className="h-8 w-8 text-[#F0B90B] drop-shadow-lg" />
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#F0B90B]/20 to-transparent rounded-2xl blur-2xl"></div>
+                    <div className="absolute inset-0 bg-[#F0B90B]/10 rounded-2xl animate-pulse"></div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] mb-3">{c.utilityContribution}</h3>
+                    <p className="text-[#C9D1D9]/90 leading-relaxed text-lg">{c.utilityContributionDesc}</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -505,20 +537,31 @@ export default function PresalePage() {
           {/* HOW IT WORKS */}
           <div className="mb-20">
             <div className="text-center mb-8">
-              <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{c.howItWorks}</p>
-              <h2 className="text-3xl font-bold text-white">{c.howItWorksTitle}</h2>
+              <p className="text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] uppercase tracking-wider mb-2">{c.howItWorks}</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">{c.howItWorksTitle}</h2>
+              <div className="h-1 w-24 mx-auto bg-gradient-to-r from-[#F0B90B]/50 to-[#F8D56B]/50 rounded-full"></div>
             </div>
             <div className="space-y-6">
               {steps.map((step, index) => {
                 const Icon = step.icon;
                 return (
-                  <div key={index} className="bg-gradient-to-r from-[#1C2128] to-[#161B22] border border-[#30363D]/50 rounded-xl p-8 flex items-center gap-8 hover:border-[#F0B90B]/30 transition-all duration-300 shadow-lg hover:shadow-xl">
-                    <div className="w-16 h-16 bg-gradient-to-br from-[#F0B90B]/20 to-[#F8D56B]/20 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg border border-[#F0B90B]/30">
-                      <Icon className="h-8 w-8 text-[#F0B90B]" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-white mb-3">{step.title}</h3>
-                      <p className="text-[#C9D1D9] leading-relaxed">{step.description}</p>
+                  <div key={index} className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#1C2128]/80 to-[#161B22]/80 rounded-2xl -z-10 backdrop-blur-xl border border-[#30363D]/30 group-hover:border-[#F0B90B]/40 transition-all duration-500"></div>
+                    <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-2xl p-6 md:p-8 backdrop-blur-sm border border-[#30363D]/50 group-hover:border-[#F0B90B]/50 transition-all duration-500 shadow-lg group-hover:shadow-2xl group-hover:shadow-[#F0B90B]/10 flex items-center gap-6 md:gap-8">
+                      <div className="relative flex-shrink-0">
+                        <div className="w-16 h-16 bg-gradient-to-br from-[#F0B90B]/20 via-[#F8D56B]/15 to-[#F0B90B]/10 rounded-xl flex items-center justify-center shadow-xl border border-[#F0B90B]/30">
+                          <Icon className="h-8 w-8 text-[#F0B90B] drop-shadow-lg" />
+                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#F0B90B]/20 to-transparent rounded-2xl blur-2xl"></div>
+                        <div className="absolute inset-0 bg-[#F0B90B]/10 rounded-2xl animate-pulse"></div>
+                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-[#F0B90B] to-[#F8D56B] rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg">
+                          {index + 1}
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-[#F0B90B]/80 mb-3">{step.title}</h3>
+                        <p className="text-[#C9D1D9]/90 leading-relaxed text-lg">{step.description}</p>
+                      </div>
                     </div>
                   </div>
                 );
@@ -529,44 +572,68 @@ export default function PresalePage() {
           {/* RISK & ANTI-SCAM SECTION */}
           <div className="mb-20">
             <div className="text-center mb-8">
-              <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{c.riskAntiScam}</p>
-              <h2 className="text-3xl font-bold text-white">{c.riskTitle}</h2>
+              <p className="text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500 uppercase tracking-wider mb-2">{c.riskAntiScam}</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">{c.riskTitle}</h2>
+              <div className="h-1 w-24 mx-auto bg-gradient-to-r from-red-500/50 to-orange-500/50 rounded-full"></div>
             </div>
-            <div className="bg-gradient-to-br from-red-500/10 to-red-600/10 border border-red-500/30 rounded-2xl p-10 shadow-xl">
-              <div className="space-y-6">
-                {/* Financial Disclaimer */}
-                <div className="flex items-start gap-4">
-                  <AlertTriangle className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-white mb-2">{c.financialDisclaimer}</h3>
-                    <p className="text-red-200 leading-relaxed">{c.riskDisclaimer}</p>
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 via-orange-500/5 to-red-500/10 rounded-2xl -z-10 backdrop-blur-xl border border-red-500/20"></div>
+              <div className="relative bg-gradient-to-br from-[#1C2128]/80 to-[#161B22]/80 rounded-2xl p-8 md:p-10 backdrop-blur-sm border border-red-500/30 shadow-2xl shadow-red-500/10">
+                <div className="space-y-8">
+                  {/* Financial Disclaimer */}
+                  <div className="flex items-start gap-6">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-12 h-12 bg-gradient-to-br from-red-500/20 to-red-600/20 rounded-xl flex items-center justify-center border border-red-500/30">
+                        <AlertTriangle className="h-6 w-6 text-red-400" />
+                      </div>
+                      <div className="absolute inset-0 bg-red-500/20 rounded-xl blur-lg"></div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-white mb-2">{c.financialDisclaimer}</h3>
+                      <p className="text-red-200/90 leading-relaxed">{c.riskDisclaimer}</p>
+                    </div>
                   </div>
-                </div>
 
-                {/* Cryptocurrency Risk */}
-                <div className="flex items-start gap-4">
-                  <AlertTriangle className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-white mb-2">{c.cryptoRiskTitle}</h3>
-                    <p className="text-red-200 leading-relaxed">{c.cryptoRisk}</p>
+                  {/* Cryptocurrency Risk */}
+                  <div className="flex items-start gap-6">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-12 h-12 bg-gradient-to-br from-orange-500/20 to-orange-600/20 rounded-xl flex items-center justify-center border border-orange-500/30">
+                        <AlertTriangle className="h-6 w-6 text-orange-400" />
+                      </div>
+                      <div className="absolute inset-0 bg-orange-500/20 rounded-xl blur-lg"></div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-white mb-2">{c.cryptoRiskTitle}</h3>
+                      <p className="text-orange-200/90 leading-relaxed">{c.cryptoRisk}</p>
+                    </div>
                   </div>
-                </div>
 
-                {/* Anti-Scam Warning */}
-                <div className="flex items-start gap-4">
-                  <Shield className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-white mb-2">{c.antiScamTitle}</h3>
-                    <p className="text-red-200 leading-relaxed">{c.antiScamWarning}</p>
+                  {/* Anti-Scam Warning */}
+                  <div className="flex items-start gap-6">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-12 h-12 bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 rounded-xl flex items-center justify-center border border-yellow-500/30">
+                        <Shield className="h-6 w-6 text-yellow-400" />
+                      </div>
+                      <div className="absolute inset-0 bg-yellow-500/20 rounded-xl blur-lg"></div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-white mb-2">{c.antiScamTitle}</h3>
+                      <p className="text-yellow-200/90 leading-relaxed">{c.antiScamWarning}</p>
+                    </div>
                   </div>
-                </div>
 
-                {/* Official Channels */}
-                <div className="flex items-start gap-4">
-                  <CheckCircle className="h-6 w-6 text-emerald-500 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-white mb-2">{c.officialChannelsTitle}</h3>
-                    <p className="text-emerald-200 leading-relaxed">{c.officialChannels}</p>
+                  {/* Official Channels */}
+                  <div className="flex items-start gap-6">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-12 h-12 bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 rounded-xl flex items-center justify-center border border-emerald-500/30">
+                        <CheckCircle className="h-6 w-6 text-emerald-400" />
+                      </div>
+                      <div className="absolute inset-0 bg-emerald-500/20 rounded-xl blur-lg"></div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-white mb-2">{c.officialChannelsTitle}</h3>
+                      <p className="text-emerald-200/90 leading-relaxed">{c.officialChannels}</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -576,25 +643,42 @@ export default function PresalePage() {
           {/* ACCESS CTA */}
           <div className="mb-20">
             <div className="text-center mb-8">
-              <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{c.accessParticipation}</p>
+              <p className="text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] uppercase tracking-wider mb-2">{c.accessParticipation}</p>
+              <div className="h-1 w-24 mx-auto bg-gradient-to-r from-[#F0B90B]/50 to-[#F8D56B]/50 rounded-full mb-6"></div>
             </div>
-            <div className="text-center">
-              <button
-                onClick={() => navigate(user ? '/member/dashboard' : `/${safeLang}/login`)}
-                className="px-12 py-4 bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] hover:from-[#F8D56B] hover:to-[#F0B90B] text-[#0B0E11] rounded-xl transition-all duration-300 font-black text-lg flex items-center justify-center gap-3 shadow-xl hover:shadow-2xl mx-auto"
-              >
-                {user ? <Users className="h-6 w-6" /> : <LogIn className="h-6 w-6" />}
-                {user ? c.goToMemberArea : c.loginToParticipate}
-              </button>
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#F0B90B]/10 via-[#F8D56B]/5 to-[#F0B90B]/10 rounded-2xl -z-10 backdrop-blur-xl border border-[#F0B90B]/20"></div>
+              <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-2xl p-8 backdrop-blur-sm border border-[#F0B90B]/30 shadow-2xl shadow-[#F0B90B]/10">
+                <div className="text-center">
+                  <button
+                    onClick={() => navigate(user ? '/member/dashboard' : `/${safeLang}/login`)}
+                    className="px-12 py-4 bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] hover:from-[#F8D56B] hover:to-[#F0B90B] text-[#0B0E11] rounded-xl transition-all duration-300 font-black text-lg flex items-center justify-center gap-3 shadow-xl hover:shadow-2xl mx-auto transform hover:scale-105"
+                  >
+                    <div className="relative">
+                      {user ? <Users className="h-6 w-6" /> : <LogIn className="h-6 w-6" />}
+                      <div className="absolute inset-0 bg-white/20 rounded-full blur-md"></div>
+                    </div>
+                    <span className="relative z-10">{user ? c.goToMemberArea : c.loginToParticipate}</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
           
           {/* DISCLAIMER */}
-          <div className="bg-[#1C2128] border border-[#30363D]/50 rounded-xl p-6">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-[#F0B90B] flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-[#848E9C] leading-relaxed">{c.disclaimer}</p>
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-xl -z-10 backdrop-blur-xl border border-[#30363D]/30"></div>
+            <div className="relative bg-gradient-to-br from-[#1C2128]/40 to-[#161B22]/40 rounded-xl p-6 backdrop-blur-sm border border-[#30363D]/50">
+              <div className="flex items-start gap-4">
+                <div className="relative flex-shrink-0">
+                  <div className="w-10 h-10 bg-gradient-to-br from-[#F0B90B]/20 to-[#F8D56B]/20 rounded-xl flex items-center justify-center border border-[#F0B90B]/30">
+                    <AlertTriangle className="h-5 w-5 text-[#F0B90B]" />
+                  </div>
+                  <div className="absolute inset-0 bg-[#F0B90B]/20 rounded-xl blur-lg"></div>
+                </div>
+                <p className="text-sm text-[#848E9C]/90 leading-relaxed flex-1">{c.disclaimer}</p>
+              </div>
             </div>
           </div>
         </div>
