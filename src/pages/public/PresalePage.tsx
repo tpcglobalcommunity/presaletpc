@@ -5,34 +5,37 @@ import { Coins, ArrowRight, Shield, Clock, Users, Zap, CheckCircle, AlertTriangl
 import { presaleCopy } from '@/i18n/public/presale';
 import { useState, useEffect } from 'react';
 import { 
-  PRESALE_STAGE_STARTED_AT_SG, 
-  parseStartSG, 
-  getPresaleEndTimeSG, 
-  isPresaleActive,
-  nowSG 
+  PRESALE 
+} from '@/config/presaleConfig';
+import { 
+  parseSgIso, 
+  addMonthsSg, 
+  nowSg, 
+  getCountdownParts 
 } from '@/lib/presaleTime';
 
 // Presale stage status type
 type PresaleStageStatus = 'ACTIVE' | 'COMPLETED' | 'UPCOMING';
 
-// Presale data configuration using Singapore timezone
-const startAt = parseStartSG(PRESALE_STAGE_STARTED_AT_SG);
-const endAt = getPresaleEndTimeSG(startAt);
+// Presale data configuration using new config
+const startAt = parseSgIso(PRESALE.startAtSgIso);
+const endAt = addMonthsSg(startAt, PRESALE.durationMonths);
 
 const presaleData = {
   stage1: {
-    price: 0.001,
-    supply: 200000000,
+    price: PRESALE.stage1.priceUsd,
+    supply: PRESALE.stage1.supply,
     status: 'COMPLETED' as PresaleStageStatus,
-    endTime: startAt || new Date()
+    endTime: startAt
   },
   stage2: {
-    price: 0.002,
-    supply: 100000000,
-    status: (endAt && isPresaleActive(endAt)) ? 'ACTIVE' as PresaleStageStatus : 'UPCOMING' as PresaleStageStatus,
-    endTime: endAt || new Date()
+    price: PRESALE.stage2.priceUsd,
+    supply: PRESALE.stage2.supply,
+    status: endAt > nowSg() ? 'ACTIVE' as PresaleStageStatus : 'UPCOMING' as PresaleStageStatus,
+    endTime: endAt
   },
-  totalSupply: 300000000
+  totalSupply: PRESALE.totalPresaleSupply,
+  listingReferenceUsd: PRESALE.listingReferenceUsd
 };
 
 // Countdown timer hook with Singapore timezone
@@ -41,29 +44,20 @@ const useCountdown = (endTime: Date | null) => {
     days: 0,
     hours: 0,
     minutes: 0,
-    seconds: 0
+    seconds: 0,
+    isEnded: true
   });
 
   useEffect(() => {
     const calculateTimeLeft = () => {
       if (!endTime) {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isEnded: true });
         return;
       }
 
-      const now = nowSG();
-      const difference = endTime.getTime() - now.getTime();
-      
-      if (difference > 0) {
-        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-        
-        setTimeLeft({ days, hours, minutes, seconds });
-      } else {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-      }
+      const now = nowSg();
+      const result = getCountdownParts(endTime, now);
+      setTimeLeft(result);
     };
 
     calculateTimeLeft();
@@ -98,7 +92,7 @@ export default function PresalePage() {
   const countdown = useCountdown(endAt);
 
   // Check if countdown should be displayed
-  const shouldShowCountdown = endAt && isPresaleActive(endAt);
+  const shouldShowCountdown = endAt && !countdown.isEnded;
 
   const getStatusColor = (status: PresaleStageStatus) => {
     switch (status) {
@@ -127,7 +121,7 @@ export default function PresalePage() {
   };
 
   const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('en-US').format(num);
+    return new Intl.NumberFormat('id-ID').format(num);
   };
 
   const formatTime = (value: number) => {
@@ -337,7 +331,7 @@ export default function PresalePage() {
                   ) : (
                     <div className="py-8">
                       <p className="text-lg text-[#848E9C]/80 font-medium">
-                        {endAt ? c.stageCompleted : c.stageUpcoming}
+                        {countdown.isEnded ? c.countdownEnded : c.stageUpcoming}
                       </p>
                     </div>
                   )}

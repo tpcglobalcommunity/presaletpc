@@ -60,6 +60,7 @@ export const presaleCopy = {
     seconds: 'detik',
     stageCompleted: 'Tahap ini sudah berakhir.',
     stageUpcoming: 'Waktu tahap belum ditetapkan.',
+    countdownEnded: 'Tahap ini sudah berakhir.',
     countdownMounted: 'COUNTDOWN_MOUNTED',
     countdownNotMounted: 'COUNTDOWN_NOT_MOUNTED',
     // Title strings
@@ -130,8 +131,9 @@ export const presaleCopy = {
     hours: 'hours',
     minutes: 'minutes',
     seconds: 'seconds',
-    stageCompleted: 'Stage completed',
+    stageCompleted: 'This stage has ended.',
     stageUpcoming: 'Stage not started',
+    countdownEnded: 'This stage has ended.',
     countdownMounted: 'COUNTDOWN_MOUNTED',
     countdownNotMounted: 'COUNTDOWN_NOT_MOUNTED',
     // Title strings
