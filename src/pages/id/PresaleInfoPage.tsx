@@ -201,17 +201,23 @@ export default function PresaleInfoPage() {
                   </div>
                 </div>
 
-                {/* ROI */}
+                {/* Price Target Simulation - Legal Safe */}
                 <div className="bg-slate-900/50 rounded-lg p-3 md:p-4 border border-slate-700/50">
                   <div className="flex items-center justify-center gap-2">
-                    <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-green-400" />
-                    <span className="text-sm md:text-base font-semibold">Potensi Keuntungan</span>
+                    <Target className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />
+                    <span className="text-sm md:text-base font-semibold">Simulasi Harga Target (Indikatif)</span>
                   </div>
-                  <div className="text-lg md:text-2xl font-bold text-green-400 text-center">
-                    +{stage1ROI.toFixed(0)}%
+                  <div className="text-lg md:text-2xl font-bold text-amber-400 text-center">
+                    $0.005
                   </div>
                   <div className="text-xs md:text-sm text-gray-400 text-center">
-                    Pada harga listing $0.005
+                    Target harga listing direncanakan di kisaran $0.005
+                  </div>
+                  <div className="text-xs text-gray-500 text-center mt-2">
+                    Informasi ini bersifat indikatif dan tidak mengikat. Harga dapat berubah mengikuti kondisi pasar.
+                  </div>
+                  <div className="text-xs text-gray-500 text-center mt-1">
+                    TPC adalah token utilitas, bukan produk investasi dan tidak menjanjikan imbal hasil.
                   </div>
                 </div>
               </CardContent>
@@ -373,6 +379,17 @@ export default function PresaleInfoPage() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Legal Disclaimer */}
+          <div className="mb-6 md:mb-8">
+            <div className="bg-slate-900/30 rounded-lg p-4 md:p-6 border border-slate-700/30">
+              <p className="text-xs md:text-sm text-gray-400 text-center leading-relaxed">
+                TPC adalah token utilitas untuk ekosistem edukasi dan komunitas.
+                Pembelian token tidak menjamin keuntungan dan memiliki risiko.
+                Informasi yang disampaikan bukan nasihat keuangan.
+              </p>
+            </div>
           </div>
         </div>
       </div>

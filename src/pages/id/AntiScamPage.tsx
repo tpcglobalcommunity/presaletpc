@@ -715,6 +715,17 @@ export default function AntiScamPage() {
           </div>
         </div>
 
+        {/* Legal Disclaimer */}
+        <div className="mb-8">
+          <div className="bg-slate-900/30 rounded-lg p-4 md:p-6 border border-slate-700/30">
+            <p className="text-xs md:text-sm text-gray-400 text-center leading-relaxed">
+              TPC adalah token utilitas untuk ekosistem edukasi dan komunitas.
+              Pembelian token tidak menjamin keuntungan dan memiliki risiko.
+              Informasi yang disampaikan bukan nasihat keuangan.
+            </p>
+          </div>
+        </div>
+
         {/* Footer spacing */}
         <div className="h-10 md:h-14" />
       </div>

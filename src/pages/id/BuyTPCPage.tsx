@@ -509,6 +509,19 @@ export default function BuyTPCPage() {
           </div>
         </div>
       </div>
+
+      {/* Legal Disclaimer */}
+      <div className="container mx-auto px-4 py-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-slate-900/30 rounded-lg p-4 md:p-6 border border-slate-700/30">
+            <p className="text-xs md:text-sm text-gray-400 text-center leading-relaxed">
+              TPC adalah token utilitas untuk ekosistem edukasi dan komunitas.
+              Pembelian token tidak menjamin keuntungan dan memiliki risiko.
+              Informasi yang disampaikan bukan nasihat keuangan.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

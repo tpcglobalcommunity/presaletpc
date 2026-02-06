@@ -34,6 +34,7 @@ const navItems: NavItem[] = [
   { id: 'ringkasan', label: 'Ringkasan', icon: FileText },
   { id: 'ekosistem', label: 'Ekosistem', icon: Globe },
   { id: 'token', label: 'Token TPC', icon: Target },
+  { id: 'presale', label: 'Presale', icon: Award },
   { id: 'tokenomics', label: 'Tokenomics', icon: BarChart3 },
   { id: 'dao', label: 'DAO Lite', icon: Users },
   { id: 'roadmap', label: 'Roadmap', icon: Clock },
@@ -378,6 +379,64 @@ export default function WhitepaperPage() {
         </div>
       </section>
 
+      {/* Presale */}
+      <section 
+        ref={el => sectionsRef.current['presale'] = el}
+        id="presale"
+        className="mb-12"
+      >
+        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+          <Target className="h-5 w-5 text-[#F0B90B]" />
+          Presale TPC
+        </h2>
+        
+        <div className="bg-[#12161C] border border-[#2B3139] rounded-2xl p-6">
+          <div className="mb-6">
+            <h3 className="text-white font-semibold mb-3">Struktur Presale</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[#2B3139]">
+                    <th className="text-left text-[#848E9C] pb-3">Tahap</th>
+                    <th className="text-right text-[#848E9C] pb-3">Supply</th>
+                    <th className="text-right text-[#848E9C] pb-3">Harga</th>
+                    <th className="text-right text-[#848E9C] pb-3">Persentase</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-[#2B3139]/50">
+                    <td className="text-white py-3">Tahap 1</td>
+                    <td className="text-right text-[#F0B90B] py-3">200,000,000 TPC</td>
+                    <td className="text-right text-white py-3">$0.001</td>
+                    <td className="text-right text-white py-3">66.7%</td>
+                  </tr>
+                  <tr>
+                    <td className="text-white py-3">Tahap 2</td>
+                    <td className="text-right text-[#F0B90B] py-3">100,000,000 TPC</td>
+                    <td className="text-right text-white py-3">$0.002</td>
+                    <td className="text-right text-white py-3">33.3%</td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr className="border-t border-[#2B3139]">
+                    <td className="text-white font-semibold py-3">Total Presale</td>
+                    <td className="text-right text-[#F0B90B] font-semibold py-3">300,000,000 TPC</td>
+                    <td className="text-right text-white py-3">-</td>
+                    <td className="text-right text-white font-semibold py-3">100%</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+          
+          <div className="p-3 bg-[#F0B90B]/10 border border-[#F0B90B]/30 rounded-lg">
+            <p className="text-[#F0B90B] text-xs">
+              Presale dirancang untuk distribusi yang adil dan mendukung pengembangan ekosistem.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* DAO Lite */}
       <section 
         ref={el => sectionsRef.current['dao'] = el}
@@ -524,6 +583,15 @@ export default function WhitepaperPage() {
                 <p className="text-white text-sm">{item}</p>
               </div>
             ))}
+          </div>
+          
+          <div className="mt-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+            <p className="text-red-400 text-sm font-semibold mb-2">Disclaimer Resmi</p>
+            <p className="text-white text-xs leading-relaxed">
+              TPC adalah token utilitas untuk ekosistem edukasi dan komunitas.
+              Pembelian token tidak menjamin keuntungan dan memiliki risiko.
+              Informasi yang disampaikan bukan nasihat keuangan.
+            </p>
           </div>
           
           <div className="mt-6 flex gap-3">
