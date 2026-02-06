@@ -177,7 +177,6 @@ export default function TpcAkademiPage() {
           <div className="mb-12 md:mb-16">
             <div className="text-center mb-4 md:mb-8">
               <p className="text-xs md:text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] uppercase tracking-wider mb-2">{c.whatYouGet}</p>
-              <h2 className="text-2xl md:text-3xl font-bold text-white">{c.whatYouGet}</h2>
             </div>
             <div className="grid md:grid-cols-2 gap-4 md:gap-6 md:gap-8">
               {features.map((feature, index) => {
@@ -212,7 +211,6 @@ export default function TpcAkademiPage() {
           <div className="mb-12 md:mb-16">
             <div className="text-center mb-4 md:mb-8">
               <p className="text-xs md:text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] uppercase tracking-wider mb-2">{c.learningPath}</p>
-              <h2 className="text-2xl md:text-3xl font-bold text-white">{c.learningPath}</h2>
             </div>
             <div className="space-y-4 md:space-y-6">
               {learningSteps.map((step, index) => (
