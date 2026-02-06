@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Users,
   Search,
@@ -22,6 +22,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { getChaptersTranslations, tChapters } from "@/i18n/chapters";
 
 type ChapterRole = "moderator" | "koordinator" | "chapter_lead";
 type ChapterStatus = "aktif" | "nonaktif";
@@ -46,12 +47,12 @@ interface VerifiedPerson {
 
 const cx = (...c: Array<string | false | null | undefined>) => c.filter(Boolean).join(" ");
 
-// Routes
-const ROUTES = {
-  HOME: "/id",
-  ANTI_SCAM: "/id/anti-scam",
-  TRANSPARENCY: "/id/transparansi",
-};
+// Routes - language aware
+const getRoutes = (lang: string) => ({
+  HOME: `/${lang}`,
+  ANTI_SCAM: `/${lang}/anti-scam`,
+  TRANSPARENCY: `/${lang}/transparansi`,
+});
 
 // Mock data - nanti ganti ke Supabase
 const VERIFIED_PEOPLE: VerifiedPerson[] = [
@@ -247,12 +248,18 @@ function statusLabel(status: ChapterStatus): string {
 
 export default function VerifiedCoordinatorsPage() {
   const navigate = useNavigate();
+  const { lang = 'id' } = useParams<{ lang: string }>();
+  
+  // Strict language enforcement: ID is canonical, EN follows ID
+  const safeLang = lang === 'en' ? 'en' : 'id';
+  const t = getChaptersTranslations(safeLang);
   const [searchQuery, setSearchQuery] = useState("");
   const [countryFilter, setCountryFilter] = useState<string>("all");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("verified");
   const [copiedText, setCopiedText] = useState("");
+  const routes = getRoutes(safeLang);
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -311,11 +318,11 @@ export default function VerifiedCoordinatorsPage() {
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
               <button
-                onClick={() => navigate("/id")}
+                onClick={() => navigate(routes.HOME)}
                 className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-[#C9D1D9] hover:text-white hover:bg-white/10 transition-colors"
               >
                 <ArrowRight className="h-4 w-4 rotate-180" />
-                <span className="font-medium">Kembali</span>
+                <span className="font-medium">{t.actions.back}</span>
               </button>
 
               <div className="hidden md:block h-8 w-px bg-white/10" />
@@ -325,8 +332,8 @@ export default function VerifiedCoordinatorsPage() {
                   <Shield className="h-5 w-5 text-black" />
                 </div>
                 <div className="min-w-0">
-                  <h1 className="text-white font-bold text-base md:text-lg truncate">Koordinator Resmi TPC (Verified)</h1>
-                  <p className="text-[#848E9C] text-xs truncate">Cek di sini sebelum percaya</p>
+                  <h1 className="text-white font-bold text-base md:text-lg truncate">{t.meta.title}</h1>
+                  <p className="text-[#848E9C] text-xs truncate">{t.hero.subtitle}</p>
                 </div>
               </div>
             </div>
@@ -402,7 +409,7 @@ export default function VerifiedCoordinatorsPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#848E9C]" />
               <input
                 type="text"
-                placeholder="Cari nama/username/kota/negara..."
+                placeholder={t.filters.searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full rounded-2xl border border-white/10 bg-white/5 px-10 py-2.5 text-white placeholder-[#848E9C] outline-none focus:border-[#F0B90B]/40"
@@ -412,10 +419,10 @@ export default function VerifiedCoordinatorsPage() {
             <div className="flex flex-wrap gap-3">
               <Select value={countryFilter} onValueChange={setCountryFilter}>
                 <SelectTrigger className="h-10 rounded-2xl border border-white/10 bg-white/5 text-white focus:ring-2 focus:ring-[#F0B90B]/30 focus:ring-offset-0 min-w-[180px]">
-                  <SelectValue placeholder="Semua Negara" />
+                  <SelectValue placeholder={t.filters.allCountries} />
                 </SelectTrigger>
                 <SelectContent className="border-white/10 bg-[#0B0E11] text-white">
-                  <SelectItem value="all">Semua Negara</SelectItem>
+                  <SelectItem value="all">{t.filters.allCountries}</SelectItem>
                   {countries.map((country) => (
                     <SelectItem key={country} value={country}>
                       {country}
@@ -426,35 +433,35 @@ export default function VerifiedCoordinatorsPage() {
 
               <Select value={roleFilter} onValueChange={setRoleFilter}>
                 <SelectTrigger className="h-10 rounded-2xl border border-white/10 bg-white/5 text-white focus:ring-2 focus:ring-[#F0B90B]/30 focus:ring-offset-0 min-w-[180px]">
-                  <SelectValue placeholder="Semua Peran" />
+                  <SelectValue placeholder={t.filters.allRoles} />
                 </SelectTrigger>
                 <SelectContent className="border-white/10 bg-[#0B0E11] text-white">
-                  <SelectItem value="all">Semua Peran</SelectItem>
-                  <SelectItem value="moderator">Moderator</SelectItem>
-                  <SelectItem value="koordinator">Koordinator</SelectItem>
-                  <SelectItem value="chapter_lead">Chapter Lead</SelectItem>
+                  <SelectItem value="all">{t.filters.allRoles}</SelectItem>
+                  <SelectItem value="moderator">{t.roles.moderator}</SelectItem>
+                  <SelectItem value="koordinator">{t.roles.koordinator}</SelectItem>
+                  <SelectItem value="chapter_lead">{t.roles.chapterLead}</SelectItem>
                 </SelectContent>
               </Select>
 
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="h-10 rounded-2xl border border-white/10 bg-white/5 text-white focus:ring-2 focus:ring-[#F0B90B]/30 focus:ring-offset-0 min-w-[180px]">
-                  <SelectValue placeholder="Semua Status" />
+                  <SelectValue placeholder={t.filters.allStatus} />
                 </SelectTrigger>
                 <SelectContent className="border-white/10 bg-[#0B0E11] text-white">
-                  <SelectItem value="all">Semua Status</SelectItem>
-                  <SelectItem value="aktif">Aktif</SelectItem>
-                  <SelectItem value="nonaktif">Nonaktif</SelectItem>
+                  <SelectItem value="all">{t.filters.allStatus}</SelectItem>
+                  <SelectItem value="aktif">{t.status.active}</SelectItem>
+                  <SelectItem value="nonaktif">{t.status.inactive}</SelectItem>
                 </SelectContent>
               </Select>
 
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="h-10 rounded-2xl border border-white/10 bg-white/5 text-white focus:ring-2 focus:ring-[#F0B90B]/30 focus:ring-offset-0 min-w-[180px]">
-                  <SelectValue placeholder="Urutkan" />
+                  <SelectValue placeholder={t.filters.sortBy} />
                 </SelectTrigger>
                 <SelectContent className="border-white/10 bg-[#0B0E11] text-white">
-                  <SelectItem value="verified">Terbaru Diverifikasi</SelectItem>
-                  <SelectItem value="name">Nama A-Z</SelectItem>
-                  <SelectItem value="region">Wilayah A-Z</SelectItem>
+                  <SelectItem value="verified">{t.filters.sortOptions.newest}</SelectItem>
+                  <SelectItem value="name">{t.filters.sortOptions.name}</SelectItem>
+                  <SelectItem value="region">{t.filters.sortOptions.region}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -464,7 +471,7 @@ export default function VerifiedCoordinatorsPage() {
         {/* Active Coordinators */}
         <div className="mb-8">
           <h3 className="text-xl md:text-2xl font-extrabold text-white mb-6">
-            Koordinator Aktif ({activePeople.length})
+            {t.sections.roles.title} ({activePeople.length})
           </h3>
           
           {activePeople.length === 0 ? (
@@ -491,8 +498,8 @@ export default function VerifiedCoordinatorsPage() {
                             <div className="min-w-0">
                               <h4 className="text-white font-extrabold text-lg leading-snug">{person.displayName}</h4>
                               <div className="flex items-center gap-2 mt-2">
-                                <span className={roleBadgeClass(person.role)}>{roleLabel(person.role)}</span>
-                                <span className={statusBadgeClass(person.status)}>{statusLabel(person.status)}</span>
+                                <span className={roleBadgeClass(person.role)}>{t.roles[person.role]}</span>
+                                <span className={statusBadgeClass(person.status)}>{t.status[person.status]}</span>
                               </div>
                             </div>
                             <div className={`h-12 w-12 rounded-2xl bg-gradient-to-br ${roleIcon.bg} flex items-center justify-center shadow-lg shadow-[#F0B90B]/10 border ${roleIcon.border}`}>
@@ -521,13 +528,13 @@ export default function VerifiedCoordinatorsPage() {
                         <MessageSquare className="h-4 w-4 text-blue-400" />
                         <span className="text-[#C9D1D9] text-sm">@{person.telegramUsername}</span>
                         {copiedText === `@${person.telegramUsername}` && (
-                          <span className="text-emerald-400 text-xs font-medium">Tersalin</span>
+                          <span className="text-emerald-400 text-xs font-medium">{t.actions.copied}</span>
                         )}
                       </div>
                       <button
                         onClick={() => copyToClipboard(`@${person.telegramUsername}`)}
                         className="rounded-xl border border-white/10 bg-white/5 p-2 hover:bg-white/10 transition-colors"
-                        title="Salin username"
+                        title={t.actions.copyUsername}
                       >
                         <Copy className="h-3 w-3 text-[#C9D1D9]" />
                       </button>
@@ -554,7 +561,7 @@ export default function VerifiedCoordinatorsPage() {
                         className="w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-[#F0B90B]/30 bg-[#F0B90B]/10 hover:bg-[#F0B90B]/20 px-4 py-2.5 text-[#F0B90B] font-semibold transition-colors"
                       >
                         <Users className="h-4 w-4" />
-                        <span>Grup Lokal</span>
+                        <span>{t.actions.joinLocalGroup}</span>
                       </button>
                     )}
 
@@ -573,7 +580,7 @@ export default function VerifiedCoordinatorsPage() {
         {/* Inactive Coordinators */}
         <div className="mb-8">
           <h3 className="text-xl md:text-2xl font-extrabold text-white mb-6">
-            Koordinator Nonaktif ({inactivePeople.length})
+            {t.sections.inactive.title} ({inactivePeople.length})
           </h3>
           
           {inactivePeople.length === 0 ? (
@@ -655,28 +662,28 @@ export default function VerifiedCoordinatorsPage() {
         <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur p-6">
           <div className="text-center mb-6">
             <h3 className="text-xl md:text-2xl font-extrabold text-white mb-4">
-              Tetap Aman dan Terinformasi
+              {t.footer.title}
             </h3>
             <p className="text-[#848E9C] text-base max-w-2xl mx-auto">
-              Selalu verifikasi identitas koordinator sebelum percaya. TPC adalah platform edukasi, bukan investasi.
+              {t.footer.description}
             </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <button
-              onClick={() => navigate(ROUTES.ANTI_SCAM)}
+              onClick={() => navigate(routes.ANTI_SCAM)}
               className="inline-flex items-center justify-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 px-4 py-3 text-red-300 font-semibold transition-colors"
             >
               <AlertTriangle className="h-4 w-4" />
-              <span>Baca Anti-Scam Notice</span>
+              <span>{t.cta.secondary}</span>
             </button>
             
             <button
-              onClick={() => navigate(ROUTES.TRANSPARENCY)}
+              onClick={() => navigate(routes.TRANSPARENCY)}
               className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#F0B90B]/30 bg-[#F0B90B]/10 hover:bg-[#F0B90B]/20 px-4 py-3 text-[#F0B90B] font-semibold transition-colors"
             >
               <Shield className="h-4 w-4" />
-              <span>Lihat Transparansi Wallet</span>
+              <span>{t.cta.primary}</span>
             </button>
             
             <button
@@ -684,7 +691,7 @@ export default function VerifiedCoordinatorsPage() {
               className="inline-flex items-center justify-center gap-2 rounded-2xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 px-4 py-3 text-blue-300 font-semibold transition-colors"
             >
               <MessageSquare className="h-4 w-4" />
-              <span>Gabung Telegram Resmi</span>
+              <span>{t.footer.joinTelegram}</span>
             </button>
           </div>
         </div>
