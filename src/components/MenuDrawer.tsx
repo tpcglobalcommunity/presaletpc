@@ -45,6 +45,35 @@ export function MenuDrawer({ onClose }: MenuDrawerProps) {
     navigate(`/${lang}`);
   };
 
+  // Dev-only regression guard
+  if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+    const checkRegression = () => {
+      const currentPathname = window.location.pathname;
+      
+      // If we detect hardcoded language paths in navigation
+      if (currentPathname.startsWith('/en') || currentPathname.startsWith('/id')) {
+        // Check if any navigation action used hardcoded paths
+        const navButtons = document.querySelectorAll('button[onclick*="navigate"]');
+        navButtons.forEach(button => {
+          const onClick = button.getAttribute('onclick');
+          if (onClick && (onClick.includes('"/en"') || onClick.includes('"/id"'))) {
+            console.error('🚨 REGRESSION: hardcoded language path detected in navigation', {
+              componentName: 'MenuDrawer',
+              onClick,
+              currentPathname
+            });
+          }
+        });
+      }
+    };
+    
+    // Check on route changes
+    window.addEventListener('popstate', checkRegression);
+    
+    // Check immediately
+    setTimeout(checkRegression, 100);
+  }
+
   const publicItems = [
     { icon: Shield, label: lang === 'en' ? 'Transparency' : 'Transparansi', path: lang === 'en' ? 'transparency' : 'transparansi' },
     { icon: AlertTriangle, label: lang === 'en' ? 'Anti-Scam' : 'Anti-Scam', path: 'anti-scam' },

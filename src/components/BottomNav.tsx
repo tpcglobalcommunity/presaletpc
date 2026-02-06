@@ -1,5 +1,5 @@
 import { Home, TrendingUp, User, Menu, Coins, Target } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { MenuDrawer } from './MenuDrawer';
@@ -10,24 +10,60 @@ export function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { lang = 'en' } = useParams(); // Language from URL, default to 'en'
+
   const [menuOpen, setMenuOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
+  const withLang = (path: string) => {
+    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+    return `/${lang}${cleanPath}`;
+  };
+
+  // Dev-only regression guard
+  if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+    const checkRegression = () => {
+      const currentPathname = window.location.pathname;
+      
+      // If we detect hardcoded language paths in navigation
+      if (currentPathname.startsWith('/en') || currentPathname.startsWith('/id')) {
+        // Check if any navigation action used hardcoded paths
+        const navButtons = document.querySelectorAll('button[onclick*="navigate"]');
+        navButtons.forEach(button => {
+          const onClick = button.getAttribute('onclick');
+          if (onClick && (onClick.includes('"/en"') || onClick.includes('"/id"'))) {
+            console.error('🚨 REGRESSION: hardcoded language path detected in navigation', {
+              componentName: 'BottomNav',
+              onClick,
+              currentPathname
+            });
+          }
+        });
+      }
+    };
+    
+    // Check on route changes
+    window.addEventListener('popstate', checkRegression);
+    
+    // Check immediately
+    setTimeout(checkRegression, 100);
+  }
+
   const navItems = [
-    { icon: Home, label: 'Home', path: '/en' },
-    { icon: TrendingUp, label: 'Market', path: '/en/market' },
+    { icon: Home, label: 'Home', path: withLang('/') },
+    { icon: TrendingUp, label: 'Market', path: withLang('market') },
     { 
       icon: Coins, 
       label: 'Presale', 
-      path: '/en/presale',
+      path: withLang('presale'),
       isPrimary: true,
       requiresAuth: false // ✅ PUBLIC - tidak memerlukan auth
     },
     { 
       icon: User, 
       label: user ? 'Account' : 'Login', 
-      path: user ? '/en/member' : '/en/login' 
+      path: user ? withLang('member') : withLang('login') 
     },
   ];
 
@@ -40,9 +76,9 @@ export function BottomNav() {
             onClick={() => {
               if (item.requiresAuth && !user) {
                 // Redirect to login with returnTo
-                navigate(buildLoginUrl('id', item.path));
+                navigate(buildLoginUrl(lang, item.path));
               } else {
-                navigate(item.path);
+                navigate(withLang(item.path));
               }
             }}
             className={`flex flex-col items-center justify-center min-w-[56px] py-2 px-3 rounded-xl transition-all ${
