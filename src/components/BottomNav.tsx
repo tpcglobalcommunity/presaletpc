@@ -25,8 +25,6 @@ export function BottomNav() {
   // Public navigation items with RAW paths only
   const navItems = useMemo(
     () => [
-      { icon: Home, label: 'Home', rawPath: '/' },
-      { icon: TrendingUp, label: 'Market', rawPath: '/market' },
       {
         icon: Coins,
         label: 'Presale',

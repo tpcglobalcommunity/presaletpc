@@ -52,7 +52,6 @@ import FAQPage from "@/pages/id/FAQPage";
 import WhitepaperPage from "@/pages/id/WhitepaperPage";
 import DAOPage from "@/pages/id/DAOPage";
 import TransparansiPage from "@/pages/id/TransparansiPage";
-import MarketPage from "@/pages/id/MarketPage";
 import InvoiceSuccessPage from "@/pages/id/InvoiceSuccessPage";
 import TermsConditionsPage from "@/pages/legal/TermsConditionsPage";
 import PrivacyPolicyPage from "@/pages/legal/PrivacyPolicyPage";
@@ -159,28 +158,20 @@ function App() {
                 
                 {/* PUBLIC ID ROUTES (ID-only) */}
                 <Route
-                  path="presale"
-                  element={<IdOnly><PresaleInfoPage /></IdOnly>}
-                />
-                <Route
-                  path="buytpc"
-                  element={<IdOnly><BuyTPCPage /></IdOnly>}
-                />
-                <Route
                   path="anti-scam"
                   element={<IdOnly><AntiScamPage /></IdOnly>}
                 />
                 <Route
-                  path="edukasi"
-                  element={<IdOnly><EdukasiPage /></IdOnly>}
+                  path="verified-coordinators"
+                  element={<IdOnly><VerifiedCoordinatorsPage /></IdOnly>}
+                />
+                <Route
+                  path="chapters"
+                  element={<IdOnly><ChaptersSopPage /></IdOnly>}
                 />
                 <Route
                   path="education"
-                  element={<IdOnly><EducationPage /></IdOnly>}
-                />
-                <Route
-                  path="faq"
-                  element={<IdOnly><FAQPage /></IdOnly>}
+                  element={<IdOnly><EdukasiPage /></IdOnly>}
                 />
                 <Route
                   path="whitepaper"
@@ -191,40 +182,20 @@ function App() {
                   element={<IdOnly><DAOPage /></IdOnly>}
                 />
                 <Route
-                  path="dao-lite"
-                  element={<IdOnly><DAOPage /></IdOnly>}
-                />
-                <Route
-                  path="transparansi"
-                  element={<IdOnly><TransparansiPage /></IdOnly>}
-                />
-                <Route
-                  path="market"
-                  element={<IdOnly><MarketPage /></IdOnly>}
-                />
-                <Route
-                  path="invoice/success"
-                  element={<IdOnly><InvoiceSuccessPage /></IdOnly>}
-                />
-                <Route
-                  path="syarat-ketentuan"
-                  element={<IdOnly><TermsConditionsPage /></IdOnly>}
+                  path="faq"
+                  element={<IdOnly><FAQPage /></IdOnly>}
                 />
                 <Route
                   path="terms"
-                  element={<IdOnly><TermsConditionsPage /></IdOnly>}
-                />
-                <Route
-                  path="kebijakan-privasi"
-                  element={<IdOnly><PrivacyPolicyPage /></IdOnly>}
+                  element={<TermsConditionsPage />}
                 />
                 <Route
                   path="privacy"
-                  element={<IdOnly><PrivacyPolicyPage /></IdOnly>}
+                  element={<PrivacyPolicyPage />}
                 />
                 <Route
-                  path="verified-coordinators"
-                  element={<IdOnly><VerifiedCoordinatorsPage /></IdOnly>}
+                  path="invoice/success"
+                  element={<InvoiceSuccessPage />}
                 />
                 <Route
                   path="chapters"

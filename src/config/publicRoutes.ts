@@ -6,7 +6,6 @@ type Lang = 'en' | 'id';
  */
 export const PUBLIC_RAW_PATHS = new Set([
   '/',
-  '/market',
   '/presale',
   '/buytpc',
   '/transparency',
