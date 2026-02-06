@@ -58,8 +58,8 @@ export const presaleCopy = {
     hours: 'jam',
     minutes: 'menit',
     seconds: 'detik',
-    stageCompleted: 'Tahap selesai',
-    stageUpcoming: 'Tahap belum dimulai',
+    stageCompleted: 'Tahap ini sudah berakhir.',
+    stageUpcoming: 'Waktu tahap belum ditetapkan.',
     countdownMounted: 'COUNTDOWN_MOUNTED',
     countdownNotMounted: 'COUNTDOWN_NOT_MOUNTED',
     // Title strings

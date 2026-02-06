@@ -4,29 +4,39 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Coins, ArrowRight, Shield, Clock, Users, Zap, CheckCircle, AlertTriangle, User, LogIn, Menu, FileText, BookOpen } from 'lucide-react';
 import { presaleCopy } from '@/i18n/public/presale';
 import { useState, useEffect } from 'react';
+import { 
+  PRESALE_STAGE_STARTED_AT_SG, 
+  parseStartSG, 
+  getPresaleEndTimeSG, 
+  isPresaleActive,
+  nowSG 
+} from '@/lib/presaleTime';
 
 // Presale stage status type
 type PresaleStageStatus = 'ACTIVE' | 'COMPLETED' | 'UPCOMING';
 
-// Presale data (reused from existing config)
+// Presale data configuration using Singapore timezone
+const startAt = parseStartSG(PRESALE_STAGE_STARTED_AT_SG);
+const endAt = getPresaleEndTimeSG(startAt);
+
 const presaleData = {
   stage1: {
     price: 0.001,
     supply: 200000000,
     status: 'COMPLETED' as PresaleStageStatus,
-    endTime: new Date('2024-12-31T23:59:59Z') // Static config for demo
+    endTime: startAt || new Date()
   },
   stage2: {
     price: 0.002,
     supply: 100000000,
-    status: 'ACTIVE' as PresaleStageStatus,
-    endTime: new Date('2025-12-31T23:59:59Z') // Static config for demo
+    status: (endAt && isPresaleActive(endAt)) ? 'ACTIVE' as PresaleStageStatus : 'UPCOMING' as PresaleStageStatus,
+    endTime: endAt || new Date()
   },
   totalSupply: 300000000
 };
 
-// Countdown timer hook
-const useCountdown = (endTime: Date) => {
+// Countdown timer hook with Singapore timezone
+const useCountdown = (endTime: Date | null) => {
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -36,7 +46,13 @@ const useCountdown = (endTime: Date) => {
 
   useEffect(() => {
     const calculateTimeLeft = () => {
-      const difference = endTime.getTime() - new Date().getTime();
+      if (!endTime) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        return;
+      }
+
+      const now = nowSG();
+      const difference = endTime.getTime() - now.getTime();
       
       if (difference > 0) {
         const days = Math.floor(difference / (1000 * 60 * 60 * 24));
@@ -79,7 +95,10 @@ export default function PresalePage() {
   };
 
   const currentStage = getCurrentStage();
-  const countdown = useCountdown(currentStage.endTime);
+  const countdown = useCountdown(endAt);
+
+  // Check if countdown should be displayed
+  const shouldShowCountdown = endAt && isPresaleActive(endAt);
 
   const getStatusColor = (status: PresaleStageStatus) => {
     switch (status) {
@@ -262,7 +281,7 @@ export default function PresalePage() {
                   </p>
                 </div>
 
-                {currentStage.status === 'ACTIVE' ? (
+                {shouldShowCountdown ? (
                   <div className="flex justify-center items-center gap-4 text-2xl font-bold text-white">
                     <div className="text-center">
                       <div className="text-3xl font-black text-blue-500">{formatTime(countdown.days)}</div>
@@ -286,9 +305,7 @@ export default function PresalePage() {
                   </div>
                 ) : (
                   <p className="text-sm text-blue-200">
-                    {currentStage.status === 'COMPLETED'
-                      ? c.stageCompleted
-                      : c.stageUpcoming}
+                    {endAt ? c.stageCompleted : c.stageUpcoming}
                   </p>
                 )}
 
