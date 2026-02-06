@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useParams } from 'react-router-dom';
-import { Home, Shield, LogIn } from 'lucide-react';
+import { Home, TrendingUp, Coins, LogIn, Menu } from 'lucide-react';
 import { publicBottomNavItems } from '@/config/publicBottomNav';
 
 export default function PublicBottomNav() {
@@ -21,15 +21,19 @@ export default function PublicBottomNav() {
   // Icon mapping
   const iconMap = {
     Home,
-    Shield,
-    LogIn
+    TrendingUp,
+    Coins,
+    LogIn,
+    Menu
   } as const;
 
   // Hardcoded English labels
   const labels = {
     home: 'Home',
-    'anti-scam': 'Anti-Scam',
-    login: 'Login'
+    market: 'Market',
+    presale: 'Presale',
+    login: 'Login',
+    menu: 'Menu'
   } as const;
 
   return (
