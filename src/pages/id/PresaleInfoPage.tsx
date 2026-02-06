@@ -40,7 +40,7 @@ export default function PresaleInfoPage() {
     stage1_duration_days: 180, // 6 months
     stage1_supply: 200000000, // 200 million
     stage1_price_usd: 0.001,
-    stage2_supply: 0, // Stage 2 disabled - all supply in stage 1
+    stage2_supply: 100000000, // 100 million - next sale after stage 1
     stage2_price_usd: 0.002,
     listing_price_usd: 0.005
   };
@@ -102,7 +102,7 @@ export default function PresaleInfoPage() {
   // Calculate progress using config values
   const stage1Progress = countdown.expired ? 100 : Math.min(100, ((config.stage1_duration_days - countdown.days) / config.stage1_duration_days) * 100);
   const stage1Raised = (200000000 * stage1Progress) / 100;
-  const stage2Raised = 0; // Stage 2 disabled
+  const stage2Raised = 0; // Stage 2 hasn't started
 
   // Calculate ROI
   const stage1ROI = ((config.listing_price_usd - config.stage1_price_usd) / config.stage1_price_usd) * 100;
@@ -266,7 +266,8 @@ export default function PresaleInfoPage() {
                       <span className="text-lg md:text-xl font-bold text-blue-400">0%</span>
                     </div>
                     <div className="font-semibold text-sm md:text-base">Tahap 2</div>
-                    <div className="text-sm md:text-base text-gray-400">0M TPC</div>
+                    <div className="text-sm md:text-base text-gray-400">100M TPC</div>
+                    <div className="text-xs text-gray-500 mt-1">Belum dimulai</div>
                   </div>
                   <div className="bg-slate-900/50 rounded-lg p-3 md:p-4 border border-slate-700/50">
                     <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mx-auto mb-2">
@@ -275,6 +276,17 @@ export default function PresaleInfoPage() {
                     <div className="font-semibold text-sm md:text-base">Total Presale</div>
                     <div className="text-sm md:text-base text-gray-400">200M TPC</div>
                   </div>
+                </div>
+
+                {/* Tahap 2 Clarification */}
+                <div className="bg-slate-900/50 rounded-lg p-3 md:p-4 border border-slate-700/50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Target className="w-4 h-4 md:w-5 md:h-5 text-blue-400" />
+                    <span className="text-sm md:text-base font-semibold">Informasi Tahap 2</span>
+                  </div>
+                  <p className="text-xs md:text-sm text-gray-400 leading-relaxed">
+                    Tahap 2 akan dibuka setelah Tahap 1 berakhir.
+                  </p>
                 </div>
 
                 {/* Features */}
