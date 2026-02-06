@@ -21,14 +21,14 @@ export function MemberLayout() {
     return <Navigate to={`/${safeLang}/login`} replace />;
   }
 
-  // Profile completeness gate - redirect to onboarding if profile is incomplete
+  // Profile completeness gate - redirect to complete-profile if profile is incomplete
   if (profile && !profileComplete) {
     const currentPath = window.location.pathname;
-    const isOnboardingRoute = currentPath.includes('/onboarding');
+    const isCompleteProfileRoute = currentPath.includes('/complete-profile');
     const isAuthCallback = currentPath.includes('/auth/callback');
     
-    if (!isOnboardingRoute && !isAuthCallback) {
-      return <Navigate to={`/${safeLang}/onboarding`} replace />;
+    if (!isCompleteProfileRoute && !isAuthCallback) {
+      return <Navigate to={`/${safeLang}/member/complete-profile`} replace />;
     }
   }
 

@@ -68,6 +68,7 @@ const MemberProfilePage = lazy(() => import("@/pages/member/MemberProfilePage"))
 const MemberSettingsPage = lazy(() => import("@/pages/member/MemberSettingsPage"));
 const MemberWalletPage = lazy(() => import("@/pages/member/MemberWalletPage"));
 const MemberWithdrawalPage = lazy(() => import("@/pages/member/MemberWithdrawalPage"));
+const CompleteProfilePage = lazy(() => import("@/pages/id/CompleteProfilePage"));
 const BuyTPCMemberPage = lazy(() => import("@/pages/id/member/BuyTPCMemberPage"));
 
 // Admin Pages (Lazy Loaded)
@@ -145,12 +146,12 @@ function App() {
                 
                 {/* PUBLIC ID ROUTES (ID-only) */}
                 <Route
-                  path="buytpc"
-                  element={<IdOnly><BuyTPCPage /></IdOnly>}
-                />
-                <Route
                   path="presale"
                   element={<IdOnly><PresaleInfoPage /></IdOnly>}
+                />
+                <Route
+                  path="buytpc"
+                  element={<IdOnly><BuyTPCPage /></IdOnly>}
                 />
                 <Route
                   path="anti-scam"
@@ -250,6 +251,17 @@ function App() {
                     element={
                       <Suspense fallback={<PageLoader />}>
                         <MemberDashboardPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="complete-profile"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <LangRoute
+                          id={<CompleteProfilePage />}
+                          en={<CompleteProfilePage />}
+                        />
                       </Suspense>
                     }
                   />

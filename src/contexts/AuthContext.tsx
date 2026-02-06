@@ -17,11 +17,14 @@ interface Profile {
   avatar_url: string | null;
   created_at: string;
   last_sign_in_at: string | null;
-  nama?: string | null;
+  nama_lengkap?: string | null;
   email?: string | null;
-  phone?: string | null;
-  city?: string | null;
-  wallet_address?: string | null;
+  no_wa?: string | null;
+  kota?: string | null;
+  tpc_wallet_address?: string | null;
+  sponsor_code?: string | null;
+  referred_by?: string | null;
+  is_active?: boolean | null;
 }
 
 interface AuthContextType {
@@ -71,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
       .from('profiles')
-      .select('user_id,email_initial,display_name,avatar_url,created_at,last_sign_in_at,nama,email,phone,city,wallet_address')
+      .select('user_id,email_initial,display_name,avatar_url,created_at,last_sign_in_at,nama_lengkap,email,no_wa,kota,tpc_wallet_address,sponsor_code,referred_by,is_active')
       .eq('user_id', userId)
       .maybeSingle();
 
@@ -89,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (profile.email === null && user?.email) {
       await supabase
         .from('profiles')
-        .update({ email: user.email })
+        .update({ email_current: user.email })
         .eq('user_id', userId);
       profile.email = user.email;
     }

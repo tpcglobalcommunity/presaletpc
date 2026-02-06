@@ -3,11 +3,23 @@
  */
 
 export interface Profile {
-  nama?: string | null;
+  nama_lengkap?: string | null;
   email?: string | null;
-  phone?: string | null;
-  city?: string | null;
+  no_wa?: string | null;
+  kota?: string | null;
+  tpc_wallet_address?: string | null;
   wallet_address?: string | null;
+  sponsor_code?: string | null;
+  referred_by?: string | null;
+  is_active?: boolean | null;
+}
+
+/**
+ * Get canonical wallet field name
+ */
+export function getWalletFieldName(): 'tpc_wallet_address' | 'wallet_address' {
+  // Prioritize tpc_wallet_address if it exists in schema
+  return 'tpc_wallet_address';
 }
 
 /**
@@ -16,14 +28,17 @@ export interface Profile {
 export function isProfileComplete(profile: Profile | null | undefined): boolean {
   if (!profile) return false;
 
-  const hasName = Boolean(profile.nama && profile.nama.trim().length > 0);
+  const hasName = Boolean(profile.nama_lengkap && profile.nama_lengkap.trim().length > 0);
   const hasEmail = Boolean(profile.email && profile.email.trim().length > 0);
-  const hasPhone = Boolean(profile.phone && profile.phone.trim().length > 0);
-  const hasCity = Boolean(profile.city && profile.city.trim().length > 0);
+  const hasPhone = Boolean(profile.no_wa && profile.no_wa.trim().length > 0);
+  const hasCity = Boolean(profile.kota && profile.kota.trim().length > 0);
+  
+  const walletField = getWalletFieldName();
+  const wallet = profile[walletField];
   const hasValidWallet = Boolean(
-    profile.wallet_address && 
-    profile.wallet_address.trim().length >= 32 && 
-    profile.wallet_address.trim().length <= 44
+    wallet && 
+    wallet.trim().length >= 32 && 
+    wallet.trim().length <= 44
   );
 
   return hasName && hasEmail && hasPhone && hasCity && hasValidWallet;
@@ -33,16 +48,19 @@ export function isProfileComplete(profile: Profile | null | undefined): boolean 
  * Get missing fields for onboarding
  */
 export function getMissingFields(profile: Profile | null | undefined): string[] {
-  if (!profile) return ['nama', 'email', 'phone', 'city', 'wallet_address'];
+  if (!profile) return ['nama_lengkap', 'email', 'no_wa', 'kota', 'tpc_wallet_address'];
 
   const missing: string[] = [];
   
-  if (!profile.nama || profile.nama.trim().length === 0) missing.push('nama');
+  if (!profile.nama_lengkap || profile.nama_lengkap.trim().length === 0) missing.push('nama_lengkap');
   if (!profile.email || profile.email.trim().length === 0) missing.push('email');
-  if (!profile.phone || profile.phone.trim().length === 0) missing.push('phone');
-  if (!profile.city || profile.city.trim().length === 0) missing.push('city');
-  if (!profile.wallet_address || profile.wallet_address.trim().length < 32 || profile.wallet_address.trim().length > 44) {
-    missing.push('wallet_address');
+  if (!profile.no_wa || profile.no_wa.trim().length === 0) missing.push('no_wa');
+  if (!profile.kota || profile.kota.trim().length === 0) missing.push('kota');
+  
+  const walletField = getWalletFieldName();
+  const wallet = profile[walletField];
+  if (!wallet || wallet.trim().length < 32 || wallet.trim().length > 44) {
+    missing.push(walletField);
   }
 
   return missing;
@@ -55,4 +73,17 @@ export function isValidWalletAddress(address: string | null | undefined): boolea
   if (!address) return false;
   const trimmed = address.trim();
   return trimmed.length >= 32 && trimmed.length <= 44;
+}
+
+/**
+ * Validate WhatsApp number (numeric with optional +, min 8 chars)
+ */
+export function isValidWhatsAppNumber(phone: string | null | undefined): boolean {
+  if (!phone) return false;
+  const trimmed = phone.trim();
+  if (trimmed.length < 8) return false;
+  
+  // Allow optional + at start, then only numbers
+  const phoneRegex = /^\+?\d+$/;
+  return phoneRegex.test(trimmed);
 }
