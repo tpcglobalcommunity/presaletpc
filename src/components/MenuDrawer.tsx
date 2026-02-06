@@ -1,8 +1,8 @@
-import { 
-  Shield, 
-  AlertTriangle, 
-  BookOpen, 
-  Users, 
+import {
+  Shield,
+  AlertTriangle,
+  BookOpen,
+  Users,
   HelpCircle,
   FileText,
   History,
@@ -14,96 +14,106 @@ import {
   FileText as FileTextIcon,
   Crown,
   Star,
-  Wallet
+  Wallet,
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Separator } from '@/components/ui/separator';
+import { useEffect } from 'react';
 
 interface MenuDrawerProps {
   onClose: () => void;
 }
 
+type Lang = 'en' | 'id';
+
 export function MenuDrawer({ onClose }: MenuDrawerProps) {
   const navigate = useNavigate();
   const { user, isAdmin, signOut } = useAuth();
-  const { lang = 'en' } = useParams(); // Default to 'en', will be overridden by URL if present
+  const params = useParams();
+  const lang = ((params.lang as Lang) || 'en') as Lang;
 
+  // ✅ Build "/{lang}{path}" aman:
+  // - memastikan path selalu diawali "/"
+  // - dedupe jika path sudah ada /en atau /id
+  // - tidak menghasilkan /en//market atau /en/en/market
   const withLang = (path: string) => {
-    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-    return `/${lang}/${cleanPath}`;
+    let p = (path || '').trim();
+    if (!p.startsWith('/')) p = `/${p}`;
+    p = p.replace(/^\/(en|id)(?=\/|$)/, ''); // remove existing lang prefix
+    if (p === '') p = '/';
+    return `/${lang}${p}`;
   };
 
-  const handleNav = (path: string) => {
-    navigate(withLang(path));
+  const handleNav = (rawPath: string) => {
+    navigate(withLang(rawPath));
     onClose();
   };
 
   const handleLogout = async () => {
     await signOut();
     onClose();
-    navigate(`/${lang}`);
+    navigate(withLang('/')); // ✅ kembali ke home sesuai lang
   };
 
-  // Dev-only regression guard
-  if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+  // ✅ Dev-only regression guard: pasang sekali, bersihin saat unmount
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'development') return;
+
     const checkRegression = () => {
       const currentPathname = window.location.pathname;
-      
-      // If we detect hardcoded language paths in navigation
-      if (currentPathname.startsWith('/en') || currentPathname.startsWith('/id')) {
-        // Check if any navigation action used hardcoded paths
-        const navButtons = document.querySelectorAll('button[onclick*="navigate"]');
-        navButtons.forEach(button => {
-          const onClick = button.getAttribute('onclick');
-          if (onClick && (onClick.includes('"/en"') || onClick.includes('"/id"'))) {
-            console.error('🚨 REGRESSION: hardcoded language path detected in navigation', {
-              componentName: 'MenuDrawer',
-              onClick,
-              currentPathname
-            });
-          }
+
+      // deteksi kasus /en/en/* atau /id/id/*
+      if (/^\/(en|id)\/\1(\/|$)/.test(currentPathname)) {
+        console.error('🚨 REGRESSION: duplicate language prefix detected', {
+          componentName: 'MenuDrawer',
+          currentPathname,
         });
       }
     };
-    
-    // Check on route changes
-    window.addEventListener('popstate', checkRegression);
-    
-    // Check immediately
-    setTimeout(checkRegression, 100);
-  }
 
+    window.addEventListener('popstate', checkRegression);
+    const t = window.setTimeout(checkRegression, 50);
+
+    return () => {
+      window.removeEventListener('popstate', checkRegression);
+      window.clearTimeout(t);
+    };
+  }, []);
+
+  // ✅ REKOMENDASI: slug path dibuat konsisten EN/ID.
+  // Kalau sudah terlanjur beda slug, kamu bisa tetap pakai conditional seperti dulu,
+  // tapi lebih aman diseragamkan.
   const publicItems = [
-    { icon: Shield, label: lang === 'en' ? 'Transparency' : 'Transparansi', path: lang === 'en' ? 'transparency' : 'transparansi' },
-    { icon: AlertTriangle, label: lang === 'en' ? 'Anti-Scam' : 'Anti-Scam', path: 'anti-scam' },
-    { icon: Wallet, label: lang === 'en' ? 'Phantom Wallet Tutorial' : 'Tutorial Phantom Wallet', path: 'tutorial/phantom-wallet' },
-    { icon: Crown, label: lang === 'en' ? 'Verified Coordinators' : 'Koordinator Resmi', path: 'verified-coordinators' },
-    { icon: Star, label: lang === 'en' ? 'TPC Chapters' : 'TPC Chapters', path: 'chapters' },
-    { icon: BookOpen, label: lang === 'en' ? 'Education' : 'Edukasi', path: lang === 'en' ? 'education' : 'edukasi' },
-    { icon: FileTextIcon, label: lang === 'en' ? 'Whitepaper' : 'Whitepaper', path: 'whitepaper' },
-    { icon: Users, label: lang === 'en' ? 'DAO Lite' : 'DAO Lite', path: 'dao' },
-    { icon: HelpCircle, label: lang === 'en' ? 'FAQ' : 'FAQ', path: 'faq' },
-    { icon: FileText, label: lang === 'en' ? 'Terms & Conditions' : 'Syarat dan Ketentuan', path: lang === 'en' ? 'terms' : 'syarat-ketentuan' },
-    { icon: FileText, label: lang === 'en' ? 'Privacy Policy' : 'Kebijakan Privasi', path: lang === 'en' ? 'privacy' : 'kebijakan-privasi' },
+    { icon: Shield, label: lang === 'en' ? 'Transparency' : 'Transparansi', path: '/transparency' },
+    { icon: AlertTriangle, label: 'Anti-Scam', path: '/anti-scam' },
+    { icon: Wallet, label: lang === 'en' ? 'Phantom Wallet Tutorial' : 'Tutorial Phantom Wallet', path: '/tutorial/phantom-wallet' },
+    { icon: Crown, label: lang === 'en' ? 'Verified Coordinators' : 'Koordinator Resmi', path: '/verified-coordinators' },
+    { icon: Star, label: 'TPC Chapters', path: '/chapters' },
+    { icon: BookOpen, label: lang === 'en' ? 'Education' : 'Edukasi', path: '/education' },
+    { icon: FileTextIcon, label: 'Whitepaper', path: '/whitepaper' },
+    { icon: Users, label: 'DAO Lite', path: '/dao' },
+    { icon: HelpCircle, label: 'FAQ', path: '/faq' },
+    { icon: FileText, label: lang === 'en' ? 'Terms & Conditions' : 'Syarat dan Ketentuan', path: '/terms' },
+    { icon: FileText, label: lang === 'en' ? 'Privacy Policy' : 'Kebijakan Privasi', path: '/privacy' },
   ];
 
   const memberItems = [
-    { icon: FileText, label: lang === 'en' ? 'Invoice' : 'Invoice', path: 'member/invoices', subtext: lang === 'en' ? 'TPC purchase history' : 'Riwayat pembelian TPC' },
-    { icon: History, label: lang === 'en' ? 'Invoice History' : 'Riwayat Invoice', path: 'dashboard/history' },
-    { icon: Share2, label: lang === 'en' ? 'My Referrals' : 'Referral Saya', path: 'member/referrals' },
-    { icon: Settings, label: lang === 'en' ? 'Settings' : 'Pengaturan', path: 'dashboard/settings' },
+    { icon: FileText, label: 'Invoice', path: '/member/invoices', subtext: lang === 'en' ? 'TPC purchase history' : 'Riwayat pembelian TPC' },
+    { icon: History, label: lang === 'en' ? 'Invoice History' : 'Riwayat Invoice', path: '/dashboard/history' },
+    { icon: Share2, label: lang === 'en' ? 'My Referrals' : 'Referral Saya', path: '/member/referrals' },
+    { icon: Settings, label: lang === 'en' ? 'Settings' : 'Pengaturan', path: '/dashboard/settings' },
   ];
 
   const adminItems = [
-    { icon: LayoutDashboard, label: lang === 'en' ? 'Admin Dashboard' : 'Admin Dashboard', path: 'admin' },
-    { icon: Cog, label: lang === 'en' ? 'Admin Settings' : 'Admin Settings', path: 'admin/settings' },
+    { icon: LayoutDashboard, label: 'Admin Dashboard', path: '/admin' },
+    { icon: Cog, label: 'Admin Settings', path: '/admin/settings' },
   ];
 
   return (
     <div className="flex flex-col h-full pt-4 pb-20 overflow-y-auto">
       <div className="w-12 h-1 bg-muted rounded-full mx-auto mb-6 shrink-0" />
-      
+
       <h2 className="text-title px-4 mb-4">Menu</h2>
 
       {/* Public Items */}
@@ -135,12 +145,11 @@ export function MenuDrawer({ onClose }: MenuDrawerProps) {
                 <item.icon className="h-5 w-5 text-primary" />
                 <div className="flex flex-col items-start">
                   <span className="font-medium">{item.label}</span>
-                  {item.subtext && (
-                    <span className="text-xs text-muted-foreground">{item.subtext}</span>
-                  )}
+                  {item.subtext && <span className="text-xs text-muted-foreground">{item.subtext}</span>}
                 </div>
               </button>
             ))}
+
             <button
               onClick={handleLogout}
               className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-destructive hover:bg-destructive/10 transition-colors"
