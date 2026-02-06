@@ -55,7 +55,9 @@ const antiScamCopy = {
     neutral: 'Netral',
     antiScamNotice: '🚨 ANTI-SCAM NOTICE',
     protectYourself: 'Lindungi diri dari pihak yang mengatasnamakan TPC',
-    tpcNeverAsks: 'TPC Global <span className="text-white font-semibold">tidak pernah</span> meminta dana, data sensitif, atau menjanjikan keuntungan. Halaman ini membantu publik mengenali pola penipuan dan memverifikasi informasi resmi.',
+    warningTextBefore: 'TPC Global ',
+    warningTextEmphasis: 'tidak pernah',
+    warningTextAfter: ' meminta dana, data sensitif, atau menjanjikan keuntungan. Halaman ini membantu publik mengenali pola penipuan dan memverifikasi informasi resmi.',
     verifyFirst: 'Verifikasi dulu',
     officialOnly: 'Hanya resmi',
     contactingFirst: 'Menghubungi lebih dulu via WhatsApp / Telegram / DM',
@@ -115,7 +117,9 @@ const antiScamCopy = {
     neutral: 'Neutral',
     antiScamNotice: '🚨 ANTI-SCAM NOTICE',
     protectYourself: 'Protect yourself from parties impersonating TPC',
-    tpcNeverAsks: 'TPC Global <span className="text-white font-semibold">never</span> asks for funds, sensitive data, or promises profits. This page helps the public recognize scam patterns and verify official information.',
+    warningTextBefore: 'TPC Global ',
+    warningTextEmphasis: 'never',
+    warningTextAfter: ' asks for funds, sensitive data, or promises profits. This page helps the public recognize scam patterns and verify official information.',
     verifyFirst: 'Verify first',
     officialOnly: 'Official only',
     contactingFirst: 'Contacting first via WhatsApp / Telegram / DM',
@@ -307,7 +311,9 @@ export default function AntiScamPageShared({ lang }: AntiScamPageSharedProps) {
                   <h2 className="text-xl font-bold text-yellow-500">{c.warning}</h2>
                 </div>
                 <p className="text-sm md:text-base text-[#C9D1D9] leading-relaxed">
-                  {c.tpcNeverAsks}
+                  {c.warningTextBefore}
+                  <span className="text-white font-semibold">{c.warningTextEmphasis}</span>
+                  {c.warningTextAfter}
                 </p>
 
                 {/* Official links */}
