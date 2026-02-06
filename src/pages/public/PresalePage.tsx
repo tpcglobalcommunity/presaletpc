@@ -3,20 +3,60 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Coins, ArrowRight, Shield, Clock, Users, Zap, CheckCircle, AlertTriangle, User, LogIn, Menu, FileText, BookOpen } from 'lucide-react';
 import { presaleCopy } from '@/i18n/public/presale';
+import { useState, useEffect } from 'react';
+
+// Presale stage status type
+type PresaleStageStatus = 'ACTIVE' | 'COMPLETED' | 'UPCOMING';
 
 // Presale data (reused from existing config)
 const presaleData = {
   stage1: {
     price: 0.001,
     supply: 200000000,
-    status: 'completed' as const
+    status: 'COMPLETED' as PresaleStageStatus,
+    endTime: new Date('2024-12-31T23:59:59Z') // Static config for demo
   },
   stage2: {
     price: 0.002,
     supply: 100000000,
-    status: 'upcoming' as const
+    status: 'UPCOMING' as PresaleStageStatus,
+    endTime: new Date('2025-01-31T23:59:59Z') // Static config for demo
   },
   totalSupply: 300000000
+};
+
+// Countdown timer hook
+const useCountdown = (endTime: Date) => {
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  });
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const difference = endTime.getTime() - new Date().getTime();
+      
+      if (difference > 0) {
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+        
+        setTimeLeft({ days, hours, minutes, seconds });
+      } else {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      }
+    };
+
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 1000);
+
+    return () => clearInterval(timer);
+  }, [endTime]);
+
+  return timeLeft;
 };
 
 export default function PresalePage() {
@@ -28,26 +68,30 @@ export default function PresalePage() {
   const safeLang = lang === 'en' ? 'en' : 'id';
   const c = presaleCopy[safeLang];
 
-  const getStatusColor = (status: string) => {
+  // Get countdown for active stage
+  const activeStage = presaleData.stage1.status === 'ACTIVE' ? presaleData.stage1 : presaleData.stage2;
+  const countdown = useCountdown(activeStage.endTime);
+
+  const getStatusColor = (status: PresaleStageStatus) => {
     switch (status) {
-      case 'active':
+      case 'ACTIVE':
         return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30';
-      case 'completed':
+      case 'COMPLETED':
         return 'bg-blue-500/10 text-blue-500 border-blue-500/30';
-      case 'upcoming':
+      case 'UPCOMING':
         return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30';
       default:
         return 'bg-gray-500/10 text-gray-500 border-gray-500/30';
     }
   };
 
-  const getStatusText = (status: string) => {
+  const getStatusText = (status: PresaleStageStatus) => {
     switch (status) {
-      case 'active':
+      case 'ACTIVE':
         return c.active;
-      case 'completed':
+      case 'COMPLETED':
         return c.completed;
-      case 'upcoming':
+      case 'UPCOMING':
         return c.upcoming;
       default:
         return status;
@@ -56,6 +100,10 @@ export default function PresalePage() {
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('en-US').format(num);
+  };
+
+  const formatTime = (value: number) => {
+    return value.toString().padStart(2, '0');
   };
 
   const steps = [
@@ -85,6 +133,66 @@ export default function PresalePage() {
       description: c.step5Desc
     }
   ];
+
+  const features = [
+    {
+      id: 'education',
+      title: c.utilityEducation,
+      description: c.utilityEducationDesc,
+      icon: BookOpen,
+      color: 'blue'
+    },
+    {
+      id: 'community',
+      title: c.utilityCommunity,
+      description: c.utilityCommunityDesc,
+      icon: Users,
+      color: 'purple'
+    },
+    {
+      id: 'governance',
+      title: c.utilityGovernance,
+      description: c.utilityGovernanceDesc,
+      icon: Shield,
+      color: 'emerald'
+    },
+    {
+      id: 'ecosystem',
+      title: c.utilityEcosystem,
+      description: c.utilityEcosystemDesc,
+      icon: Zap,
+      color: 'orange'
+    },
+    {
+      id: 'contribution',
+      title: c.utilityContribution,
+      description: c.utilityContributionDesc,
+      icon: Coins,
+      color: 'yellow'
+    }
+  ];
+
+  const getIconColor = (color: string) => {
+    const colors = {
+      blue: 'text-blue-500',
+      purple: 'text-purple-500',
+      emerald: 'text-emerald-500',
+      orange: 'text-orange-500',
+      yellow: 'text-yellow-500'
+    };
+    return colors[color as keyof typeof colors] || 'text-primary';
+  };
+
+  const getBgColor = (color: string) => {
+    const colors = {
+      blue: 'bg-blue-500/20',
+      purple: 'bg-purple-500/20',
+      emerald: 'bg-emerald-500/20',
+      orange: 'bg-orange-500/20',
+      yellow: 'bg-yellow-500/20'
+    };
+    return colors[color as keyof typeof colors] || 'bg-primary/10';
+  };
 
   return (
     <>
@@ -134,6 +242,42 @@ export default function PresalePage() {
             <div className="bg-gradient-to-br from-[#1C2128] to-[#161B22] border border-[#30363D]/50 rounded-xl p-6 mb-8">
               <p className="text-[#C9D1D9] leading-relaxed text-center">{c.stagesNarrative}</p>
             </div>
+
+            {/* COUNTDOWN TIMER */}
+            {presaleData.stage2.status === 'ACTIVE' && (
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-6 mb-8">
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-2 mb-4">
+                    <Clock className="h-5 w-5 text-blue-500" />
+                    <p className="text-sm font-semibold text-blue-500 uppercase tracking-wider">{c.stageEndsIn}</p>
+                  </div>
+                  <div className="flex justify-center items-center gap-4 text-2xl font-bold text-white">
+                    <div className="text-center">
+                      <div className="text-3xl font-black text-blue-500">{formatTime(countdown.days)}</div>
+                      <div className="text-sm text-blue-200">{c.days}</div>
+                    </div>
+                    <span className="text-blue-500">:</span>
+                    <div className="text-center">
+                      <div className="text-3xl font-black text-blue-500">{formatTime(countdown.hours)}</div>
+                      <div className="text-sm text-blue-200">{c.hours}</div>
+                    </div>
+                    <span className="text-blue-500">:</span>
+                    <div className="text-center">
+                      <div className="text-3xl font-black text-blue-500">{formatTime(countdown.minutes)}</div>
+                      <div className="text-sm text-blue-200">{c.minutes}</div>
+                    </div>
+                    <span className="text-blue-500">:</span>
+                    <div className="text-center">
+                      <div className="text-3xl font-black text-blue-500">{formatTime(countdown.seconds)}</div>
+                      <div className="text-sm text-blue-200">{c.seconds}</div>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <p className="text-xs text-blue-200 leading-relaxed text-center">{c.countdownDisclaimer}</p>
+                  </div>
+                </div>
+              </div>
+            )}
             
             <div className="grid md:grid-cols-2 gap-8 mb-8">
               {/* Stage 1 */}
