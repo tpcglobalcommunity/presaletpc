@@ -132,45 +132,73 @@ export default function MarketPage() {
         <meta name="description" content={`TPC Global Market - ${c.subtitle}`} />
       </Helmet>
       
-      <div className="min-h-screen bg-[#0B0E11]">
-        <div className="max-w-4xl mx-auto px-4 py-8 pb-24">
+      <div className="min-h-screen bg-gradient-to-br from-[#0B0E11] via-[#0A0D0F] to-[#0C0F12]">
+        <div className="max-w-4xl mx-auto px-4 py-6 pb-24">
           {/* HERO SECTION */}
-          <div className="text-center mb-16">
-            <div className="w-24 h-24 mx-auto mb-8 rounded-2xl bg-gradient-to-br from-[#F0B90B]/20 to-[#F8D56B]/20 flex items-center justify-center border border-[#F0B90B]/30 backdrop-blur-sm">
-              <TrendingUp className="h-12 w-12 text-[#F0B90B]" />
+          <div className="relative mb-12 md:mb-16">
+            {/* Animated background gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#1C2128]/30 via-[#F0B90B]/5 to-[#161B22]/30 rounded-2xl md:rounded-3xl -z-10 backdrop-blur-xl border border-[#F0B90B]/10"></div>
+            
+            {/* Enhanced icon container */}
+            <div className="relative z-10">
+              <div className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 md:mb-8 rounded-2xl md:rounded-2xl bg-gradient-to-br from-[#F0B90B]/20 via-[#F8D56B]/15 to-[#F0B90B]/10 flex items-center justify-center border border-[#F0B90B]/30 backdrop-blur-sm relative shadow-2xl shadow-[#F0B90B]/20">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#F0B90B]/20 to-transparent rounded-2xl blur-xl md:blur-2xl"></div>
+                <div className="absolute inset-0 bg-[#F0B90B]/10 rounded-2xl animate-pulse"></div>
+                <TrendingUp className="h-10 w-10 md:h-12 md:w-12 text-[#F0B90B] relative z-10 drop-shadow-lg" />
+              </div>
             </div>
-            <h1 className="text-5xl font-bold text-white mb-4 tracking-tight">{c.title}</h1>
-            <p className="text-2xl text-[#F0B90B] font-medium mb-3">{c.subtitle}</p>
-            <p className="text-[#848E9C] text-lg max-w-2xl mx-auto">{c.supporting}</p>
+            
+            <div className="relative z-10 text-center">
+              <div className="mb-4 md:mb-6">
+                <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-[#F0B90B] to-white mb-2 md:mb-4 tracking-tight leading-tight">
+                  {c.title}
+                </h1>
+                <div className="h-1 w-20 md:w-32 mx-auto bg-gradient-to-r from-[#F0B90B]/50 to-[#F8D56B]/50 rounded-full mb-4 md:mb-6"></div>
+              </div>
+              <p className="text-lg md:text-2xl lg:text-3xl text-[#F0B90B] font-semibold mb-3 md:mb-4 leading-relaxed">{c.subtitle}</p>
+              <p className="text-sm md:text-base lg:text-lg text-[#848E9C]/90 max-w-2xl md:max-w-3xl mx-auto leading-relaxed font-light">{c.supporting}</p>
+            </div>
           </div>
 
           {/* PRODUCT CATEGORIES */}
-          <div className="mb-16">
-            <h2 className="text-2xl font-semibold text-white mb-8 text-center">{c.products}</h2>
-            <div className="grid md:grid-cols-2 gap-6">
+          <div className="mb-12 md:mb-16">
+            <div className="text-center mb-6 md:mb-8">
+              <p className="text-xs md:text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] uppercase tracking-wider mb-2">{c.products}</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-white">{c.products}</h2>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4 md:gap-6">
               {products.map((product) => {
                 const Icon = product.icon;
                 return (
-                  <div key={product.id} className="bg-[#1C2128] border border-[#30363D] rounded-2xl p-6 hover:border-[#F0B90B]/30 transition-colors">
-                    <div className="flex items-start gap-4 mb-4">
-                      <div className={`w-14 h-14 rounded-xl ${getBgColor(product.color)} flex items-center justify-center flex-shrink-0`}>
-                        <Icon className={`h-7 w-7 ${getIconColor(product.color)}`} />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-xl font-semibold text-white mb-2">{product.title}</h3>
-                        <p className="text-[#848E9C] text-sm leading-relaxed mb-3">{product.description}</p>
-                        <div className={`inline-flex px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(product.status)}`}>
-                          {product.status}
+                  <div key={product.id} className="relative group">
+                    {/* Background hover effect */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#1C2128]/80 to-[#161B22]/80 rounded-xl md:rounded-2xl -z-10 backdrop-blur-xl border border-[#30363D]/30 group-hover:border-[#F0B90B]/40 transition-all duration-500"></div>
+                    
+                    {/* Main card */}
+                    <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-xl md:rounded-2xl p-4 md:p-6 backdrop-blur-sm border border-[#30363D]/50 group-hover:border-[#F0B90B]/50 transition-all duration-500 shadow-lg group-hover:shadow-2xl group-hover:shadow-[#F0B90B]/10">
+                      <div className="flex items-start gap-3 md:gap-4 mb-4">
+                        <div className="relative">
+                          <div className={`w-12 h-12 md:w-14 md:h-14 rounded-lg md:rounded-xl ${getBgColor(product.color)} flex items-center justify-center flex-shrink-0 border border-[#30363D]/30`}>
+                            <Icon className={`h-6 w-6 md:h-7 md:w-7 ${getIconColor(product.color)}`} />
+                          </div>
+                          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-lg blur-lg"></div>
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-lg md:text-xl font-bold text-white mb-1">{product.title}</h3>
+                          <p className="text-[#C9D1D9]/90 text-sm md:text-base leading-relaxed mb-3">{product.description}</p>
+                          <div className={`inline-flex px-2 py-1 md:px-3 py-1 rounded-full text-xs md:text-xs font-medium border backdrop-blur-sm ${getStatusColor(product.status)}`}>
+                            {product.status}
+                          </div>
                         </div>
                       </div>
+                      <button 
+                        onClick={() => navigate(`/${safeLang}/market/tpc-akademi`)}
+                        className="w-full mt-3 md:mt-4 px-3 md:px-4 py-2 md:py-3 bg-gradient-to-r from-[#F0B90B]/10 to-[#F8D56B]/10 hover:from-[#F0B90B]/20 hover:to-[#F8D56B]/20 text-[#F0B90B] rounded-lg md:rounded-xl transition-all duration-300 font-medium flex items-center justify-center gap-2 group-hover:shadow-lg group-hover:shadow-[#F0B90B]/20 transform hover:scale-105"
+                      >
+                        {product.cta}
+                        <ArrowRight className="h-4 w-4" />
+                      </button>
                     </div>
-                    <button 
-                      onClick={() => navigate(`/${safeLang}/market/tpc-akademi`)}
-                      className="w-full mt-4 px-4 py-3 bg-[#F0B90B]/10 hover:bg-[#F0B90B]/20 text-[#F0B90B] rounded-xl transition-colors font-medium flex items-center justify-center gap-2"
-                    >
-                      {product.cta}
-                      <ArrowRight className="h-4 w-4" />
-                    </button>
                   </div>
                 );
               })}
@@ -178,31 +206,45 @@ export default function MarketPage() {
           </div>
 
           {/* TRUST & SAFETY SECTION */}
-          <div className="bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border border-emerald-500/30 rounded-2xl p-8 mb-12">
-            <div className="flex items-start gap-6">
-              <div className="w-16 h-16 rounded-xl bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                <Shield className="h-8 w-8 text-emerald-500" />
-              </div>
-              <div className="flex-1">
-                <h2 className="text-2xl font-bold text-white mb-3">{c.safetyTransparency}</h2>
-                <p className="text-[#C9D1D9] text-lg mb-6">{c.safetyDesc}</p>
-                <button
-                  onClick={() => navigate(`/${safeLang}/anti-scam`)}
-                  className="inline-flex items-center gap-3 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-colors font-medium"
-                >
-                  <Shield className="h-5 w-5" />
-                  {c.antiScam}
-                  <ArrowRight className="h-5 w-5" />
-                </button>
+          <div className="relative mb-8 md:mb-12">
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-emerald-600/5 to-emerald-500/10 rounded-xl md:rounded-2xl -z-10 backdrop-blur-xl border border-emerald-500/20"></div>
+            <div className="relative bg-gradient-to-br from-[#1C2128]/80 to-[#161B22]/80 rounded-xl md:rounded-2xl p-6 md:p-8 backdrop-blur-sm border border-emerald-500/30 shadow-2xl shadow-emerald-500/10">
+              <div className="flex items-start gap-4 md:gap-6">
+                <div className="relative flex-shrink-0">
+                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-lg md:rounded-xl bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
+                    <Shield className="h-6 w-6 md:h-8 md:w-8 text-emerald-400" />
+                  </div>
+                  <div className="absolute inset-0 bg-emerald-500/20 rounded-lg blur-lg"></div>
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-xl md:text-2xl font-bold text-white mb-2 md:mb-3">{c.safetyTransparency}</h2>
+                  <p className="text-[#C9D1D9]/90 text-sm md:text-base md:text-lg mb-4 md:mb-6 leading-relaxed">{c.safetyDesc}</p>
+                  <button
+                    onClick={() => navigate(`/${safeLang}/anti-scam`)}
+                    className="inline-flex items-center gap-2 md:gap-3 px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-lg md:rounded-xl transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+                  >
+                    <Shield className="h-4 w-4 md:h-5 md:w-5" />
+                    {c.antiScam}
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
           {/* DISCLAIMER */}
-          <div className="bg-[#1C2128] border border-[#30363D]/50 rounded-xl p-6">
-            <div className="flex items-start gap-3">
-              <Info className="h-5 w-5 text-[#F0B90B] flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-[#848E9C] leading-relaxed">{c.disclaimer}</p>
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-xl md:rounded-xl -z-10 backdrop-blur-xl border border-[#30363D]/30"></div>
+            <div className="relative bg-gradient-to-br from-[#1C2128]/40 to-[#161B22]/40 rounded-xl md:rounded-xl p-4 md:p-6 backdrop-blur-sm border border-[#30363D]/50">
+              <div className="flex items-start gap-3 md:gap-4">
+                <div className="relative flex-shrink-0">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-[#F0B90B]/20 to-[#F8D56B]/20 rounded-lg md:rounded-xl flex items-center justify-center border border-[#F0B90B]/30">
+                    <Info className="h-5 w-5 md:h-6 md:w-6 text-[#F0B90B]" />
+                  </div>
+                  <div className="absolute inset-0 bg-[#F0B90B]/20 rounded-lg blur-lg"></div>
+                </div>
+                <p className="text-xs md:text-sm text-[#848E9C]/90 leading-relaxed flex-1">{c.disclaimer}</p>
+              </div>
             </div>
           </div>
         </div>
