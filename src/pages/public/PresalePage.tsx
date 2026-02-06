@@ -224,38 +224,38 @@ export default function PresalePage() {
       </Helmet>
       
       <div className="min-h-screen bg-gradient-to-br from-[#0B0E11] via-[#0A0D0F] to-[#0C0F12]">
-        <div className="max-w-4xl mx-auto px-4 py-8 pb-24">
+        <div className="max-w-4xl mx-auto px-4 py-6 pb-24">
           {/* HERO SECTION */}
-          <div className="relative mb-20">
+          <div className="relative mb-12 md:mb-16">
             {/* Animated background gradient */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#1C2128]/30 via-[#F0B90B]/5 to-[#161B22]/30 rounded-3xl -z-10 backdrop-blur-xl border border-[#F0B90B]/10"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-[#1C2128]/30 via-[#F0B90B]/5 to-[#161B22]/30 rounded-2xl md:rounded-3xl -z-10 backdrop-blur-xl border border-[#F0B90B]/10"></div>
             
             {/* Enhanced icon container */}
             <div className="relative z-10">
-              <div className="w-32 h-32 mx-auto mb-8 rounded-3xl bg-gradient-to-br from-[#F0B90B]/20 via-[#F8D56B]/15 to-[#F0B90B]/10 flex items-center justify-center border border-[#F0B90B]/30 backdrop-blur-sm relative shadow-2xl shadow-[#F0B90B]/20">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#F0B90B]/20 to-transparent rounded-3xl blur-2xl"></div>
-                <div className="absolute inset-0 bg-[#F0B90B]/10 rounded-3xl animate-pulse"></div>
-                <Coins className="h-16 w-16 text-[#F0B90B] relative z-10 drop-shadow-lg" />
+              <div className="w-20 h-20 md:w-32 md:h-32 mx-auto mb-4 md:mb-8 rounded-2xl md:rounded-3xl bg-gradient-to-br from-[#F0B90B]/20 via-[#F8D56B]/15 to-[#F0B90B]/10 flex items-center justify-center border border-[#F0B90B]/30 backdrop-blur-sm relative shadow-2xl shadow-[#F0B90B]/20">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#F0B90B]/20 to-transparent rounded-2xl md:rounded-3xl blur-xl md:blur-2xl"></div>
+                <div className="absolute inset-0 bg-[#F0B90B]/10 rounded-2xl md:rounded-3xl animate-pulse"></div>
+                <Coins className="h-10 w-10 md:h-16 md:w-16 text-[#F0B90B] relative z-10 drop-shadow-lg" />
               </div>
             </div>
             
             <div className="relative z-10 text-center">
-              <div className="mb-6">
-                <h1 className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-[#F0B90B] to-white mb-4 tracking-tight leading-tight">
+              <div className="mb-4 md:mb-6">
+                <h1 className="text-3xl md:text-5xl lg:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-[#F0B90B] to-white mb-2 md:mb-4 tracking-tight leading-tight">
                   {c.title}
                 </h1>
-                <div className="h-1 w-32 mx-auto bg-gradient-to-r from-[#F0B90B]/50 to-[#F8D56B]/50 rounded-full mb-6"></div>
+                <div className="h-1 w-20 md:w-32 mx-auto bg-gradient-to-r from-[#F0B90B]/50 to-[#F8D56B]/50 rounded-full mb-4 md:mb-6"></div>
               </div>
-              <p className="text-2xl md:text-3xl text-[#F0B90B] font-semibold mb-6 leading-relaxed">{c.subtitle}</p>
-              <p className="text-lg md:text-xl text-[#848E9C]/90 max-w-3xl mx-auto leading-relaxed font-light">{c.supporting}</p>
+              <p className="text-lg md:text-2xl lg:text-3xl text-[#F0B90B] font-semibold mb-3 md:mb-6 leading-relaxed">{c.subtitle}</p>
+              <p className="text-sm md:text-base lg:text-lg text-[#848E9C]/90 max-w-2xl md:max-w-3xl mx-auto leading-relaxed font-light">{c.supporting}</p>
             </div>
           </div>
 
           {/* STAGES */}
-          <div className="mb-20">
-            <div className="text-center mb-8">
-              <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{c.stages}</p>
-              <h2 className="text-3xl font-bold text-white">{c.stagesTitle}</h2>
+          <div className="mb-12 md:mb-16">
+            <div className="text-center mb-6 md:mb-8">
+              <p className="text-xs md:text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{c.stages}</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-white">{c.stagesTitle}</h2>
             </div>
             
             {/* LISTING DISCLAIMER */}
@@ -272,59 +272,59 @@ export default function PresalePage() {
             </div>
 
             {/* COUNTDOWN TIMER */}
-            <div className="relative mb-12">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#F0B90B]/10 via-[#F8D56B]/5 to-[#F0B90B]/10 rounded-2xl -z-10 backdrop-blur-xl border border-[#F0B90B]/20"></div>
-              <div className="bg-gradient-to-br from-[#1C2128]/80 to-[#161B22]/80 rounded-2xl p-8 backdrop-blur-sm border border-[#F0B90B]/30 shadow-2xl shadow-[#F0B90B]/10">
+            <div className="relative mb-8 md:mb-12">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#F0B90B]/10 via-[#F8D56B]/5 to-[#F0B90B]/10 rounded-xl md:rounded-2xl -z-10 backdrop-blur-xl border border-[#F0B90B]/20"></div>
+              <div className="bg-gradient-to-br from-[#1C2128]/80 to-[#161B22]/80 rounded-xl md:rounded-2xl p-4 md:p-8 backdrop-blur-sm border border-[#F0B90B]/30 shadow-2xl shadow-[#F0B90B]/10">
                 <div className="text-center">
-                  <div className="flex items-center justify-center gap-3 mb-6">
+                  <div className="flex items-center justify-center gap-2 md:gap-3 mb-4 md:mb-6">
                     <div className="relative">
-                      <Clock className="h-6 w-6 text-[#F0B90B] drop-shadow-lg" />
+                      <Clock className="h-4 w-4 md:h-6 md:w-6 text-[#F0B90B] drop-shadow-lg" />
                       <div className="absolute inset-0 bg-[#F0B90B]/20 rounded-full blur-md"></div>
                     </div>
-                    <p className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] uppercase tracking-wider">
+                    <p className="text-sm md:text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] uppercase tracking-wider">
                       {c.stageEndsIn}
                     </p>
                   </div>
 
                   {shouldShowCountdown ? (
-                    <div className="flex justify-center items-center gap-3 md:gap-6 text-2xl md:text-3xl font-bold text-white">
+                    <div className="flex justify-center items-center gap-2 md:gap-4 lg:gap-6 text-lg md:text-2xl lg:text-3xl font-bold text-white">
                       <div className="relative group">
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#F0B90B]/20 to-transparent rounded-xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
-                        <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-xl p-4 md:p-6 border border-[#F0B90B]/30 shadow-lg">
-                          <div className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] drop-shadow-lg">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#F0B90B]/20 to-transparent rounded-lg md:rounded-xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
+                        <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-lg md:rounded-xl p-3 md:p-4 lg:p-6 border border-[#F0B90B]/30 shadow-lg">
+                          <div className="text-2xl md:text-3xl lg:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] drop-shadow-lg">
                             {formatTime(countdown.days)}
                           </div>
-                          <div className="text-sm md:text-base text-[#F0B90B]/80 font-medium mt-1">{c.days}</div>
+                          <div className="text-xs md:text-sm lg:text-base text-[#F0B90B]/80 font-medium mt-1">{c.days}</div>
                         </div>
                       </div>
-                      <span className="text-[#F0B90B]/60 text-2xl md:text-3xl font-light animate-pulse">:</span>
+                      <span className="text-[#F0B90B]/60 text-lg md:text-2xl lg:text-3xl font-light animate-pulse">:</span>
                       <div className="relative group">
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#F0B90B]/20 to-transparent rounded-xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
-                        <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-xl p-4 md:p-6 border border-[#F0B90B]/30 shadow-lg">
-                          <div className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] drop-shadow-lg">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#F0B90B]/20 to-transparent rounded-lg md:rounded-xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
+                        <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-lg md:rounded-xl p-3 md:p-4 lg:p-6 border border-[#F0B90B]/30 shadow-lg">
+                          <div className="text-2xl md:text-3xl lg:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] drop-shadow-lg">
                             {formatTime(countdown.hours)}
                           </div>
-                          <div className="text-sm md:text-base text-[#F0B90B]/80 font-medium mt-1">{c.hours}</div>
+                          <div className="text-xs md:text-sm lg:text-base text-[#F0B90B]/80 font-medium mt-1">{c.hours}</div>
                         </div>
                       </div>
-                      <span className="text-[#F0B90B]/60 text-2xl md:text-3xl font-light animate-pulse">:</span>
+                      <span className="text-[#F0B90B]/60 text-lg md:text-2xl lg:text-3xl font-light animate-pulse">:</span>
                       <div className="relative group">
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#F0B90B]/20 to-transparent rounded-xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
-                        <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-xl p-4 md:p-6 border border-[#F0B90B]/30 shadow-lg">
-                          <div className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] drop-shadow-lg">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#F0B90B]/20 to-transparent rounded-lg md:rounded-xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
+                        <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-lg md:rounded-xl p-3 md:p-4 lg:p-6 border border-[#F0B90B]/30 shadow-lg">
+                          <div className="text-2xl md:text-3xl lg:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] drop-shadow-lg">
                             {formatTime(countdown.minutes)}
                           </div>
-                          <div className="text-sm md:text-base text-[#F0B90B]/80 font-medium mt-1">{c.minutes}</div>
+                          <div className="text-xs md:text-sm lg:text-base text-[#F0B90B]/80 font-medium mt-1">{c.minutes}</div>
                         </div>
                       </div>
-                      <span className="text-[#F0B90B]/60 text-2xl md:text-3xl font-light animate-pulse">:</span>
+                      <span className="text-[#F0B90B]/60 text-lg md:text-2xl lg:text-3xl font-light animate-pulse">:</span>
                       <div className="relative group">
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#F0B90B]/20 to-transparent rounded-xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
-                        <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-xl p-4 md:p-6 border border-[#F0B90B]/30 shadow-lg">
-                          <div className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] drop-shadow-lg">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#F0B90B]/20 to-transparent rounded-lg md:rounded-xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
+                        <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-lg md:rounded-xl p-3 md:p-4 lg:p-6 border border-[#F0B90B]/30 shadow-lg">
+                          <div className="text-2xl md:text-3xl lg:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] drop-shadow-lg">
                             {formatTime(countdown.seconds)}
                           </div>
-                          <div className="text-sm md:text-base text-[#F0B90B]/80 font-medium mt-1">{c.seconds}</div>
+                          <div className="text-xs md:text-sm lg:text-base text-[#F0B90B]/80 font-medium mt-1">{c.seconds}</div>
                         </div>
                       </div>
                     </div>
@@ -345,30 +345,30 @@ export default function PresalePage() {
               </div>
             </div>
             
-            <div className="grid md:grid-cols-2 gap-6 md:gap-8 mb-12">
+            <div className="grid md:grid-cols-2 gap-4 md:gap-6 md:gap-8 mb-8 md:mb-12">
               {/* Stage 1 */}
               <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#1C2128]/80 to-[#161B22]/80 rounded-2xl -z-10 backdrop-blur-xl border border-[#30363D]/30 group-hover:border-[#F0B90B]/40 transition-all duration-500"></div>
-                <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-2xl p-6 md:p-8 backdrop-blur-sm border border-[#30363D]/50 group-hover:border-[#F0B90B]/50 transition-all duration-500 shadow-lg group-hover:shadow-2xl group-hover:shadow-[#F0B90B]/10">
-                  <div className="flex items-center justify-between mb-6">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#1C2128]/80 to-[#161B22]/80 rounded-xl md:rounded-2xl -z-10 backdrop-blur-xl border border-[#30363D]/30 group-hover:border-[#F0B90B]/40 transition-all duration-500"></div>
+                <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 backdrop-blur-sm border border-[#30363D]/50 group-hover:border-[#F0B90B]/50 transition-all duration-500 shadow-lg group-hover:shadow-2xl group-hover:shadow-[#F0B90B]/10">
+                  <div className="flex items-center justify-between mb-4 md:mb-6">
                     <div>
-                      <h3 className="text-2xl md:text-3xl font-bold text-white mb-1">{c.stage1}</h3>
-                      <div className="h-1 w-16 bg-gradient-to-r from-[#F0B90B]/50 to-transparent rounded-full"></div>
+                      <h3 className="text-lg md:text-2xl lg:text-3xl font-bold text-white mb-1">{c.stage1}</h3>
+                      <div className="h-1 w-12 md:w-16 bg-gradient-to-r from-[#F0B90B]/50 to-transparent rounded-full"></div>
                     </div>
-                    <div className={`px-4 py-2 rounded-full text-sm font-medium border backdrop-blur-sm ${getStatusColor(presaleData.stage1.status)}`}>
+                    <div className={`px-3 py-1 md:px-4 py-2 rounded-full text-xs md:text-sm font-medium border backdrop-blur-sm ${getStatusColor(presaleData.stage1.status)}`}>
                       {getStatusText(presaleData.stage1.status)}
                     </div>
                   </div>
-                  <div className="space-y-6">
-                    <div className="flex justify-between items-center p-4 bg-[#0B0E11]/30 rounded-xl border border-[#30363D]/20">
-                      <span className="text-[#848E9C] font-medium">{c.price}</span>
-                      <span className="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-[#F0B90B]/80">
+                  <div className="space-y-3 md:space-y-6">
+                    <div className="flex justify-between items-center p-3 md:p-4 bg-[#0B0E11]/30 rounded-lg md:rounded-xl border border-[#30363D]/20">
+                      <span className="text-[#848E9C] text-sm md:text-base font-medium">{c.price}</span>
+                      <span className="text-base md:text-xl lg:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-[#F0B90B]/80">
                         ${presaleData.stage1.price.toFixed(3)}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center p-4 bg-[#0B0E11]/30 rounded-xl border border-[#30363D]/20">
-                      <span className="text-[#848E9C] font-medium">{c.supply}</span>
-                      <span className="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-[#F0B90B]/80">
+                    <div className="flex justify-between items-center p-3 md:p-4 bg-[#0B0E11]/30 rounded-lg md:rounded-xl border border-[#30363D]/20">
+                      <span className="text-[#848E9C] text-sm md:text-base font-medium">{c.supply}</span>
+                      <span className="text-base md:text-xl lg:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-[#F0B90B]/80">
                         {formatNumber(presaleData.stage1.supply)} TPC
                       </span>
                     </div>
@@ -378,27 +378,27 @@ export default function PresalePage() {
 
               {/* Stage 2 */}
               <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#1C2128]/80 to-[#161B22]/80 rounded-2xl -z-10 backdrop-blur-xl border border-[#30363D]/30 group-hover:border-[#F0B90B]/40 transition-all duration-500"></div>
-                <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-2xl p-6 md:p-8 backdrop-blur-sm border border-[#30363D]/50 group-hover:border-[#F0B90B]/50 transition-all duration-500 shadow-lg group-hover:shadow-2xl group-hover:shadow-[#F0B90B]/10">
-                  <div className="flex items-center justify-between mb-6">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#1C2128]/80 to-[#161B22]/80 rounded-xl md:rounded-2xl -z-10 backdrop-blur-xl border border-[#30363D]/30 group-hover:border-[#F0B90B]/40 transition-all duration-500"></div>
+                <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 backdrop-blur-sm border border-[#30363D]/50 group-hover:border-[#F0B90B]/50 transition-all duration-500 shadow-lg group-hover:shadow-2xl group-hover:shadow-[#F0B90B]/10">
+                  <div className="flex items-center justify-between mb-4 md:mb-6">
                     <div>
-                      <h3 className="text-2xl md:text-3xl font-bold text-white mb-1">{c.stage2}</h3>
-                      <div className="h-1 w-16 bg-gradient-to-r from-[#F0B90B]/50 to-transparent rounded-full"></div>
+                      <h3 className="text-lg md:text-2xl lg:text-3xl font-bold text-white mb-1">{c.stage2}</h3>
+                      <div className="h-1 w-12 md:w-16 bg-gradient-to-r from-[#F0B90B]/50 to-transparent rounded-full"></div>
                     </div>
-                    <div className={`px-4 py-2 rounded-full text-sm font-medium border backdrop-blur-sm ${getStatusColor(presaleData.stage2.status)}`}>
+                    <div className={`px-3 py-1 md:px-4 py-2 rounded-full text-xs md:text-sm font-medium border backdrop-blur-sm ${getStatusColor(presaleData.stage2.status)}`}>
                       {getStatusText(presaleData.stage2.status)}
                     </div>
                   </div>
-                  <div className="space-y-6">
-                    <div className="flex justify-between items-center p-4 bg-[#0B0E11]/30 rounded-xl border border-[#30363D]/20">
-                      <span className="text-[#848E9C] font-medium">{c.price}</span>
-                      <span className="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-[#F0B90B]/80">
+                  <div className="space-y-3 md:space-y-6">
+                    <div className="flex justify-between items-center p-3 md:p-4 bg-[#0B0E11]/30 rounded-lg md:rounded-xl border border-[#30363D]/20">
+                      <span className="text-[#848E9C] text-sm md:text-base font-medium">{c.price}</span>
+                      <span className="text-base md:text-xl lg:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-[#F0B90B]/80">
                         ${presaleData.stage2.price.toFixed(3)}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center p-4 bg-[#0B0E11]/30 rounded-xl border border-[#30363D]/20">
-                      <span className="text-[#848E9C] font-medium">{c.supply}</span>
-                      <span className="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-[#F0B90B]/80">
+                    <div className="flex justify-between items-center p-3 md:p-4 bg-[#0B0E11]/30 rounded-lg md:rounded-xl border border-[#30363D]/20">
+                      <span className="text-[#848E9C] text-sm md:text-base font-medium">{c.supply}</span>
+                      <span className="text-base md:text-xl lg:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-[#F0B90B]/80">
                         {formatNumber(presaleData.stage2.supply)} TPC
                       </span>
                     </div>
@@ -408,10 +408,10 @@ export default function PresalePage() {
             </div>
 
             {/* Total Supply */}
-            <div className="relative mb-12">
-              <div className="absolute inset-0 bg-gradient-to-r from-[#F0B90B]/10 via-[#F8D56B]/5 to-[#F0B90B]/10 rounded-2xl -z-10 backdrop-blur-xl border border-[#F0B90B]/20"></div>
-              <div className="bg-gradient-to-r from-[#1C2128]/60 to-[#161B22]/60 rounded-2xl p-6 backdrop-blur-sm border border-[#F0B90B]/30 text-center">
-                <p className="text-lg md:text-xl text-transparent bg-clip-text bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] font-bold">
+            <div className="relative mb-8 md:mb-12">
+              <div className="absolute inset-0 bg-gradient-to-r from-[#F0B90B]/10 via-[#F8D56B]/5 to-[#F0B90B]/10 rounded-xl md:rounded-2xl -z-10 backdrop-blur-xl border border-[#F0B90B]/20"></div>
+              <div className="bg-gradient-to-r from-[#1C2128]/60 to-[#161B22]/60 rounded-xl md:rounded-2xl p-4 md:p-6 backdrop-blur-sm border border-[#F0B90B]/30 text-center">
+                <p className="text-sm md:text-lg lg:text-xl text-transparent bg-clip-text bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] font-bold">
                   {c.totalSupply}
                 </p>
               </div>
@@ -419,28 +419,28 @@ export default function PresalePage() {
           </div>
 
           {/* UTILITY-FIRST POSITIONING */}
-          <div className="mb-20">
-            <div className="text-center mb-8">
-              <p className="text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] uppercase tracking-wider mb-2">{c.utility}</p>
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">{c.utilityTitle}</h2>
-              <div className="h-1 w-24 mx-auto bg-gradient-to-r from-[#F0B90B]/50 to-[#F8D56B]/50 rounded-full"></div>
+          <div className="mb-12 md:mb-16">
+            <div className="text-center mb-4 md:mb-8">
+              <p className="text-xs md:text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] uppercase tracking-wider mb-2">{c.utility}</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">{c.utilityTitle}</h2>
+              <div className="h-1 w-20 md:w-24 mx-auto bg-gradient-to-r from-[#F0B90B]/50 to-[#F8D56B]/50 rounded-full"></div>
             </div>
-            <div className="grid md:grid-cols-2 gap-6 md:gap-8">
-              <div className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-4 md:gap-6 md:gap-8">
+              <div className="space-y-4 md:space-y-6">
                 {/* Education Access */}
                 <div className="relative group">
                   <div className="absolute inset-0 bg-gradient-to-br from-[#1C2128]/80 to-[#161B22]/80 rounded-2xl -z-10 backdrop-blur-xl border border-[#30363D]/30 group-hover:border-[#F0B90B]/40 transition-all duration-500"></div>
                   <div className="relative bg-gradient-to-br from-[#1C2128]/60 to-[#161B22]/60 rounded-2xl p-6 backdrop-blur-sm border border-[#30363D]/50 group-hover:border-[#F0B90B]/50 transition-all duration-500 shadow-lg group-hover:shadow-2xl group-hover:shadow-[#F0B90B]/10">
-                    <div className="flex items-start gap-4">
+                    <div className="flex items-start gap-3 md:gap-4">
                       <div className="relative">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl flex items-center justify-center flex-shrink-0 border border-blue-500/30">
-                          <BookOpen className="h-6 w-6 text-blue-400" />
+                        <div className="w-10 h-10 md:w-12 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0 border border-blue-500/30">
+                          <BookOpen className="h-5 w-5 md:h-6 text-blue-400" />
                         </div>
-                        <div className="absolute inset-0 bg-blue-500/20 rounded-xl blur-lg"></div>
+                        <div className="absolute inset-0 bg-blue-500/20 rounded-lg blur-lg"></div>
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-lg font-bold text-white mb-2">{c.utilityEducation}</h3>
-                        <p className="text-[#C9D1D9]/90 leading-relaxed">{c.utilityEducationDesc}</p>
+                        <h3 className="text-base md:text-lg font-bold text-white mb-1">{c.utilityEducation}</h3>
+                        <p className="text-[#C9D1D9]/90 leading-relaxed text-sm md:text-base">{c.utilityEducationDesc}</p>
                       </div>
                     </div>
                   </div>
