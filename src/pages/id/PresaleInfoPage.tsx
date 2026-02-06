@@ -107,10 +107,6 @@ export default function PresaleInfoPage() {
   const stage1Raised = (200000000 * stage1Progress) / 100;
   const stage2Raised = 0; // Stage 2 hasn't started
 
-  // Calculate ROI
-  const stage1ROI = ((config.listing_price_usd - config.stage1_price_usd) / config.stage1_price_usd) * 100;
-  const stage2ROI = ((config.listing_price_usd - config.stage2_price_usd) / config.stage2_price_usd) * 100;
-
   // Helper functions
   const formatMillions = (n: number) => `${(n / 1_000_000).toFixed(0)}M`;
 
@@ -201,23 +197,23 @@ export default function PresaleInfoPage() {
                   </div>
                 </div>
 
-                {/* Price Target Simulation - Legal Safe */}
+                {/* Price Information - Legal Safe */}
                 <div className="bg-slate-900/50 rounded-lg p-3 md:p-4 border border-slate-700/50">
                   <div className="flex items-center justify-center gap-2">
                     <Target className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />
-                    <span className="text-sm md:text-base font-semibold">Simulasi Harga Target (Indikatif)</span>
+                    <span className="text-sm md:text-base font-semibold">Informasi Harga (Indikatif)</span>
                   </div>
                   <div className="text-lg md:text-2xl font-bold text-amber-400 text-center">
                     $0.005
                   </div>
                   <div className="text-xs md:text-sm text-gray-400 text-center">
-                    Target harga listing direncanakan di kisaran $0.005
+                    Harga listing direncanakan di kisaran tertentu berdasarkan roadmap proyek.
                   </div>
                   <div className="text-xs text-gray-500 text-center mt-2">
                     Informasi ini bersifat indikatif dan tidak mengikat. Harga dapat berubah mengikuti kondisi pasar.
                   </div>
                   <div className="text-xs text-gray-500 text-center mt-1">
-                    TPC adalah token utilitas, bukan produk investasi dan tidak menjanjikan imbal hasil.
+                    Tidak menjamin keuntungan.
                   </div>
                 </div>
               </CardContent>
@@ -385,9 +381,7 @@ export default function PresaleInfoPage() {
           <div className="mb-6 md:mb-8">
             <div className="bg-slate-900/30 rounded-lg p-4 md:p-6 border border-slate-700/30">
               <p className="text-xs md:text-sm text-gray-400 text-center leading-relaxed">
-                TPC adalah token utilitas untuk ekosistem edukasi dan komunitas.
-                Pembelian token tidak menjamin keuntungan dan memiliki risiko.
-                Informasi yang disampaikan bukan nasihat keuangan.
+                TPC adalah token utilitas untuk ekosistem edukasi dan komunitas. Bukan produk investasi dan tidak menjanjikan imbal hasil. Pembelian token memiliki risiko. Informasi yang disampaikan bukan nasihat keuangan.
               </p>
             </div>
           </div>

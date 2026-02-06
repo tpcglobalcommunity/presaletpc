@@ -719,9 +719,7 @@ export default function AntiScamPage() {
         <div className="mb-8">
           <div className="bg-slate-900/30 rounded-lg p-4 md:p-6 border border-slate-700/30">
             <p className="text-xs md:text-sm text-gray-400 text-center leading-relaxed">
-              TPC adalah token utilitas untuk ekosistem edukasi dan komunitas.
-              Pembelian token tidak menjamin keuntungan dan memiliki risiko.
-              Informasi yang disampaikan bukan nasihat keuangan.
+              TPC adalah token utilitas untuk ekosistem edukasi dan komunitas. Bukan produk investasi dan tidak menjanjikan imbal hasil. Pembelian token memiliki risiko. Informasi yang disampaikan bukan nasihat keuangan.
             </p>
           </div>
         </div>

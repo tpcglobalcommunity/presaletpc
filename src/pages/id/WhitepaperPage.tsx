@@ -588,9 +588,7 @@ export default function WhitepaperPage() {
           <div className="mt-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
             <p className="text-red-400 text-sm font-semibold mb-2">Disclaimer Resmi</p>
             <p className="text-white text-xs leading-relaxed">
-              TPC adalah token utilitas untuk ekosistem edukasi dan komunitas.
-              Pembelian token tidak menjamin keuntungan dan memiliki risiko.
-              Informasi yang disampaikan bukan nasihat keuangan.
+              TPC adalah token utilitas untuk ekosistem edukasi dan komunitas. Bukan produk investasi dan tidak menjanjikan imbal hasil. Pembelian token memiliki risiko. Informasi yang disampaikan bukan nasihat keuangan.
             </p>
           </div>
           
