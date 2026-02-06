@@ -57,6 +57,7 @@ import InvoiceSuccessPage from "@/pages/id/InvoiceSuccessPage";
 import TutorialPhantomWalletPage from "@/pages/public/TutorialPhantomWalletPage";
 import LoginPageV2 from "@/pages/public/LoginPage"; // V2
 import LegacyAuthRedirectPage from "@/pages/public/LegacyAuthRedirectPage";
+import OnboardingPage from "@/pages/id/OnboardingPage";
 
 // Member Pages (Lazy Loaded)
 const MemberDashboardPage = lazy(() => import("@/pages/member/MemberDashboardPage"));
@@ -121,6 +122,21 @@ function App() {
                   }
                 />
                 
+                {/* Onboarding Route */}
+                <Route
+                  path="onboarding"
+                  element={
+                    <RouteErrorBoundary>
+                      <Suspense fallback={<FullScreenLoader />}>
+                        <LangRoute
+                          id={<OnboardingPage />}
+                          en={<OnboardingPage />}
+                        />
+                      </Suspense>
+                    </RouteErrorBoundary>
+                  }
+                />
+
                 {/* Legacy fallback route */}
                 <Route
                   path="login-legacy"

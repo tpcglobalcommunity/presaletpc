@@ -3,6 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { isAdminUserId } from '@/config/admin';
 import { ensureProfile } from "@/lib/ensureProfile";
+import { isProfileComplete } from '@/lib/profileValidation';
 
 // Logging hygiene
 const DEV = import.meta.env.DEV;
@@ -16,6 +17,11 @@ interface Profile {
   avatar_url: string | null;
   created_at: string;
   last_sign_in_at: string | null;
+  nama?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  city?: string | null;
+  wallet_address?: string | null;
 }
 
 interface AuthContextType {
@@ -25,6 +31,7 @@ interface AuthContextType {
   isLoading: boolean;
   sessionInitialized: boolean;
   isAdmin: boolean;
+  profileComplete: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   safeSignOut: () => Promise<void>;
@@ -59,11 +66,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const isAdmin = isAdminUserId(user?.id);
+  const profileComplete = isProfileComplete(profile);
 
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
       .from('profiles')
-      .select('user_id,email_initial,display_name,avatar_url,created_at,last_sign_in_at')
+      .select('user_id,email_initial,display_name,avatar_url,created_at,last_sign_in_at,nama,email,phone,city,wallet_address')
       .eq('user_id', userId)
       .maybeSingle();
 
@@ -76,7 +84,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return null;
     }
     
-    return data as Profile | null;
+    // Update email if missing in profile but exists in auth
+    const profile = data as Profile;
+    if (profile.email === null && user?.email) {
+      await supabase
+        .from('profiles')
+        .update({ email: user.email })
+        .eq('user_id', userId);
+      profile.email = user.email;
+    }
+    
+    return profile;
   };
 
   const createProfile = async (user: User, referredBy?: string | null) => {
@@ -271,6 +289,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signInWithGoogle,
         signOut,
         safeSignOut,
+        profileComplete,
         refreshProfile,
       }}
     >
