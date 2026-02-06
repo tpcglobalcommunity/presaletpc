@@ -148,30 +148,43 @@ export default function TpcAkademiPage() {
           </button>
 
           {/* HERO SECTION */}
-          <div className="text-center mb-16">
-            <div className="w-24 h-24 mx-auto mb-8 rounded-2xl bg-gradient-to-br from-[#F0B90B]/20 to-[#F8D56B]/20 flex items-center justify-center border border-[#F0B90B]/30 backdrop-blur-sm">
-              <BookOpen className="h-12 w-12 text-[#F0B90B]" />
+          <div className="relative mb-16">
+            {/* Background gradient container */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#1C2128] via-[#0B0E11] to-[#161B22] rounded-3xl -z-10"></div>
+            
+            {/* Icon glow effect */}
+            <div className="relative z-10">
+              <div className="w-24 h-24 mx-auto mb-8 rounded-2xl bg-gradient-to-br from-[#F0B90B]/20 to-[#F8D56B]/20 flex items-center justify-center border border-[#F0B90B]/30 backdrop-blur-sm relative">
+                <div className="absolute inset-0 bg-[#F0B90B]/10 rounded-2xl blur-xl"></div>
+                <BookOpen className="h-12 w-12 text-[#F0B90B] relative z-10" />
+              </div>
             </div>
-            <h1 className="text-5xl font-bold text-white mb-4 tracking-tight">{c.title}</h1>
-            <p className="text-2xl text-[#F0B90B] font-medium mb-3">{c.subtitle}</p>
-            <p className="text-[#848E9C] text-lg max-w-2xl mx-auto">{c.supporting}</p>
+            
+            <div className="relative z-10 text-center">
+              <h1 className="text-6xl font-black text-white mb-6 tracking-tight">{c.title}</h1>
+              <p className="text-3xl text-[#F0B90B] font-semibold mb-4">{c.subtitle}</p>
+              <p className="text-lg text-[#848E9C]/80 max-w-2xl mx-auto leading-relaxed">{c.supporting}</p>
+            </div>
           </div>
 
           {/* WHAT YOU GET */}
-          <div className="mb-16">
-            <h2 className="text-2xl font-semibold text-white mb-8 text-center">{c.whatYouGet}</h2>
-            <div className="grid md:grid-cols-2 gap-6">
+          <div className="mb-20">
+            <div className="text-center mb-8">
+              <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{c.whatYouGet}</p>
+              <h2 className="text-3xl font-bold text-white">Apa yang akan Anda dapatkan</h2>
+            </div>
+            <div className="grid md:grid-cols-2 gap-8">
               {features.map((feature, index) => {
                 const Icon = feature.icon;
                 return (
-                  <div key={index} className="bg-[#1C2128] border border-[#30363D] rounded-2xl p-6 hover:border-[#F0B90B]/30 transition-colors">
-                    <div className="flex items-start gap-4">
-                      <div className={`w-14 h-14 rounded-xl ${getBgColor(feature.color)} flex items-center justify-center flex-shrink-0`}>
-                        <Icon className={`h-7 w-7 ${getIconColor(feature.color)}`} />
+                  <div key={index} className="bg-gradient-to-br from-[#1C2128] to-[#161B22] border border-[#30363D]/50 rounded-2xl p-8 hover:border-[#F0B90B]/30 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <div className="flex items-start gap-6">
+                      <div className={`w-16 h-16 rounded-xl ${getBgColor(feature.color)} flex items-center justify-center flex-shrink-0 shadow-lg`}>
+                        <Icon className={`h-8 w-8 ${getIconColor(feature.color)}`} />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
-                        <p className="text-[#848E9C] text-sm leading-relaxed">{feature.description}</p>
+                        <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
+                        <p className="text-[#C9D1D9] leading-relaxed">{feature.description}</p>
                       </div>
                     </div>
                   </div>
@@ -181,17 +194,20 @@ export default function TpcAkademiPage() {
           </div>
 
           {/* LEARNING PATH */}
-          <div className="mb-16">
-            <h2 className="text-2xl font-semibold text-white mb-8 text-center">{c.learningPath}</h2>
-            <div className="space-y-4">
+          <div className="mb-20">
+            <div className="text-center mb-8">
+              <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{c.learningPath}</p>
+              <h2 className="text-3xl font-bold text-white">Jalur pembelajaran</h2>
+            </div>
+            <div className="space-y-6">
               {learningSteps.map((step, index) => (
-                <div key={index} className="bg-[#1C2128] border border-[#30363D] rounded-xl p-6 flex items-center gap-6">
-                  <div className="w-12 h-12 bg-[#F0B90B]/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <span className="text-[#F0B90B] font-bold text-lg">{step.step}</span>
+                <div key={index} className="bg-gradient-to-r from-[#1C2128] to-[#161B22] border border-[#30363D]/50 rounded-xl p-8 flex items-center gap-8 hover:border-[#F0B90B]/30 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#F0B90B]/20 to-[#F8D56B]/20 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg border border-[#F0B90B]/30">
+                    <span className="text-[#F0B90B] font-black text-xl font-bold">{step.step}</span>
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-white mb-2">{step.title}</h3>
-                    <p className="text-[#848E9C] text-sm">{step.description}</p>
+                    <h3 className="text-xl font-bold text-white mb-3">{step.title}</h3>
+                    <p className="text-[#C9D1D9] leading-relaxed">{step.description}</p>
                   </div>
                 </div>
               ))}
@@ -199,39 +215,51 @@ export default function TpcAkademiPage() {
           </div>
 
           {/* SAFETY NOTICE */}
-          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-8 mb-12">
-            <div className="flex items-start gap-4">
-              <AlertTriangle className="h-6 w-6 text-yellow-500 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <h2 className="text-xl font-bold text-yellow-500 mb-3">{c.safetyNotice}</h2>
-                <p className="text-yellow-200 leading-relaxed">{c.safetyDesc}</p>
+          <div className="mb-20">
+            <div className="text-center mb-8">
+              <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{c.safetyNotice}</p>
+            </div>
+            <div className="bg-gradient-to-br from-[#1C2128] to-[#161B22] border border-[#30363D]/50 rounded-2xl p-10 shadow-xl">
+              <div className="flex items-start gap-6">
+                <div className="w-16 h-16 bg-emerald-500/20 rounded-xl flex items-center justify-center flex-shrink-0 border border-emerald-500/30">
+                  <Shield className="h-8 w-8 text-emerald-500" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-4">Keamanan & Transparansi</h3>
+                  <p className="text-[#C9D1D9] text-lg leading-relaxed">{c.safetyDesc}</p>
+                </div>
               </div>
             </div>
           </div>
 
           {/* CTA BUTTONS */}
-          <div className="grid md:grid-cols-3 gap-4 mb-12">
-            <button
-              onClick={() => navigate(`/${safeLang}/market`)}
-              className="px-6 py-3 bg-[#1C2128] border border-[#30363D] hover:border-[#F0B90B]/30 text-white rounded-xl transition-colors font-medium flex items-center justify-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              {c.backToMarket}
-            </button>
-            <button
-              onClick={() => navigate(`/${safeLang}/anti-scam`)}
-              className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-colors font-medium flex items-center justify-center gap-2"
-            >
-              <Shield className="h-4 w-4" />
-              {c.antiScam}
-            </button>
-            <button
-              onClick={() => navigate(`/${safeLang}/presale`)}
-              className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl transition-colors font-medium flex items-center justify-center gap-2"
-            >
-              <TrendingUp className="h-4 w-4" />
-              {c.presale}
-            </button>
+          <div className="mb-20">
+            <div className="text-center mb-8">
+              <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">Navigasi</p>
+            </div>
+            <div className="flex flex-col md:flex-row gap-4 justify-center">
+              <button
+                onClick={() => navigate(`/${safeLang}/market`)}
+                className="px-8 py-4 bg-gradient-to-r from-[#1C2128] to-[#161B22] border border-[#30363D]/50 hover:border-[#F0B90B]/30 text-white rounded-xl transition-all duration-300 font-semibold flex items-center justify-center gap-3 shadow-lg hover:shadow-xl"
+              >
+                <ArrowLeft className="h-5 w-5" />
+                {c.backToMarket}
+              </button>
+              <button
+                onClick={() => navigate(`/${safeLang}/anti-scam`)}
+                className="px-8 py-4 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-xl transition-all duration-300 font-semibold flex items-center justify-center gap-3 shadow-lg hover:shadow-xl"
+              >
+                <Shield className="h-5 w-5" />
+                {c.antiScam}
+              </button>
+              <button
+                onClick={() => navigate(`/${safeLang}/presale`)}
+                className="px-8 py-4 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-xl transition-all duration-300 font-semibold flex items-center justify-center gap-3 shadow-lg hover:shadow-xl"
+              >
+                <TrendingUp className="h-5 w-5" />
+                {c.presale}
+              </button>
+            </div>
           </div>
 
           {/* DISCLAIMER */}
