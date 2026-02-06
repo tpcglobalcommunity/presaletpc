@@ -210,25 +210,11 @@ export default function TransparansiPage() {
     }
   };
 
-  // Filter wallets
-  const filteredWallets = useMemo(() => {
-    return wallets.filter(wallet => {
-      const matchesSearch = searchQuery === '' || 
-        wallet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        wallet.badge.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        wallet.address.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const matchesStatus = statusFilter === 'all' || wallet.stats.status === statusFilter;
-      
-      return matchesSearch && matchesStatus;
-    });
-  }, [searchQuery, statusFilter]);
-
   // Calculate summary stats
   const summaryStats = useMemo(() => {
-    const activeCount = wallets.filter(w => w.stats.status === 'Active').length;
-    const scheduledCount = wallets.filter(w => w.stats.status === 'Scheduled').length;
-    const lockedCount = wallets.filter(w => w.stats.status === 'Locked').length;
+    const activeCount = wallets.filter(w => w.stats?.status === 'Active').length;
+    const scheduledCount = wallets.filter(w => w.stats?.status === 'Scheduled').length;
+    const lockedCount = wallets.filter(w => w.stats?.status === 'Locked').length;
     
     return {
       totalWallets: wallets.length,
@@ -237,7 +223,21 @@ export default function TransparansiPage() {
       scheduledCount,
       lockedCount
     };
-  }, []);
+  }, [wallets]);
+
+  // Filter wallets
+  const filteredWallets = useMemo(() => {
+    return wallets.filter(wallet => {
+      const matchesSearch = searchQuery === '' || 
+        wallet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        wallet.badge.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        wallet.address.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesStatus = statusFilter === 'all' || wallet.stats?.status === statusFilter;
+      
+      return matchesSearch && matchesStatus;
+    });
+  }, [searchQuery, statusFilter, wallets]);
 
   return (
     <div className="mobile-container pt-6 pb-28">
@@ -380,7 +380,7 @@ export default function TransparansiPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[#F0B90B] font-semibold">{wallet.stats.total}</div>
+                  <div className="text-[#F0B90B] font-semibold">{wallet.stats?.total ?? 0}</div>
                   <div className="text-xs text-[#848E9C]">Total</div>
                 </div>
               </div>
