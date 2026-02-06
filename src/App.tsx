@@ -8,6 +8,7 @@ import AntiScamPage from "@/pages/public/AntiScamPage";
 import MarketPage from "@/pages/public/MarketPage";
 import PresalePage from "@/pages/public/PresalePage";
 import PublicMenuPage from "@/pages/public/PublicMenuPage";
+import TpcAkademiPage from "@/pages/public/products/TpcAkademiPage";
 import { PublicNotFoundPage } from "@/pages/public/PublicNotFoundPage";
 
 // MEMBER
@@ -32,6 +33,7 @@ export default function App() {
             <Route path="login" element={<LoginPage />} />
             <Route path="anti-scam" element={<AntiScamPage />} />
             <Route path="market" element={<MarketPage />} />
+            <Route path="market/tpc-akademi" element={<TpcAkademiPage />} />
             <Route path="presale" element={<PresalePage />} />
             <Route path="menu" element={<PublicMenuPage />} />
           </Route>

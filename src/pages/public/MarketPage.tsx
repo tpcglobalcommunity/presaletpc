@@ -164,7 +164,10 @@ export default function MarketPage() {
                         </div>
                       </div>
                     </div>
-                    <button className="w-full mt-4 px-4 py-3 bg-[#F0B90B]/10 hover:bg-[#F0B90B]/20 text-[#F0B90B] rounded-xl transition-colors font-medium flex items-center justify-center gap-2">
+                    <button 
+                      onClick={() => navigate(`/${safeLang}/market/tpc-akademi`)}
+                      className="w-full mt-4 px-4 py-3 bg-[#F0B90B]/10 hover:bg-[#F0B90B]/20 text-[#F0B90B] rounded-xl transition-colors font-medium flex items-center justify-center gap-2"
+                    >
                       {product.cta}
                       <ArrowRight className="h-4 w-4" />
                     </button>
