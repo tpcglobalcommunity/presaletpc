@@ -57,8 +57,8 @@ export default function LoginPage() {
       // sessionStorage.setItem('returnTo', '/id/member/dashboard');
 
       await signInWithGoogle();
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch (error: unknown) {
+      console.error('Login error:', error instanceof Error ? error.message : String(error));
     }
   };
 
