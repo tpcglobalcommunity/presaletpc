@@ -245,7 +245,7 @@ export default function AdminWithdrawalPage() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate('/id/admin/dashboard')}
+          onClick={() => navigate('/admin/dashboard')}
           className="text-white/80 hover:text-white mb-4"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />

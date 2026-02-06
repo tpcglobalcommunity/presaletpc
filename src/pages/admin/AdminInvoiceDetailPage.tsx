@@ -219,7 +219,7 @@ export default function AdminInvoiceDetailPage() {
             Invoice dengan ID atau Nomor Invoice yang diminta tidak ditemukan.
           </p>
           <Button
-            onClick={() => navigate('/id/admin/invoices')}
+            onClick={() => navigate('/admin/invoices')}
             className="bg-[#F0B90B] hover:bg-[#F8D56B] text-black"
           >
             Kembali ke Daftar Invoice
@@ -247,7 +247,7 @@ export default function AdminInvoiceDetailPage() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate('/id/admin/invoices')}
+          onClick={() => navigate('/admin/invoices')}
           className="text-white/80 hover:text-white mb-4"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />

@@ -23,6 +23,7 @@ import PageLoader from "@/components/PageLoader";
 import AppErrorBoundary from "@/components/system/AppErrorBoundary";
 import LangRoute from "@/components/system/LangRoute";
 import IdOnly from "@/components/system/IdOnly";
+import RedirectLegacyRoute from "@/components/system/RedirectLegacyRoute";
 
 // Layouts
 import { MobileLayout } from "@/layouts/MobileLayout";
@@ -155,7 +156,12 @@ function App() {
                 />
                 <Route
                   path="anti-scam"
-                  element={<IdOnly><AntiScamPage /></IdOnly>}
+                  element={
+                    <LangRoute
+                      id={<AntiScamPage />}
+                      en={<Navigate to="/member" replace />}
+                    />
+                  }
                 />
                 <Route
                   path="edukasi"
@@ -198,198 +204,184 @@ function App() {
                   element={<LegacyAuthRedirectPage />}
                 />
                 
-                {/* CANONICAL DASHBOARD ROUTE */}
+                {/* LEGACY REDIRECTS FOR MEMBER/ADMIN */}
                 <Route
-                  path="dashboard"
-                  element={
-                    <RouteErrorBoundary>
-                      <Suspense fallback={<FullScreenLoader />}>
-                        <MemberLayout />
-                      </Suspense>
-                    </RouteErrorBoundary>
-                  }
-                >
-                  <Route
-                    index
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <Navigate replace to="member" />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="member"
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <MemberDashboardPage />
-                      </Suspense>
-                    }
-                  />
-                </Route>
-
-                {/* CANONICAL MEMBER AREA */}
-                <Route 
-                  path="member" 
-                  element={
-                    <RouteErrorBoundary>
-                      <Suspense fallback={<FullScreenLoader />}>
-                        <MemberLayout />
-                      </Suspense>
-                    </RouteErrorBoundary>
-                  }
-                >
-                  <Route
-                    index
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <MemberDashboardPage />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="dashboard"
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <MemberDashboardPage />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="complete-profile"
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <LangRoute
-                          id={<CompleteProfilePage />}
-                          en={<CompleteProfilePage />}
-                        />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="invoices"
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <MemberInvoicesPage />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="invoices/:invoiceNo"
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <MemberInvoiceDetailPage />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="referrals"
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <MemberReferralPage />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="profile"
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <MemberProfilePage />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="settings"
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <MemberSettingsPage />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="wallet"
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <MemberWalletPage />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="withdraw"
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <MemberWithdrawalPage />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="buytpc"
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <BuyTPCMemberPage />
-                      </Suspense>
-                    }
-                  />
-                </Route>
-                
-                {/* ADMIN ROUTES (ID-only) */}
+                  path="member/*"
+                  element={<RedirectLegacyRoute to="member" />}
+                />
                 <Route
-                  path="admin"
-                  element={<IdOnly><AdminLayoutPremium /></IdOnly>}
-                >
-                  <Route index element={<Navigate replace to="invoices" />} />
-                  <Route 
-                    path="dashboard" 
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <AdminDashboardPage />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="invoices" 
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <AdminInvoicesPage />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="invoices/:invoiceKey" 
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <AdminInvoiceDetailPage />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="referrals" 
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <AdminReferralsPage />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="analytics" 
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <AdminAnalyticsPage />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="users" 
-                    element={
-                      <Suspense fallback={<PageLoader />}>
-                        <AdminUsersPage />
-                      </Suspense>
-                    } 
-                  />
-                </Route>
+                  path="admin/*"
+                  element={<RedirectLegacyRoute to="admin" />}
+                />
                 
                 {/* 404 - MUST BE LAST */}
                 <Route path="*" element={<NotFound />} />
               </Route> {/* End of /:lang */}
+              
+              {/* TOP-LEVEL MEMBER AREA (EN ONLY) */}
+              <Route 
+                path="member" 
+                element={
+                  <RouteErrorBoundary>
+                    <Suspense fallback={<FullScreenLoader />}>
+                      <MemberLayout />
+                    </Suspense>
+                  </RouteErrorBoundary>
+                }
+              >
+                <Route
+                  index
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <MemberDashboardPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="dashboard"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <MemberDashboardPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="complete-profile"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <CompleteProfilePage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="invoices"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <MemberInvoicesPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="invoices/:invoiceNo"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <MemberInvoiceDetailPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="referrals"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <MemberReferralPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="profile"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <MemberProfilePage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="settings"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <MemberSettingsPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="wallet"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <MemberWalletPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="withdraw"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <MemberWithdrawalPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="buytpc"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <BuyTPCMemberPage />
+                    </Suspense>
+                  }
+                />
+              </Route>
+              
+              {/* TOP-LEVEL ADMIN AREA (EN ONLY) */}
+              <Route 
+                path="admin" 
+                element={
+                  <RouteErrorBoundary>
+                    <Suspense fallback={<FullScreenLoader />}>
+                      <RequireAdmin>
+                        <AdminLayoutPremium />
+                      </RequireAdmin>
+                    </Suspense>
+                  </RouteErrorBoundary>
+                }
+              >
+                <Route index element={<Navigate replace to="invoices" />} />
+                <Route 
+                  path="dashboard" 
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <AdminDashboardPage />
+                    </Suspense>
+                  } 
+                />
+                <Route 
+                  path="invoices" 
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <AdminInvoicesPage />
+                    </Suspense>
+                  } 
+                />
+                <Route 
+                  path="invoices/:invoiceKey" 
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <AdminInvoiceDetailPage />
+                    </Suspense>
+                  } 
+                />
+                <Route 
+                  path="referrals" 
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <AdminReferralsPage />
+                    </Suspense>
+                  } 
+                />
+                <Route 
+                  path="analytics" 
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <AdminAnalyticsPage />
+                    </Suspense>
+                  } 
+                />
+                <Route 
+                  path="users" 
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <AdminUsersPage />
+                    </Suspense>
+                  } 
+                />
+              </Route>
               
               {/* Global 404 */}
               <Route path="*" element={<NotFound />} />

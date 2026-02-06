@@ -17,19 +17,19 @@ export default function InvoiceSuccessPage() {
   };
 
   if (!invoice) {
-    return <Navigate to="/id/member/invoices" replace />;
+    return <Navigate to="/member/invoices" replace />;
   }
 
   const handleLogin = async () => {
     try {
       // ✅ HARD LOCK return target
       if (invoice?.id) {
-        setReturnToAfterLogin(`/id/member/invoices/${invoice.id}`);
+        setReturnToAfterLogin(`/member/invoices/${invoice.id}`);
       } else if (invoice?.invoice_no) {
         // ✅ legacy fallback
-        setReturnToAfterLogin(`/id/member/invoices-no/${invoice.invoice_no}`);
+        setReturnToAfterLogin(`/member/invoices-no/${invoice.invoice_no}`);
       } else {
-        setReturnToAfterLogin('/id/member/invoices');
+        setReturnToAfterLogin('/member/invoices');
       }
 
       await signInWithGoogle();

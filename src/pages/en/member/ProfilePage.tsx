@@ -122,7 +122,7 @@ export default function ProfilePage() {
             <h2 className="text-xl font-semibold mb-2">Error</h2>
             <p className="text-muted-foreground">{error || "Profile not found"}</p>
             <Button 
-              onClick={() => navigate("/en/member/dashboard")}
+              onClick={() => navigate("/member/dashboard")}
               className="mt-4"
             >
               Back to Dashboard
