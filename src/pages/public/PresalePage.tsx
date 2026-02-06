@@ -19,8 +19,8 @@ const presaleData = {
   stage2: {
     price: 0.002,
     supply: 100000000,
-    status: 'UPCOMING' as PresaleStageStatus,
-    endTime: new Date('2025-01-31T23:59:59Z') // Static config for demo
+    status: 'ACTIVE' as PresaleStageStatus,
+    endTime: new Date('2025-12-31T23:59:59Z') // Static config for demo
   },
   totalSupply: 300000000
 };
