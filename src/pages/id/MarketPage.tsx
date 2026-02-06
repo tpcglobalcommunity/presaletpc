@@ -22,6 +22,7 @@ import {
   Handshake
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { publicPath } from '@/lib/publicPath';
 
 interface ProductItem {
   id: string;
@@ -51,7 +52,7 @@ export default function MarketPage() {
       icon: BookOpen,
       status: 'Available',
       cta: 'Pelajari',
-      path: '/id/edukasi'
+      path: publicPath('id', 'edukasi')
     },
     {
       id: 'pelatihan',
@@ -59,7 +60,8 @@ export default function MarketPage() {
       description: 'Fokus skill, mental, dan konsistensi proses trading',
       icon: GraduationCap,
       status: 'Coming Soon',
-      cta: 'Lihat Program'
+      cta: 'Lihat Program',
+      path: publicPath('id', 'pelatihan')
     },
     {
       id: 'tools',
