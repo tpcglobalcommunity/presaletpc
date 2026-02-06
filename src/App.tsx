@@ -10,8 +10,9 @@ import { PublicNotFoundPage } from "@/pages/public/PublicNotFoundPage";
 // MEMBER
 import MemberWithdrawalPage from "@/pages/member/MemberWithdrawalPage";
 
-// GUARD
+// GUARDS
 import { RequireAuth } from "@/components/guards/RequireAuth";
+import RequirePublicLang from "@/components/system/RequirePublicLang";
 
 export default function App() {
   return (
@@ -21,9 +22,11 @@ export default function App() {
         <Route path="/" element={<Navigate to="/id" replace />} />
 
         {/* PUBLIC (LANG BASED) */}
-        <Route path="/:lang" element={<HomePage />} />
-        <Route path="/:lang/login" element={<LoginPage />} />
-        <Route path="/:lang/anti-scam" element={<AntiScamPage />} />
+        <Route path="/:lang" element={<RequirePublicLang />}>
+          <Route index element={<HomePage />} />
+          <Route path="login" element={<LoginPage />} />
+          <Route path="anti-scam" element={<AntiScamPage />} />
+        </Route>
 
         {/* MEMBER */}
         <Route
