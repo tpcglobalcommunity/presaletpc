@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Coins, ArrowRight, Shield, Clock, Users, Zap, CheckCircle, AlertTriangle, User, LogIn, Menu, FileText } from 'lucide-react';
+import { Coins, ArrowRight, Shield, Clock, Users, Zap, CheckCircle, AlertTriangle, User, LogIn, Menu, FileText, BookOpen } from 'lucide-react';
 import { presaleCopy } from '@/i18n/public/presale';
 
 // Presale data (reused from existing config)
@@ -119,8 +119,22 @@ export default function PresalePage() {
           <div className="mb-20">
             <div className="text-center mb-8">
               <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{c.stages}</p>
-              <h2 className="text-3xl font-bold text-white">Tahapan Distribusi</h2>
+              <h2 className="text-3xl font-bold text-white">Tahapan Akses Dini</h2>
             </div>
+            
+            {/* LISTING DISCLAIMER */}
+            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-6 mb-8">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-yellow-200 leading-relaxed">{c.listingDisclaimer}</p>
+              </div>
+            </div>
+
+            {/* STAGES NARRATIVE */}
+            <div className="bg-gradient-to-br from-[#1C2128] to-[#161B22] border border-[#30363D]/50 rounded-xl p-6 mb-8">
+              <p className="text-[#C9D1D9] leading-relaxed text-center">{c.stagesNarrative}</p>
+            </div>
+            
             <div className="grid md:grid-cols-2 gap-8 mb-8">
               {/* Stage 1 */}
               <div className="bg-gradient-to-br from-[#1C2128] to-[#161B22] border border-[#30363D]/50 rounded-2xl p-8 hover:border-[#F0B90B]/30 transition-all duration-300 shadow-lg hover:shadow-xl">
@@ -169,6 +183,84 @@ export default function PresalePage() {
             </div>
           </div>
 
+          {/* UTILITY-FIRST POSITIONING */}
+          <div className="mb-20">
+            <div className="text-center mb-8">
+              <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{c.utility}</p>
+              <h2 className="text-3xl font-bold text-white">Utilitas TPC</h2>
+            </div>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                {/* Education Access */}
+                <div className="bg-gradient-to-br from-[#1C2128] to-[#161B22] border border-[#30363D]/50 rounded-xl p-6 hover:border-[#F0B90B]/30 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <BookOpen className="h-6 w-6 text-blue-500" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-white mb-2">{c.utilityEducation}</h3>
+                      <p className="text-[#C9D1D9] leading-relaxed">{c.utilityEducationDesc}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Community Membership */}
+                <div className="bg-gradient-to-br from-[#1C2128] to-[#161B22] border border-[#30363D]/50 rounded-xl p-6 hover:border-[#F0B90B]/30 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Users className="h-6 w-6 text-purple-500" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-white mb-2">{c.utilityCommunity}</h3>
+                      <p className="text-[#C9D1D9] leading-relaxed">{c.utilityCommunityDesc}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                {/* DAO Lite Participation */}
+                <div className="bg-gradient-to-br from-[#1C2128] to-[#161B22] border border-[#30363D]/50 rounded-xl p-6 hover:border-[#F0B90B]/30 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Shield className="h-6 w-6 text-emerald-500" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-white mb-2">{c.utilityGovernance}</h3>
+                      <p className="text-[#C9D1D9] leading-relaxed">{c.utilityGovernanceDesc}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Internal Ecosystem Usage */}
+                <div className="bg-gradient-to-br from-[#1C2128] to-[#161B22] border border-[#30363D]/50 rounded-xl p-6 hover:border-[#F0B90B]/30 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-orange-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Zap className="h-6 w-6 text-orange-500" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-white mb-2">{c.utilityEcosystem}</h3>
+                      <p className="text-[#C9D1D9] leading-relaxed">{c.utilityEcosystemDesc}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Contribution & Reward Mechanics */}
+            <div className="mt-8 bg-gradient-to-br from-[#1C2128] to-[#161B22] border border-[#30363D]/50 rounded-xl p-6 hover:border-[#F0B90B]/30 transition-all duration-300 shadow-lg hover:shadow-xl">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-[#F0B90B]/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Coins className="h-6 w-6 text-[#F0B90B]" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-white mb-2">{c.utilityContribution}</h3>
+                  <p className="text-[#C9D1D9] leading-relaxed">{c.utilityContributionDesc}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* HOW IT WORKS */}
           <div className="mb-20">
             <div className="text-center mb-8">
@@ -193,34 +285,49 @@ export default function PresalePage() {
             </div>
           </div>
 
-          {/* SAFETY & TRANSPARENCY */}
+          {/* RISK & ANTI-SCAM SECTION */}
           <div className="mb-20">
             <div className="text-center mb-8">
-              <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{c.safetyTransparency}</p>
+              <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{c.riskAntiScam}</p>
+              <h2 className="text-3xl font-bold text-white">Risiko & Anti-Scam</h2>
             </div>
-            <div className="bg-gradient-to-br from-[#1C2128] to-[#161B22] border border-[#30363D]/50 rounded-2xl p-10 shadow-xl">
-              <div className="flex items-center justify-center gap-6 mb-8">
-                <div className="w-16 h-16 bg-emerald-500/20 rounded-xl flex items-center justify-center flex-shrink-0 border border-emerald-500/30">
-                  <Shield className="h-8 w-8 text-emerald-500" />
+            <div className="bg-gradient-to-br from-red-500/10 to-red-600/10 border border-red-500/30 rounded-2xl p-10 shadow-xl">
+              <div className="space-y-6">
+                {/* Financial Disclaimer */}
+                <div className="flex items-start gap-4">
+                  <AlertTriangle className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-white mb-2">Bukan Nasihat Keuangan</h3>
+                    <p className="text-red-200 leading-relaxed">{c.riskDisclaimer}</p>
+                  </div>
                 </div>
-                <h3 className="text-2xl font-bold text-white">Keamanan & Transparansi</h3>
-              </div>
-              <p className="text-[#C9D1D9] text-lg leading-relaxed text-center mb-8">{c.safetyDesc}</p>
-              <div className="flex flex-col md:flex-row gap-4 justify-center">
-                <button
-                  onClick={() => navigate(`/${safeLang}/anti-scam`)}
-                  className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-xl transition-all duration-300 font-semibold flex items-center justify-center gap-2"
-                >
-                  <Shield className="h-4 w-4" />
-                  {c.antiScam}
-                </button>
-                <button
-                  onClick={() => navigate(`/${safeLang}/menu`)}
-                  className="px-6 py-3 bg-gradient-to-r from-[#1C2128] to-[#161B22] border border-[#30363D]/50 hover:border-[#F0B90B]/30 text-white rounded-xl transition-all duration-300 font-semibold flex items-center justify-center gap-2"
-                >
-                  <Menu className="h-4 w-4" />
-                  {c.menu}
-                </button>
+
+                {/* Cryptocurrency Risk */}
+                <div className="flex items-start gap-4">
+                  <AlertTriangle className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-white mb-2">Risiko Cryptocurrency</h3>
+                    <p className="text-red-200 leading-relaxed">{c.cryptoRisk}</p>
+                  </div>
+                </div>
+
+                {/* Anti-Scam Warning */}
+                <div className="flex items-start gap-4">
+                  <Shield className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-white mb-2">Peringatan Anti-Scam</h3>
+                    <p className="text-red-200 leading-relaxed">{c.antiScamWarning}</p>
+                  </div>
+                </div>
+
+                {/* Official Channels */}
+                <div className="flex items-start gap-4">
+                  <CheckCircle className="h-6 w-6 text-emerald-500 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-white mb-2">Saluran Resmi</h3>
+                    <p className="text-emerald-200 leading-relaxed">{c.officialChannels}</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
