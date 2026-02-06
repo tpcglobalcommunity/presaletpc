@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { handleGatedActionLogin } from '@/lib/authReturnTo';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import { 
   Clock, 
   TrendingUp, 
@@ -116,9 +117,8 @@ export default function PresaleInfoPage() {
     if (isLoading) return; // Don't navigate while loading
     
     if (!user) {
-      // Redirect to login with next parameter
-      const nextPath = encodeURIComponent(`/${lang}/buytpc`);
-      navigate(`/${lang}/login?next=${nextPath}`);
+      // Redirect to login with explicit target for presale flow
+      handleGatedActionLogin(navigate, lang, `/${lang}/buytpc`);
     } else {
       // Direct to buy page if authenticated
       navigate(`/${lang}/buytpc`);

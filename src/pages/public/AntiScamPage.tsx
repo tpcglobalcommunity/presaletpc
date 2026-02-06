@@ -27,6 +27,82 @@ import {
 } from "lucide-react";
 import TokenMintInfoCard from '@/components/trust/TokenMintInfoCard';
 
+// i18n translations
+const translations = {
+  id: {
+    title: 'Anti-Scam Notice - TPC Global',
+    description: 'Panduan lengkap untuk menghindari penipuan yang mengatasnamakan TPC. Pelajari cara mengenali aktivitas resmi TPC dan melindungi aset Anda.',
+    pageTitle: 'Anti-Scam Notice',
+    pageSubtitle: 'Panduan lengkap untuk menghindari penipuan yang mengatasnamakan TPC',
+    backToHome: 'Kembali ke Home',
+    officialChannels: 'Kanal Resmi TPC',
+    websiteOfficial: 'Website Resmi',
+    telegramOfficial: 'Telegram Komunitas Resmi',
+    transparencyPage: 'Halaman Transparansi',
+    notTpcActivities: 'Bukan Aktivitas TPC',
+    scamMethods: 'Metode Penipuan Umum',
+    howToVerify: 'Cara Verifikasi',
+    whatToDo: 'Apa yang Harus Dilakukan',
+    reportScam: 'Laporkan Penipuan',
+    reportDesc: 'Jika Anda menemukan aktivitas mencurigakan, segera laporkan ke admin TPC.',
+    reportButton: 'Laporkan ke Admin',
+    copySuccess: 'Tersalin!',
+    copy: 'Salin',
+    official: 'Resmi',
+    scam: 'Penipuan',
+    warning: 'Peringatan',
+    safe: 'Aman',
+    neutral: 'Netral',
+    step1: '1',
+    step2: '2',
+    step3: '3',
+    step4: '4',
+    step5: '5',
+    step6: '6',
+    step7: '7',
+    step8: '8',
+    step9: '9',
+    step10: '10',
+    disclaimer: 'TPC tidak bertanggung jawab atas kerugian akibat penipuan. Selalu verifikasi dan waspada terhadap penipuan.'
+  },
+  en: {
+    title: 'Anti-Scam Notice - TPC Global',
+    description: 'Complete guide to avoid scams impersonating TPC. Learn how to identify official TPC activities and protect your assets.',
+    pageTitle: 'Anti-Scam Notice',
+    pageSubtitle: 'Complete guide to avoid scams impersonating TPC',
+    backToHome: 'Back to Home',
+    officialChannels: 'Official TPC Channels',
+    websiteOfficial: 'Official Website',
+    telegramOfficial: 'Official Community Telegram',
+    transparencyPage: 'Transparency Page',
+    notTpcActivities: 'Not TPC Activities',
+    scamMethods: 'Common Scam Methods',
+    howToVerify: 'How to Verify',
+    whatToDo: 'What to Do',
+    reportScam: 'Report Scam',
+    reportDesc: 'If you find suspicious activity, immediately report it to TPC admin.',
+    reportButton: 'Report to Admin',
+    copySuccess: 'Copied!',
+    copy: 'Copy',
+    official: 'Official',
+    scam: 'Scam',
+    warning: 'Warning',
+    safe: 'Safe',
+    neutral: 'Neutral',
+    step1: '1',
+    step2: '2',
+    step3: '3',
+    step4: '4',
+    step5: '5',
+    step6: '6',
+    step7: '7',
+    step8: '8',
+    step9: '9',
+    step10: '10',
+    disclaimer: 'TPC is not responsible for losses due to scams. Always verify and be wary of scams.'
+  }
+};
+
 type IconType = any;
 
 type InfoCard = {
@@ -212,6 +288,10 @@ export default function AntiScamPage() {
   const navigate = useNavigate();
   const [copiedText, setCopiedText] = useState("");
 
+  // Get language from URL or default to 'id'
+  const lang = window.location.pathname.startsWith('/en/') ? 'en' : 'id';
+  const t = translations[lang];
+
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -225,56 +305,56 @@ export default function AntiScamPage() {
   const official = useMemo(
     () => [
       {
-        label: "Website Resmi",
+        label: t.websiteOfficial,
         value: "https://tpcglobal.io",
       },
       {
-        label: "Telegram Komunitas Resmi",
+        label: t.telegramOfficial,
         value: "https://t.me/tpcglobalcommunity",
       },
       {
-        label: "Halaman Transparansi",
-        value: "/id/transparansi",
+        label: t.transparencyPage,
+        value: `/${lang}/transparansi`,
       },
     ],
-    []
+    [lang, t]
   );
 
   const notTpcActivities: InfoCard[] = [
     {
       icon: TrendingUp,
-      title: "Menjanjikan profit, ROI, atau keuntungan tetap",
-      description: "TPC tidak pernah menjanjikan keuntungan apa pun.",
+      title: lang === 'en' ? "Promising profit, ROI, or fixed returns" : "Menjanjikan profit, ROI, atau keuntungan tetap",
+      description: lang === 'en' ? "TPC never promises any profits." : "TPC tidak pernah menjanjikan keuntungan apa pun.",
       tone: "danger",
     },
     {
       icon: MessageSquare,
-      title: "Mengirim pesan pribadi (DM) menawarkan investasi",
-      description: "TPC tidak pernah menghubungi pengguna lebih dulu.",
+      title: lang === 'en' ? "Sending private messages (DM) offering investments" : "Mengirim pesan pribadi (DM) menawarkan investasi",
+      description: lang === 'en' ? "TPC never contacts users first." : "TPC tidak pernah menghubungi pengguna lebih dulu.",
       tone: "danger",
     },
     {
       icon: Star,
-      title: "Menyediakan sinyal trading berbayar",
-      description: "TPC adalah platform edukasi, bukan sinyal trading.",
+      title: lang === 'en' ? "Providing paid trading signals" : "Menyediakan sinyal trading berbayar",
+      description: lang === 'en' ? "TPC is an education platform, not trading signals." : "TPC adalah platform edukasi, bukan sinyal trading.",
       tone: "danger",
     },
     {
       icon: Wallet,
-      title: "Mengelola dana atau menerima titip dana",
-      description: "TPC tidak mengelola dana pengguna.",
+      title: lang === 'en' ? "Managing funds or accepting deposits" : "Mengelola dana atau menerima titip dana",
+      description: lang === 'en' ? "TPC does not manage user funds." : "TPC tidak mengelola dana pengguna.",
       tone: "danger",
     },
     {
       icon: Key,
-      title: "Meminta private key, seed phrase, atau OTP",
-      description: "TPC tidak pernah meminta data sensitif.",
+      title: lang === 'en' ? "Requesting private keys, seed phrases, or OTP" : "Meminta private key, seed phrase, atau OTP",
+      description: lang === 'en' ? "TPC never requests sensitive data." : "TPC tidak pernah meminta data sensitif.",
       tone: "danger",
     },
     {
       icon: Smartphone,
-      title: "Menghubungi lebih dulu via WhatsApp / Telegram / DM",
-      description: "TPC hanya mengumumkan melalui kanal resmi.",
+      title: lang === 'en' ? "Contacting first via WhatsApp / Telegram / DM" : "Menghubungi lebih dulu via WhatsApp / Telegram / DM",
+      description: lang === 'en' ? "TPC only announces through official channels." : "TPC hanya mengumumkan melalui kanal resmi.",
       tone: "danger",
     },
   ];
@@ -282,32 +362,32 @@ export default function AntiScamPage() {
   const scamMethods: InfoCard[] = [
     {
       icon: UserX,
-      title: "Akun palsu dengan nama & logo mirip TPC",
-      description: "Cek username, ejaan, dan akun terverifikasi.",
+      title: lang === 'en' ? "Fake accounts with TPC-like names & logos" : "Akun palsu dengan nama & logo mirip TPC",
+      description: lang === 'en' ? "Check username, spelling, and verified accounts." : "Cek username, ejaan, dan akun terverifikasi.",
       tone: "warning",
     },
     {
       icon: Users,
-      title: "Grup Telegram tiruan",
-      description: "Hanya bergabung melalui tautan resmi.",
+      title: lang === 'en' ? "Fake Telegram groups" : "Grup Telegram tiruan",
+      description: lang === 'en' ? "Only join through official links." : "Hanya bergabung melalui tautan resmi.",
       tone: "warning",
     },
     {
       icon: Globe,
-      title: "Website / domain mirip (typo domain)",
-      description: "Selalu cek URL sebelum login / transfer.",
+      title: lang === 'en' ? "Similar websites / domains (typo domains)" : "Website / domain mirip (typo domain)",
+      description: lang === 'en' ? "Always check URL before login / transfer." : "Selalu cek URL sebelum login / transfer.",
       tone: "warning",
     },
     {
       icon: MessageSquare,
-      title: "DM dengan ‘kesempatan terbatas’",
-      description: "Penipuan sering pakai taktik urgensi & tekanan.",
+      title: lang === 'en' ? "Requests for transfers to personal wallets" : "Permintaan transfer ke wallet pribadi",
+      description: lang === 'en' ? "Only use official wallets listed on Transparency page." : "Hanya gunakan wallet resmi di halaman Transparansi.",
       tone: "warning",
     },
     {
       icon: Wallet,
-      title: "Permintaan transfer ke wallet pribadi",
-      description: "Hanya gunakan wallet resmi di halaman Transparansi.",
+      title: lang === 'en' ? "Requests for transfers to personal wallets" : "Permintaan transfer ke wallet pribadi",
+      description: lang === 'en' ? "Only use official wallets listed on Transparency page." : "Hanya gunakan wallet resmi di halaman Transparansi.",
       tone: "warning",
     },
   ];
@@ -316,43 +396,43 @@ export default function AntiScamPage() {
     {
       step: 1,
       icon: Globe,
-      title: "Cek Kanal Resmi",
-      description: "Mulai dari sumber yang benar",
-      items: ["Website resmi TPC", "Halaman Transparansi", "Kanal komunitas resmi"],
+      title: lang === 'en' ? "Check Official Channels" : "Cek Kanal Resmi",
+      description: lang === 'en' ? "Start from the right sources" : "Mulai dari sumber yang benar",
+      items: lang === 'en' ? ["Official TPC website", "Transparency page", "Official community channels"] : ["Website resmi TPC", "Halaman Transparansi", "Kanal komunitas resmi"],
     },
     {
       step: 2,
       icon: Wallet,
-      title: "Cek Alamat Wallet",
-      description: "Transfer hanya ke alamat resmi",
-      items: ["Abaikan alamat selain yang tertera", "Walau mengatasnamakan TPC", "Verifikasi dulu sebelum transfer"],
+      title: lang === 'en' ? "Check Wallet Address" : "Cek Alamat Wallet",
+      description: lang === 'en' ? "Only transfer to official addresses" : "Transfer hanya ke alamat resmi",
+      items: lang === 'en' ? ["Ignore addresses other than listed", "Even if claiming to be TPC", "Verify before transfer"] : ["Abaikan alamat selain yang tertera", "Walau mengatasnamakan TPC", "Verifikasi dulu sebelum transfer"],
     },
     {
       step: 3,
       icon: MessageSquare,
-      title: "Jangan Percaya DM",
-      description: "TPC tidak pernah menghubungi lebih dulu",
-      items: ["Semua proses melalui sistem resmi", "Abaikan penawaran investasi", "Laporkan jika mencurigakan"],
+      title: lang === 'en' ? "Don't Trust DMs" : "Jangan Percaya DM",
+      description: lang === 'en' ? "TPC never contacts first" : "TPC tidak pernah menghubungi lebih dulu",
+      items: lang === 'en' ? ["All processes through official system", "Ignore investment offers", "Report if suspicious"] : ["Semua proses melalui sistem resmi", "Abaikan penawaran investasi", "Laporkan jika mencurigakan"],
     },
   ];
 
   const securityPrinciples: InfoCard[] = [
     {
       icon: Lock,
-      title: "Login menggunakan sistem aman",
-      description: "Proteksi berlapis untuk akses akun & proses sensitif.",
+      title: lang === 'en' ? "Secure login system" : "Login menggunakan sistem aman",
+      description: lang === 'en' ? "Multi-layer protection for account access & sensitive processes." : "Proteksi berlapis untuk akses akun & proses sensitif.",
       tone: "safe",
     },
     {
       icon: Shield,
-      title: "Admin dikunci dengan UUID",
-      description: "Akses admin berbasis whitelist UUID, tidak bisa ‘ngaku-ngaku’.",
+      title: lang === 'en' ? "Admin locked with UUID" : "Admin dikunci dengan UUID",
+      description: lang === 'en' ? "Admin access based on UUID whitelist, cannot impersonate." : "Akses admin berbasis whitelist UUID, tidak bisa 'ngaku-ngaku'.",
       tone: "safe",
     },
     {
       icon: Eye,
-      title: "Proses sensitif selalu via halaman resmi",
-      description: "Verifikasi transparan, jelas, dan terstruktur.",
+      title: lang === 'en' ? "Sensitive processes always through official pages" : "Proses sensitif selalu via halaman resmi",
+      description: lang === 'en' ? "Transparent, clear, and structured verification." : "Verifikasi transparan, jelas, dan terstruktur.",
       tone: "safe",
     },
   ];
@@ -360,20 +440,20 @@ export default function AntiScamPage() {
   const userResponsibilities: InfoCard[] = [
     {
       icon: Target,
-      title: "Selalu lakukan verifikasi mandiri (DYOR)",
-      description: "Jangan percaya info tanpa bukti dari kanal resmi.",
+      title: lang === 'en' ? "Always do your own research (DYOR)" : "Selalu lakukan verifikasi mandiri (DYOR)",
+      description: lang === 'en' ? "Don't trust info without proof from official channels." : "Jangan percaya info tanpa bukti dari kanal resmi.",
       tone: "neutral",
     },
     {
       icon: X,
-      title: "Jangan percaya janji keuntungan",
-      description: "TPC adalah platform edukasi komunitas, bukan investasi.",
+      title: lang === 'en' ? "Don't believe profit promises" : "Jangan percaya janji keuntungan",
+      description: lang === 'en' ? "TPC is a community education platform, not investment." : "TPC adalah platform edukasi komunitas, bukan investasi.",
       tone: "neutral",
     },
     {
       icon: Key,
-      title: "Jangan bagikan data sensitif",
-      description: "Seed phrase / OTP / private key tidak boleh dibagikan ke siapa pun.",
+      title: lang === 'en' ? "Don't share sensitive data" : "Jangan bagikan data sensitif",
+      description: lang === 'en' ? "Seed phrase / OTP / private key should never be shared with anyone." : "Seed phrase / OTP / private key tidak boleh dibagikan ke siapa pun.",
       tone: "neutral",
     },
   ];
@@ -386,11 +466,11 @@ export default function AntiScamPage() {
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
               <button
-                onClick={() => navigate("/id")}
+                onClick={() => navigate(`/${lang}`)}
                 className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-[#C9D1D9] hover:text-white hover:bg-white/10 transition-colors"
               >
                 <ArrowLeft className="h-4 w-4" />
-                <span className="font-medium">Kembali</span>
+                <span className="font-medium">{t.backToHome}</span>
               </button>
 
               <div className="hidden md:block h-8 w-px bg-white/10" />
@@ -400,8 +480,8 @@ export default function AntiScamPage() {
                   <AlertTriangle className="h-5 w-5 text-white" />
                 </div>
                 <div className="min-w-0">
-                  <h1 className="text-white font-bold text-base md:text-lg truncate">Anti-Scam Notice</h1>
-                  <p className="text-[#848E9C] text-xs truncate">Panduan resmi untuk menghindari penipuan</p>
+                  <h1 className="text-white font-bold text-base md:text-lg truncate">{t.pageTitle}</h1>
+                  <p className="text-[#848E9C] text-xs truncate">{t.pageSubtitle}</p>
                 </div>
               </div>
             </div>

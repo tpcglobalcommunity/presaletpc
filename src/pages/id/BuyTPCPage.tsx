@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
+import { handleGatedActionLogin } from '@/lib/authReturnTo';
 import tpcLogo from '@/assets/tpc.png';
 import { ArrowRight, Users, Shield, Lock, ExternalLink } from 'lucide-react';
 
@@ -105,7 +106,7 @@ export default function BuyTPCPage() {
                     <Button
                       size="lg"
                       className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold py-4 md:py-6 text-lg md:text-xl rounded-xl shadow-lg shadow-amber-500/25 transition-all duration-300 transform hover:scale-[1.02]"
-                      onClick={() => navigate(`/${lang}/login`)}
+                      onClick={() => handleGatedActionLogin(navigate, 'id', '/id/buytpc')}
                     >
                       <div className="flex items-center gap-3">
                         <Users className="w-5 h-5 md:w-6 md:h-6" />

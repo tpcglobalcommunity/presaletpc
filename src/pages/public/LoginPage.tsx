@@ -1,37 +1,36 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { sanitizeReturnTo } from '@/lib/authReturnTo';
 import { Loader2 } from 'lucide-react';
 
-function sanitizeReturnTo(raw: string | null) {
-  if (!raw) return null;
-
-  // 1) pastikan string
-  let path = String(raw).trim();
-
-  // 2) kalau full URL, ambil pathname+search+hash saja
-  try {
-    if (path.startsWith('http://') || path.startsWith('https://')) {
-      const u = new URL(path);
-      path = `${u.pathname}${u.search}${u.hash}`;
-    }
-  } catch {
-    // ignore
+// i18n translations
+const translations = {
+  id: {
+    title: 'Masuk ke Akun',
+    subtitle: 'Login untuk melihat dan mengelola invoice kita',
+    signInWithGoogle: 'Masuk dengan Google',
+    termsAgreement: 'Dengan masuk, kita menyetujui',
+    termsAndConditions: 'Syarat & Ketentuan',
+    termsSuffix: ' kami'
+  },
+  en: {
+    title: 'Sign In to Account',
+    subtitle: 'Sign in to view and manage your invoices',
+    signInWithGoogle: 'Sign in with Google',
+    termsAgreement: 'By signing in, you agree to our',
+    termsAndConditions: 'Terms & Conditions',
+    termsSuffix: ''
   }
-
-  // 3) normalisasi leading slash: "///id/..." -> "/id/..."
-  path = `/${path.replace(/^\/+/, '')}`;
-
-  // 4) whitelist route yang boleh (anti open-redirect & anti route aneh)
-  if (path.startsWith('/id/') || path === '/id') return path;
-  if (path.startsWith('/en/') || path === '/en') return path;
-
-  return null;
-}
+};
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const { signInWithGoogle, isLoading, user } = useAuth();
+
+  // Get language from URL or default to 'id'
+  const lang = window.location.pathname.startsWith('/en/') ? 'en' : 'id';
+  const t = translations[lang];
 
   // Redirect if already logged in
   useEffect(() => {
@@ -39,14 +38,15 @@ export default function LoginPage() {
       const returnToRaw = sessionStorage.getItem('returnTo');
       const returnTo = sanitizeReturnTo(returnToRaw);
 
-      // kita hapus supaya tidak nyangkut/loop
+      // Clean session storage
       sessionStorage.removeItem('returnTo');
 
       if (returnTo) {
         navigate(returnTo, { replace: true });
       } else {
-        // ✅ FINAL member landing
-        navigate('/id/member/dashboard', { replace: true });
+        // Safe fallback based on language
+        const lang = window.location.pathname.startsWith('/en/') ? 'en' : 'id';
+        navigate(`/${lang}/member/dashboard`, { replace: true });
       }
     }
   }, [user, isLoading, navigate]);
@@ -82,9 +82,9 @@ export default function LoginPage() {
               className="h-20 w-20 rounded-2xl object-contain drop-shadow-lg"
             />
           </div>
-          <h1 className="text-title mb-2">Masuk ke Akun</h1>
+          <h1 className="text-title mb-2">{t.title}</h1>
           <p className="text-muted-foreground text-sm">
-            Login untuk melihat dan mengelola invoice kita
+            {t.subtitle}
           </p>
         </div>
 
@@ -115,14 +115,14 @@ export default function LoginPage() {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              Masuk dengan Google
+              {t.signInWithGoogle}
             </>
           )}
         </button>
 
         <p className="text-center text-xs text-muted-foreground">
-          Dengan masuk, kita menyetujui{' '}
-          <span className="text-primary">Syarat & Ketentuan</span> kami
+          {t.termsAgreement}{' '}
+          <span className="text-primary">{t.termsAndConditions}</span>{t.termsSuffix}
         </p>
       </div>
     </div>

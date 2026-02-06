@@ -18,8 +18,62 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
+
+// i18n translations
+const translations = {
+  id: {
+    pageTitle: 'FAQ - TPC Global',
+    pageSubtitle: 'Pertanyaan yang sering ditanyakan tentang TPC',
+    backToHome: 'Kembali ke Home',
+    searchPlaceholder: 'Cari pertanyaan...',
+    categories: 'Kategori',
+    allCategories: 'Semua Kategori',
+    aboutTPC: 'Tentang TPC',
+    token: 'Token TPC',
+    trading: 'Trading',
+    security: 'Keamanan',
+    member: 'Member',
+    technical: 'Teknis',
+    important: 'Penting',
+    learnMore: 'Pelajari lebih lanjut',
+    viewTransparency: 'Lihat Transparansi',
+    joinCommunity: 'Bergabung dengan Komunitas',
+    contactSupport: 'Hubungi Support',
+    noResults: 'Tidak ada hasil yang ditemukan',
+    tryDifferentKeywords: 'Coba kata kunci yang berbeda',
+    educationFirst: 'Education-first',
+    noProfitPromise: 'Tanpa janji profit',
+    riskManagement: 'Fokus manajemen risiko',
+    communitySupport: 'Dukungan komunitas'
+  },
+  en: {
+    pageTitle: 'FAQ - TPC Global',
+    pageSubtitle: 'Frequently asked questions about TPC',
+    backToHome: 'Back to Home',
+    searchPlaceholder: 'Search questions...',
+    categories: 'Categories',
+    allCategories: 'All Categories',
+    aboutTPC: 'About TPC',
+    token: 'TPC Token',
+    trading: 'Trading',
+    security: 'Security',
+    member: 'Member',
+    technical: 'Technical',
+    important: 'Important',
+    learnMore: 'Learn more',
+    viewTransparency: 'View Transparency',
+    joinCommunity: 'Join Community',
+    contactSupport: 'Contact Support',
+    noResults: 'No results found',
+    tryDifferentKeywords: 'Try different keywords',
+    educationFirst: 'Education-first',
+    noProfitPromise: 'No profit promises',
+    riskManagement: 'Risk management focus',
+    communitySupport: 'Community support'
+  }
+};
 
 interface Category {
   id: string;
@@ -48,225 +102,147 @@ const faqData: FAQItem[] = [
     question: 'Apa itu TPC?',
     answer: 'TPC adalah komunitas edukasi trading dan literasi risiko. TPC menyediakan materi terstruktur, program pelatihan, dan fitur member. Token TPC (utility) digunakan untuk akses ke fitur tertentu, bukan instrumen investasi.',
     category: 'tentang-tpc',
-    tags: ['komunitas', 'edukasi', 'trading'],
-    important: true
+    important: true,
+    learnMore: {
+      text: 'Pelajari lebih lanjut',
+      link: '/id/edukasi'
+    }
   },
   {
     id: 'tpc-2',
-    question: 'TPC ini komunitas atau perusahaan?',
-    answer: 'TPC adalah komunitas edukasi yang dikelola secara profesional, bukan perusahaan investasi atau MLM.',
-    category: 'tentang-tpc'
+    question: 'Apakah TPC menjanjikan keuntungan?',
+    answer: 'TIDAK. TPC tidak menjanjikan keuntungan apa pun. Ini adalah platform edukasi, bukan instrumen investasi. Trading memiliki risiko tinggi dan setiap keputusan trading sepenuhnya tanggung jawab masing-masing.',
+    category: 'tentang-tpc',
+    important: true
   },
   {
     id: 'tpc-3',
-    question: 'Siapa yang cocok bergabung?',
-    answer: 'TPC cocok untuk pemula yang ingin belajar trading dasar hingga menengah dengan pendekatan edukasi dan risiko.',
+    question: 'Bagaimana cara bergabung dengan TPC?',
+    answer: 'Anda dapat bergabung dengan mendaftar akun melalui login Google. Setelah login, Anda dapat mengakses materi edukasi dasar secara gratis dan upgrade ke member untuk fitur lanjutan.',
     category: 'tentang-tpc'
   },
-  {
-    id: 'tpc-4',
-    question: 'Apa komitmen utama TPC?',
-    answer: 'Komitmen TPC adalah edukasi berkualitas, transparansi operasional, dan komunitas yang suportif tanpa janji profit.',
-    category: 'tentang-tpc'
-  },
-
-  // Edukasi & Risiko
-  {
-    id: 'edukasi-1',
-    question: 'Apakah materi TPC menjamin profit?',
-    answer: 'Tidak. TPC tidak menjamin profit apapun. Materi edukasi bertujuan meningkatkan pemahaman trading dan manajemen risiko.',
-    category: 'edukasi-risiko'
-  },
-  {
-    id: 'edukasi-2',
-    question: 'Apa risiko terbesar trading?',
-    answer: 'Risiko terbesar adalah kehilangan modal. Trading & aset digital memiliki volatilitas tinggi dan risiko kerugian total.',
-    category: 'edukasi-risiko'
-  },
-  {
-    id: 'edukasi-3',
-    question: 'Apakah TPC memberi sinyal trading?',
-    answer: 'Tidak. TPC tidak menyediakan sinyal trading atau rekomendasi jual/beli. Fokus kami adalah edukasi dan pengembangan skill.',
-    category: 'edukasi-risiko'
-  },
-  {
-    id: 'edukasi-4',
-    question: 'Apa bedanya edukasi vs nasihat keuangan?',
-    answer: 'Edukasi mengajarkan konsep dan skill, sedangkan nasihat keuangan memberikan rekomendasi spesifik. TPC hanya menyediakan edukasi.',
-    category: 'edukasi-risiko'
-  },
-
-  // Token TPC (Utility)
+  // Token TPC
   {
     id: 'token-1',
-    question: 'Token TPC itu untuk apa?',
-    answer: 'Token TPC adalah utilitas untuk akses materi premium, fitur eksklusif, dan partisipasi dalam komunitas. Bukan untuk investasi.',
-    category: 'token-tpc'
+    question: 'Apa fungsi Token TPC?',
+    answer: 'Token TPC adalah utility token untuk akses fitur dalam ekosistem TPC: materi edukasi lanjutan, tools trading, dan partisipasi komunitas. BUKAN instrumen investasi.',
+    category: 'token',
+    important: true
   },
   {
     id: 'token-2',
-    question: 'Apakah token TPC adalah investasi?',
-    answer: 'Tidak. Token TPC adalah utilitas, bukan instrumen investasi. Nilainya bergantung pada penggunaan dalam ekosistem TPC.',
-    category: 'token-tpc',
-    tags: ['token', 'investasi', 'utility'],
-    important: true
+    question: 'Bagaimana cara mendapatkan Token TPC?',
+    answer: 'Token TPC dapat dibeli melalui halaman pembelian yang tersedia setelah login. Pembayaran menggunakan transfer bank atau crypto sesuai instruksi.',
+    category: 'token'
   },
   {
     id: 'token-3',
-    question: 'Apakah ada jaminan harga token naik?',
-    answer: 'Tidak ada jaminan harga token naik. Harga token ditentukan pasar dan bisa naik atau turun.',
-    category: 'token-tpc',
-    tags: ['token', 'harga', 'jaminan'],
+    question: 'Apakah Token TPC bisa diperjualbelikan?',
+    answer: 'Token TPC adalah utility token, bukan sekuritas. Nilainya berasal dari akses fitur edukasi, bukan spekulasi harga. TPC tidak bertanggung jawab atas trading secondary market.',
+    category: 'token',
+    important: true
+  },
+  // Trading
+  {
+    id: 'trading-1',
+    question: 'Apakah TPC memberikan sinyal trading?',
+    answer: 'TIDAK. TPC fokus pada edukasi dan literasi risiko, bukan sinyal trading. Kami mengajarkan cara menganalisis, bukan memberikan rekomendasi buy/sell.',
+    category: 'trading',
     important: true
   },
   {
-    id: 'token-4',
-    question: 'Apakah token memberi hak kepemilikan atau bagi hasil?',
-    answer: 'Tidak. Token TPC tidak memberi hak kepemilikan perusahaan atau bagi hasil keuntungan. Hanya untuk akses fitur.',
-    category: 'token-tpc'
+    id: 'trading-2',
+    question: 'Materi edukasi apa saja tersedia?',
+    answer: 'TPC menyediakan materi dari dasar hingga lanjutan: fundamental trading, analisis teknikal, manajemen risiko, psikologi trading, dan strategi.',
+    category: 'trading'
   },
+  // Keamanan
   {
-    id: 'token-5',
-    question: 'Apakah wajib punya token untuk ikut komunitas?',
-    answer: 'Tidak wajib. Komunitas dasar terbuka untuk semua, namun token diperlukan untuk akses materi premium.',
-    category: 'token-tpc'
-  },
-
-  // Referral (1 Level)
-  {
-    id: 'referral-1',
-    question: 'Apa itu referral 1 level?',
-    answer: 'Referral 1 level adalah sistem di mana Anda hanya mendapatkan komisi dari orang yang langsung Anda ajak, tanpa level bertingkat.',
-    category: 'referral'
-  },
-  {
-    id: 'referral-2',
-    question: 'Bagaimana komisi dihitung?',
-    answer: 'Komisi dihitung sebagai persentase dari pembelian token oleh referral langsung Anda. Detail ada di dashboard member.',
-    category: 'referral'
-  },
-  {
-    id: 'referral-3',
-    question: 'Apakah ini MLM?',
-    answer: 'Tidak. TPC menggunakan referral 1 level, bukan MLM multi-level. Tidak ada pembayaran dari downline bertingkat.',
-    category: 'referral',
-    tags: ['referral', 'MLM', 'komisi'],
-    important: true
-  },
-  {
-    id: 'referral-4',
-    question: 'Apakah referral bersifat wajib?',
-    answer: 'Tidak wajib. Referral adalah opsional untuk member yang ingin berbagi komunitas dengan orang lain.',
-    category: 'referral'
-  },
-
-  // DAO Lite
-  {
-    id: 'dao-1',
-    question: 'Apa itu DAO Lite?',
-    answer: 'DAO Lite adalah sistem governance ringan di mana member token dapat berpartisipasi dalam voting keputusan komunitas.',
-    category: 'dao-lite'
-  },
-  {
-    id: 'dao-2',
-    question: 'Apa yang bisa divoting?',
-    answer: 'Yang bisa divoting adalah pengembangan edukasi, update fitur, dan keputusan komunitas non-finansial.',
-    category: 'dao-lite'
-  },
-  {
-    id: 'dao-3',
-    question: 'Apa yang tidak bisa divoting?',
-    answer: 'Keputusan finansial, distribusi profit, dan operasional harian tidak melalui voting DAO.',
-    category: 'dao-lite'
-  },
-
-  // Keamanan & Transparansi
-  {
-    id: 'keamanan-1',
-    question: 'Dari mana sumber pendapatan TPC?',
-    answer: 'Pendapatan TPC berasal dari penjualan produk edukasi (ebook/pelatihan), layanan jasa profesional, tools/software pendukung, dan kerja sama bisnis. Token TPC digunakan sebagai utilitas akses fitur tertentu.',
-    category: 'keamanan-transparansi',
-    tags: ['pendapatan', 'bisnis', 'transparansi'],
-    important: true
-  },
-  {
-    id: 'keamanan-2',
-    question: 'Apakah TPC menghimpun dana publik?',
-    answer: 'Tidak. TPC tidak menghimpun dana publik atau mengelola investasi member. Penjualan token untuk akses layanan.',
-    category: 'keamanan-transparansi'
-  },
-  {
-    id: 'keamanan-3',
-    question: 'Bagaimana transparansi TPC ditunjukkan?',
-    answer: 'Transparansi ditunjukkan melalui halaman Transparansi yang menampilkan wallet resmi, operasional, dan laporan komunitas.',
-    category: 'keamanan-transparansi',
+    id: 'security-1',
+    question: 'Bagaimana TPC melindungi user dari scam?',
+    answer: 'TPC menggunakan verifikasi manual, wallet publik transparan, dan tidak pernah menghubungi user lebih dulu. Semua proses melalui sistem resmi.',
+    category: 'keamanan',
+    important: true,
     learnMore: {
-      text: 'Lihat Halaman Transparansi',
-      link: '/id/transparansi'
-    }
-  },
-  {
-    id: 'keamanan-4',
-    question: 'Apa yang harus dilakukan jika menemukan pihak mengaku TPC?',
-    answer: 'Laporkan ke admin komunitas resmi. TPC tidak pernah menghubungi lebih dulu menawarkan investasi atau meminta dana.',
-    category: 'keamanan-transparansi',
-    learnMore: {
-      text: 'Baca Anti-Scam Guide',
+      text: 'Lihat Anti-Scam Guide',
       link: '/id/anti-scam'
     }
+  },
+  {
+    id: 'security-2',
+    question: 'Apakah data saya aman?',
+    answer: 'TPC menggunakan enkripsi data, tidak menyimpan informasi sensitif seperti private key, dan mengikuti praktik keamanan standar industri.',
+    category: 'keamanan'
+  },
+  // Member
+  {
+    id: 'member-1',
+    question: 'Apa saja keuntungan member TPC?',
+    answer: 'Member mendapatkan akses materi lanjutan, trading tools, community support, dan partisipasi dalam program edukasi berkelanjutan.',
+    category: 'member'
+  },
+  {
+    id: 'member-2',
+    question: 'Bagaimana cara upgrade ke member?',
+    answer: 'Login ke akun Anda, kunjungi halaman member, dan ikuti instruksi upgrade. Pembayaran dapat menggunakan berbagai metode yang tersedia.',
+    category: 'member'
   }
 ];
 
 const categories: Category[] = [
   { 
+    id: 'all', 
+    label: 'Semua Kategori', 
+    icon: HelpCircle,
+    description: 'Lihat semua pertanyaan'
+  },
+  { 
     id: 'tentang-tpc', 
     label: 'Tentang TPC', 
-    icon: HelpCircle,
-    description: 'Dasar tentang komunitas, prinsip, dan tujuan.'
-  },
-  { 
-    id: 'edukasi-risiko', 
-    label: 'Edukasi & Risiko', 
-    icon: BookOpen,
-    description: 'Batasan edukasi, risiko, dan ekspektasi realistis.'
-  },
-  { 
-    id: 'token-tpc', 
-    label: 'Token TPC (Utility)', 
     icon: Target,
-    description: 'Fungsi token sebagai utilitas akses, bukan investasi.'
+    description: 'Informasi dasar tentang TPC'
   },
   { 
-    id: 'referral', 
-    label: 'Referral (1 Level)', 
-    icon: Users,
-    description: 'Referral satu tingkat, bukan berjenjang.'
-  },
-  { 
-    id: 'dao-lite', 
-    label: 'DAO Lite', 
+    id: 'token', 
+    label: 'Token TPC', 
     icon: Award,
-    description: 'Partisipasi keputusan non-finansial.'
+    description: 'Token utility dan fungsi'
   },
   { 
-    id: 'keamanan-transparansi', 
-    label: 'Keamanan & Transparansi', 
+    id: 'trading', 
+    label: 'Trading', 
+    icon: BookOpen,
+    description: 'Edukasi dan materi trading'
+  },
+  { 
+    id: 'keamanan', 
+    label: 'Keamanan', 
     icon: Shield,
-    description: 'Transparansi, anti-scam, dan verifikasi.'
+    description: 'Keamanan dan proteksi user'
+  },
+  { 
+    id: 'member', 
+    label: 'Member', 
+    icon: Users,
+    description: 'Fitur dan keuntungan member'
   }
 ];
 
 export default function FAQPage() {
   const navigate = useNavigate();
-  const [activeCategory, setActiveCategory] = useState('tentang-tpc');
+  const { lang = 'id' } = useParams<{ lang: string }>();
+  const t = translations[lang];
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+
+  const isEN = lang === 'en';
 
   const filteredFAQs = useMemo(() => {
     let filtered = faqData;
 
     // Filter by category
-    if (activeCategory !== 'all') {
-      filtered = filtered.filter(faq => faq.category === activeCategory);
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(faq => faq.category === selectedCategory);
     }
 
     // Filter by search query
@@ -280,227 +256,208 @@ export default function FAQPage() {
     }
 
     return filtered;
-  }, [activeCategory, searchQuery]);
+  }, [selectedCategory, searchQuery]);
 
-  const activeCategoryData = categories.find(cat => cat.id === activeCategory);
-
-  const resetSearch = () => {
-    setSearchQuery('');
-  };
+  const activeCategoryData = categories.find(cat => cat.id === selectedCategory);
 
   return (
-    <div className="mobile-container pt-6 pb-28">
-      {/* Hero Section */}
-      <div className="mb-8">
-        {/* Badge Row */}
-        <div className="flex items-center gap-2 mb-4">
-          <span className="px-3 py-1 bg-[#F0B90B]/20 text-[#F0B90B] text-xs font-medium rounded-full">
-            Trust & Clarity
-          </span>
-          <span className="px-2 py-1 bg-[#1E2329]/50 text-[#848E9C] text-xs font-medium rounded-full">
-            Diperbarui berkala
-          </span>
-        </div>
-        
-        <h1 className="text-3xl font-bold text-white mb-4">
-          FAQ TPC
-        </h1>
-        
-        <p className="text-[#848E9C] text-base leading-relaxed mb-6">
-          Jawaban ringkas untuk pertanyaan paling umum tentang TPC, edukasi, token, dan keamanan.
-        </p>
-        
-        {/* Search Bar Premium */}
-        <div className="bg-[#12161C] border border-[#2B3139] rounded-xl p-1 mb-6">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#848E9C]" />
-            <input
-              type="text"
-              placeholder="Cari: token, referral, keamanan..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-transparent text-white placeholder-[#848E9C] focus:outline-none transition-colors"
-            />
-            {searchQuery && (
+    <div className="min-h-screen bg-[radial-gradient(1000px_500px_at_50%_-100px,rgba(240,185,11,0.08),transparent),linear-gradient(to_bottom,#0B0E11,black)]">
+      {/* Header */}
+      <div className="sticky top-0 z-40 border-b border-white/10 bg-[#0B0E11]/75 backdrop-blur supports-[backdrop-filter]:bg-[#0B0E11]/55">
+        <div className="mx-auto max-w-6xl px-4 py-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
               <button
-                onClick={resetSearch}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#848E9C] hover:text-white transition-colors"
+                onClick={() => navigate(`/${lang}`)}
+                className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-[#C9D1D9] hover:text-white hover:bg-white/10 transition-colors"
               >
-                <X className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4 rotate-180" />
+                <span className="font-medium">{t.backToHome}</span>
               </button>
-            )}
+
+              <div className="hidden md:block h-8 w-px bg-white/10" />
+
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/10 border border-purple-500/20">
+                  <HelpCircle className="h-5 w-5 text-white" />
+                </div>
+                <div className="min-w-0">
+                  <h1 className="text-white font-bold text-base md:text-lg truncate">{t.pageTitle}</h1>
+                  <p className="text-[#848E9C] text-xs truncate">{t.pageSubtitle}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="hidden md:flex items-center gap-2">
+              <span className="px-3 py-1 rounded-full bg-purple-500/10 text-purple-500 text-xs font-medium">
+                {t.educationFirst}
+              </span>
+              <span className="px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-xs font-medium">
+                {t.noProfitPromise}
+              </span>
+              <span className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-500 text-xs font-medium">
+                {t.riskManagement}
+              </span>
+            </div>
           </div>
         </div>
-        
-        {/* Trust Chips Premium */}
-        <div className="flex flex-wrap gap-2 mb-2">
-          <div className="px-3 py-2 bg-[#1E2329]/50 border border-[#2B3139]/50 rounded-lg flex items-center gap-2">
-            <Shield className="h-3 w-3 text-emerald-400" />
-            <span className="text-xs text-white">Tanpa jaminan profit</span>
-          </div>
-          <div className="px-3 py-2 bg-[#1E2329]/50 border border-[#2B3139]/50 rounded-lg flex items-center gap-2">
-            <Target className="h-3 w-3 text-blue-400" />
-            <span className="text-xs text-white">Utility token (akses fitur)</span>
-          </div>
-          <div className="px-3 py-2 bg-[#1E2329]/50 border border-[#2B3139]/50 rounded-lg flex items-center gap-2">
-            <Lock className="h-3 w-3 text-purple-400" />
-            <span className="text-xs text-white">Bukan MLM</span>
-          </div>
-          <div className="px-3 py-2 bg-[#1E2329]/50 border border-[#2B3139]/50 rounded-lg flex items-center gap-2">
-            <BookOpen className="h-3 w-3 text-amber-400" />
-            <span className="text-xs text-white">Education-first</span>
-          </div>
-        </div>
-        
-        {/* Scroll Hint */}
-        <p className="text-[#848E9C] text-xs mt-3">
-          Gunakan pencarian untuk cepat menemukan jawaban.
-        </p>
       </div>
 
-      {/* FAQ Categories - Segmented Control */}
-      <div className="mb-6">
-        <div className="bg-[#12161C] border border-[#2B3139] rounded-2xl p-1">
-          <div className="flex gap-1 overflow-x-auto">
+      {/* Main Content */}
+      <div className="mx-auto max-w-6xl px-4 py-6 md:py-8">
+        {/* Search */}
+        <div className="mb-8">
+          <div className="relative max-w-2xl mx-auto">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#848E9C]" />
+            <input
+              type="text"
+              placeholder={t.searchPlaceholder}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-4 rounded-2xl border border-white/10 bg-white/5 text-white placeholder-[#848E9C] focus:border-purple-500/50 focus:outline-none transition-colors text-lg"
+            />
+          </div>
+        </div>
+
+        {/* Categories */}
+        <div className="mb-8">
+          <h2 className="text-white font-semibold text-lg mb-4">{t.categories}</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {categories.map((category) => (
               <button
                 key={category.id}
-                onClick={() => setActiveCategory(category.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all whitespace-nowrap flex-1 justify-center ${
-                  activeCategory === category.id
-                    ? 'bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] text-black shadow-lg'
-                    : 'text-[#848E9C] hover:text-white hover:bg-[#1E2329]/50'
+                onClick={() => setSelectedCategory(category.id)}
+                className={`p-4 rounded-xl border transition-all duration-300 ${
+                  selectedCategory === category.id
+                    ? 'border-purple-500/50 bg-purple-500/10 text-white'
+                    : 'border-white/10 bg-white/5 text-[#848E9C] hover:text-white hover:border-purple-500/30'
                 }`}
               >
-                <category.icon className="h-4 w-4" />
-                <span className="text-sm">{category.label}</span>
+                <category.icon className="h-5 w-5 mb-2 mx-auto" />
+                <div className="text-sm font-medium">{category.label}</div>
               </button>
             ))}
           </div>
         </div>
-        
-        {/* Category Description */}
-        {activeCategoryData && (
-          <div className="mt-3 text-center">
-            <p className="text-[#848E9C] text-sm">
-              Kategori aktif: <span className="text-white font-medium">{activeCategoryData.label}</span>
-            </p>
-            <p className="text-[#848E9C] text-xs mt-1">
-              {activeCategoryData.description}
-            </p>
+
+        {/* Active Category Description */}
+        {activeCategoryData && activeCategoryData.id !== 'all' && (
+          <div className="mb-6 p-4 rounded-xl border border-white/10 bg-white/5">
+            <div className="flex items-center gap-3">
+              <activeCategoryData.icon className="h-5 w-5 text-purple-400" />
+              <div>
+                <h3 className="text-white font-medium">{activeCategoryData.label}</h3>
+                <p className="text-[#848E9C] text-sm">{activeCategoryData.description}</p>
+              </div>
+            </div>
           </div>
         )}
-      </div>
 
-      {/* FAQ Content */}
-      <div id="faq" className="mb-12">
-        {filteredFAQs.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 rounded-xl bg-[#12161C] border border-[#2B3139] flex items-center justify-center mx-auto mb-4">
-              <Search className="h-8 w-8 text-[#848E9C]" />
+        {/* FAQ Items */}
+        <div className="space-y-4">
+          {filteredFAQs.length === 0 ? (
+            <div className="text-center py-12">
+              <HelpCircle className="h-12 w-12 text-[#848E9C] mx-auto mb-4" />
+              <h3 className="text-white font-semibold text-lg mb-2">{t.noResults}</h3>
+              <p className="text-[#848E9C]">{t.tryDifferentKeywords}</p>
             </div>
-            <h3 className="text-white font-semibold mb-2">
-              Tidak ada hasil untuk '{searchQuery}'
-            </h3>
-            <p className="text-[#848E9C] text-sm mb-4">Coba kata kunci lain atau pilih kategori berbeda</p>
-            <button
-              onClick={resetSearch}
-              className="px-4 py-2 bg-[#F0B90B]/20 text-[#F0B90B] text-sm font-medium rounded-lg hover:bg-[#F0B90B]/30 transition-colors"
-            >
-              Reset pencarian
-            </button>
-          </div>
-        ) : (
-          <Accordion type="single" collapsible className="space-y-4">
-            {filteredFAQs.map((faq) => {
-              const CategoryIcon = categories.find(cat => cat.id === faq.category)?.icon;
-              return (
+          ) : (
+            <Accordion type="single" collapsible className="space-y-4">
+              {filteredFAQs.map((faq) => (
                 <AccordionItem
                   key={faq.id}
                   value={faq.id}
-                  className="bg-[#12161C] border border-[#2B3139] rounded-2xl overflow-hidden hover:shadow-lg transition-all"
+                  className={`border rounded-xl transition-all duration-300 ${
+                    faq.important
+                      ? 'border-yellow-500/30 bg-yellow-500/5'
+                      : 'border-white/10 bg-white/5'
+                  }`}
                 >
-                  <AccordionTrigger className="hover:no-underline py-5 px-6 text-left">
-                    <div className="flex items-center gap-3 flex-1">
-                      {CategoryIcon && (
-                        <CategoryIcon className="h-4 w-4 text-[#F0B90B] shrink-0" />
-                      )}
-                      <span className="text-white font-medium flex-1">{faq.question}</span>
+                  <AccordionTrigger className="px-6 py-4 text-left hover:no-underline">
+                    <div className="flex items-start gap-3 w-full">
                       {faq.important && (
-                        <span className="px-2 py-1 bg-[#F0B90B]/20 text-[#F0B90B] text-xs font-medium rounded-full shrink-0">
-                          Penting
-                        </span>
+                        <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5 flex-shrink-0" />
                       )}
+                      <div className="flex-1">
+                        <h4 className="text-white font-medium text-base">{faq.question}</h4>
+                        {faq.tags && (
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {faq.tags.map((tag, index) => (
+                              <span
+                                key={index}
+                                className="px-2 py-1 rounded-lg bg-white/10 text-xs text-[#848E9C]"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="px-6 pb-5">
-                    <p className="text-[#848E9C] text-sm leading-relaxed mb-4">
-                      {faq.answer}
-                    </p>
-                    {faq.learnMore && (
-                      <button
-                        onClick={() => navigate(faq.learnMore.link)}
-                        className="inline-flex items-center gap-2 px-3 py-1 bg-[#F0B90B]/20 text-[#F0B90B] text-sm font-medium rounded-lg hover:bg-[#F0B90B]/30 transition-colors"
-                      >
-                        {faq.learnMore.text}
-                        <ArrowRight className="h-3 w-3" />
-                      </button>
-                    )}
+                  <AccordionContent className="px-6 pb-4">
+                    <div className="pl-8">
+                      <p className="text-[#C9D1D9] leading-relaxed mb-4">{faq.answer}</p>
+                      {faq.learnMore && (
+                        <button
+                          onClick={() => navigate(faq.learnMore.link)}
+                          className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 transition-colors"
+                        >
+                          {faq.learnMore.text}
+                          <ArrowRight className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
                   </AccordionContent>
                 </AccordionItem>
-              );
-            })}
-          </Accordion>
-        )}
-      </div>
+              ))}
+            </Accordion>
+          )}
+        </div>
 
-      {/* Key Disclaimers - Elegant & Strong */}
-      <div id="disclaimer" className="bg-gradient-to-r from-yellow-500/20 to-amber-500/10 border border-yellow-500/30 rounded-2xl p-6 mb-12">
-        <div className="flex items-start gap-4">
-          <div className="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center shrink-0">
-            <AlertTriangle className="h-5 w-5 text-yellow-500" />
-          </div>
-          <div>
-            <h3 className="text-white font-semibold mb-3">Disclaimer Penting</h3>
-            <ul className="text-[#848E9C] text-sm space-y-2">
-              <li>• TPC menyediakan edukasi, bukan nasihat keuangan.</li>
-              <li>• Tidak ada jaminan hasil atau profit.</li>
-              <li>• Trading & aset digital memiliki risiko tinggi.</li>
-              <li>• Gunakan manajemen risiko dan keputusan pribadi.</li>
-            </ul>
-            <p className="text-[#848E9C] text-xs mt-3">
-              Jika ragu, baca halaman Transparansi dan Whitepaper.
+        {/* Quick Actions */}
+        <div className="mt-12 grid md:grid-cols-3 gap-6">
+          <div className="p-6 rounded-xl border border-white/10 bg-white/5">
+            <Shield className="h-8 w-8 text-purple-400 mb-4" />
+            <h3 className="text-white font-semibold mb-2">{t.viewTransparency}</h3>
+            <p className="text-[#848E9C] text-sm mb-4">
+              {isEN ? 'View our transparent operations and wallet addresses.' : 'Lihat operasi transparan dan alamat wallet kami.'}
             </p>
+            <button
+              onClick={() => navigate(`/${lang}/transparansi`)}
+              className="text-purple-400 hover:text-purple-300 transition-colors"
+            >
+              {t.viewTransparency} →
+            </button>
           </div>
-        </div>
-      </div>
 
-      {/* CTA Bottom - Trust CTA */}
-      <div className="bg-gradient-to-br from-[#F0B90B]/20 to-[#F8D56B]/10 border border-[#F0B90B]/30 rounded-2xl p-8">
-        <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#F0B90B] to-[#F8D56B] flex items-center justify-center mx-auto mb-4">
-            <HelpCircle className="h-6 w-6 text-black" />
+          <div className="p-6 rounded-xl border border-white/10 bg-white/5">
+            <Users className="h-8 w-8 text-blue-400 mb-4" />
+            <h3 className="text-white font-semibold mb-2">{t.joinCommunity}</h3>
+            <p className="text-[#848E9C] text-sm mb-4">
+              {isEN ? 'Join our community for discussions and support.' : 'Bergabung dengan komunitas untuk diskusi dan dukungan.'}
+            </p>
+            <button
+              onClick={() => navigate(`/${lang}/login`)}
+              className="text-blue-400 hover:text-blue-300 transition-colors"
+            >
+              {t.joinCommunity} →
+            </button>
           </div>
-          <h2 className="text-xl font-bold text-white mb-2">Masih ada pertanyaan?</h2>
-          <p className="text-[#848E9C] text-sm">
-            Mulai dari Transparansi dan Anti-Scam untuk memahami cara kerja TPC.
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <button 
-            onClick={() => navigate('/id/transparansi')}
-            className="flex-1 bg-gradient-to-r from-[#F0B90B] to-[#F8D56B] text-black font-medium py-3 px-4 rounded-lg flex items-center justify-center gap-2 hover:shadow-lg transition-all"
-          >
-            <Shield className="h-4 w-4" />
-            Buka Transparansi
-          </button>
-          <button 
-            onClick={() => navigate('/id/anti-scam')}
-            className="flex-1 bg-[#12161C] border border-[#2B3139] text-white font-medium py-3 px-4 rounded-lg hover:bg-[#1E2329] transition-all flex items-center justify-center gap-2"
-          >
-            <AlertTriangle className="h-4 w-4" />
-            Baca Anti-Scam
-          </button>
+
+          <div className="p-6 rounded-xl border border-white/10 bg-white/5">
+            <BookOpen className="h-8 w-8 text-green-400 mb-4" />
+            <h3 className="text-white font-semibold mb-2">{t.learnMore}</h3>
+            <p className="text-[#848E9C] text-sm mb-4">
+              {isEN ? 'Explore our comprehensive educational materials.' : 'Jelajahi materi edukasi komprehensif kami.'}
+            </p>
+            <button
+              onClick={() => navigate(`/${lang}/edukasi`)}
+              className="text-green-400 hover:text-green-300 transition-colors"
+            >
+              {t.learnMore} →
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -56,6 +56,7 @@ export function MenuDrawer({ onClose }: MenuDrawerProps) {
     { icon: Users, label: lang === 'en' ? 'DAO Lite' : 'DAO Lite', path: 'dao' },
     { icon: HelpCircle, label: lang === 'en' ? 'FAQ' : 'FAQ', path: 'faq' },
     { icon: FileText, label: lang === 'en' ? 'Terms & Conditions' : 'Syarat dan Ketentuan', path: 'syarat-ketentuan' },
+    { icon: FileText, label: lang === 'en' ? 'Privacy Policy' : 'Kebijakan Privasi', path: 'kebijakan-privasi' },
   ];
 
   const memberItems = [

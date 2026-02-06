@@ -1,33 +1,8 @@
-import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { sanitizeReturnTo } from '@/lib/authReturnTo';
 import { Loader2 } from 'lucide-react';
-
-function sanitizeReturnTo(raw: string | null) {
-  if (!raw) return null;
-
-  // 1) pastikan string
-  let path = String(raw).trim();
-
-  // 2) kalau full URL, ambil pathname+search+hash saja
-  try {
-    if (path.startsWith('http://') || path.startsWith('https://')) {
-      const u = new URL(path);
-      path = `${u.pathname}${u.search}${u.hash}`;
-    }
-  } catch {
-    // ignore
-  }
-
-  // 3) normalisasi leading slash: "///id/..." -> "/id/..."
-  path = `/${path.replace(/^\/+/, '')}`;
-
-  // 4) whitelist route yang boleh (anti open-redirect & anti route aneh)
-  if (path.startsWith('/id/') || path === '/id') return path;
-  if (path.startsWith('/en/') || path === '/en') return path;
-
-  return null;
-}
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -51,13 +26,13 @@ export default function LoginPage() {
       const returnToRaw = sessionStorage.getItem('returnTo');
       const returnTo = sanitizeReturnTo(returnToRaw);
 
-      // kita hapus supaya tidak nyangkut/loop
+      // Clean session storage
       sessionStorage.removeItem('returnTo');
 
       if (returnTo) {
         navigate(returnTo, { replace: true });
       } else {
-        // ✅ FINAL member landing
+        // Safe fallback based on language
         navigate('/id/member/dashboard', { replace: true });
       }
     }
@@ -71,52 +46,38 @@ export default function LoginPage() {
     );
   }
 
-  const handleLogin = async () => {
-    try {
-      // OPTIONAL: kalau kita mau pastikan returnTo selalu benar sebelum login
-      // contoh: kalau user datang dari buytpc, set returnTo dulu
-      // sessionStorage.setItem('returnTo', '/id/member/dashboard');
-
-      await signInWithGoogle();
-    } catch (error) {
-      console.error('Login error:', error);
-    }
-  };
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-background">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <div className="mb-4 flex justify-center">
-            <img
-              src="/tpc-logo.png"
-              alt="TPC Logo"
-              className="h-20 w-20 rounded-2xl object-contain drop-shadow-lg"
-            />
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Header */}
+      <div className="border-b">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold">TPC Global</h1>
           </div>
-          <h1 className="text-title mb-2">Masuk ke Akun</h1>
-          <p className="text-muted-foreground text-sm">
-            Login untuk melihat dan mengelola invoice kita
-          </p>
         </div>
+      </div>
 
-        <button
-          onClick={handleLogin}
-          disabled={isLoading}
-          className="btn-gold w-full text-lg py-5 mb-4"
-        >
-          {isLoading ? (
-            <Loader2 className="h-6 w-6 animate-spin" />
-          ) : (
-            <>
-              <svg className="h-6 w-6" viewBox="0 0 24 24">
+      {/* Login Form */}
+      <div className="flex-1 flex items-center justify-center px-4">
+        <div className="w-full max-w-md">
+          <div className="bg-card border rounded-lg p-6 shadow-lg">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold mb-2">Masuk ke Akun</h2>
+              <p className="text-muted-foreground">Login untuk melihat dan mengelola invoice kita</p>
+            </div>
+
+            <button
+              onClick={signInWithGoogle}
+              className="w-full flex items-center justify-center gap-3 bg-primary text-primary-foreground hover:bg-primary/90 py-3 px-4 rounded-lg transition-colors"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
                   fill="currentColor"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                 />
                 <path
                   fill="currentColor"
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 18.31 7.7 23 12 23z"
                 />
                 <path
                   fill="currentColor"
@@ -128,14 +89,17 @@ export default function LoginPage() {
                 />
               </svg>
               Masuk dengan Google
-            </>
-          )}
-        </button>
+            </button>
 
-        <p className="text-center text-xs text-muted-foreground">
-          Dengan masuk, kita menyetujui{' '}
-          <span className="text-primary">Syarat & Ketentuan</span> kami
-        </p>
+            <div className="mt-6 text-center text-sm text-muted-foreground">
+              Dengan masuk, kita menyetujui{' '}
+              <a href="/id/syarat-ketentuan" className="text-primary hover:underline">
+                Syarat & Ketentuan
+              </a>{' '}
+              kita
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

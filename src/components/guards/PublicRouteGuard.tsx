@@ -1,5 +1,6 @@
 import { Navigate, useLocation, useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { isProtectedPath } from "@/config/publicRoutes";
 
 interface PublicRouteGuardProps {
   children: React.ReactNode;
@@ -20,40 +21,13 @@ export function PublicRouteGuard({ children }: PublicRouteGuardProps) {
     );
   }
 
-  // PUBLIC ALLOWLIST - These paths don't require authentication
-  const path = location.pathname;
-  const publicPaths = [
-    `/${safe}/buytpc`,
-    `/${safe}/presale`,
-    `/${safe}/login`,
-    `/${safe}/auth/callback`,
-    `/${safe}/auth/callback-page`,
-    `/${safe}`,
-    `/${safe}/`,
-    `/${safe}/anti-scam`,
-    `/${safe}/edukasi`,
-    `/${safe}/faq`,
-    `/${safe}/whitepaper`,
-    `/${safe}/dao`,
-    `/${safe}/transparansi`,
-    `/${safe}/market`,
-    `/${safe}/invoice/success`,
-    `/${safe}/tutorial/phantom-wallet`,
-  ];
-
-  const isPublic =
-    publicPaths.includes(path) ||
-    path.startsWith(`/${safe}/buytpc/`) ||
-    path.startsWith(`/${safe}/presale`) ||
-    path.startsWith(`/${safe}/tutorial/`);
-
-  // Allow public paths without authentication
-  if (isPublic) {
+  // Allow public paths without authentication - EXPLICIT PROTECTION ONLY
+  if (!isProtectedPath(location.pathname)) {
     return <>{children}</>;
   }
 
   // Redirect to login for protected paths
-  if (!user) {
+  if (!user && isProtectedPath(location.pathname)) {
     const returnTo = encodeURIComponent(location.pathname + location.search);
     return <Navigate to={`/${safe}/login?returnTo=${returnTo}`} replace />;
   }

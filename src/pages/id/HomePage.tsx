@@ -14,8 +14,10 @@ import {
   AlertTriangle,
   ChevronRight
 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { handlePublicNavLogin } from '@/lib/authReturnTo';
 import { Helmet } from 'react-helmet-async';
 
 export default function HomePage() {
@@ -216,7 +218,7 @@ export default function HomePage() {
           >
             Beli TPC<ArrowRight className="h-4 w-4" />
           </button>
-          <button onClick={() => navigate(user ? '/id/member/dashboard' : '/id/login')} className="w-full py-3 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">{user ? 'Masuk ke Dashboard' : 'Masuk / Daftar'}</button>
+          <button onClick={() => user ? navigate('/id/member/dashboard') : handlePublicNavLogin(navigate, 'id')} className="w-full py-3 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">{user ? 'Masuk ke Dashboard' : 'Masuk / Daftar'}</button>
         </div>
       </div>
 

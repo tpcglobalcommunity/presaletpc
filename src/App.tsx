@@ -42,10 +42,9 @@ import NotFound from "@/pages/NotFound";
 
 // Public Pages (ID)
 import HomePage from "@/pages/id/HomePage";
-import LoginPage from "@/pages/id/LoginPage"; // Legacy
 import BuyTPCPage from "@/pages/id/BuyTPCPage";
 import PresaleInfoPage from "@/pages/id/PresaleInfoPage";
-import AntiScamPage from "@/pages/id/AntiScamPage";
+import AntiScamPage from "@/pages/public/AntiScamPage";
 import EdukasiPage from "@/pages/id/EdukasiPage";
 import FAQPage from "@/pages/id/FAQPage";
 import WhitepaperPage from "@/pages/id/WhitepaperPage";
@@ -53,12 +52,16 @@ import DAOPage from "@/pages/id/DAOPage";
 import TransparansiPage from "@/pages/id/TransparansiPage";
 import MarketPage from "@/pages/id/MarketPage";
 import InvoiceSuccessPage from "@/pages/id/InvoiceSuccessPage";
+import TermsConditionsPage from "@/pages/legal/TermsConditionsPage";
+import PrivacyPolicyPage from "@/pages/legal/PrivacyPolicyPage";
 
 // Shared Public Pages
 import TutorialPhantomWalletPage from "@/pages/public/TutorialPhantomWalletPage";
 import LoginPageV2 from "@/pages/public/LoginPage"; // V2
 import LegacyAuthRedirectPage from "@/pages/public/LegacyAuthRedirectPage";
 import OnboardingPage from "@/pages/id/OnboardingPage";
+import VerifiedCoordinatorsPage from "@/pages/chapters/VerifiedCoordinatorsPage";
+import ChaptersSopPage from "@/pages/chapters/ChaptersSopPage";
 
 // Member Pages (Lazy Loaded)
 const MemberDashboardPage = lazy(() => import("@/pages/member/MemberDashboardPage"));
@@ -119,7 +122,7 @@ function App() {
                   element={
                     <LangRoute
                       id={<LoginPageV2 />}
-                      en={<LoginPage />}
+                      en={<LoginPageV2 />}
                     />
                   }
                 />
@@ -142,13 +145,13 @@ function App() {
                 {/* Legacy fallback route */}
                 <Route
                   path="login-legacy"
-                  element={<IdOnly><LoginPage /></IdOnly>}
+                  element={<IdOnly><LoginPageV2 /></IdOnly>}
                 />
                 
                 {/* PUBLIC ID ROUTES (ID-only) */}
                 <Route
                   path="presale"
-                  element={<IdOnly><PresaleInfoPage /></IdOnly>}
+                  element={<LangRoute id={<PresaleInfoPage />} en={<PresaleInfoPage />} />}
                 />
                 <Route
                   path="buytpc"
@@ -156,40 +159,63 @@ function App() {
                 />
                 <Route
                   path="anti-scam"
-                  element={
-                    <LangRoute
-                      id={<AntiScamPage />}
-                      en={<Navigate to="/member" replace />}
-                    />
-                  }
+                  element={<LangRoute id={<AntiScamPage />} en={<AntiScamPage />} />}
                 />
                 <Route
                   path="edukasi"
-                  element={<IdOnly><EdukasiPage /></IdOnly>}
+                  element={<LangRoute id={<EdukasiPage />} en={<EdukasiPage />} />}
                 />
                 <Route
                   path="faq"
-                  element={<IdOnly><FAQPage /></IdOnly>}
+                  element={<LangRoute id={<FAQPage />} en={<FAQPage />} />}
                 />
                 <Route
                   path="whitepaper"
-                  element={<IdOnly><WhitepaperPage /></IdOnly>}
+                  element={<LangRoute id={<WhitepaperPage />} en={<WhitepaperPage />} />}
                 />
                 <Route
                   path="dao"
-                  element={<IdOnly><DAOPage /></IdOnly>}
+                  element={<LangRoute id={<DAOPage />} en={<DAOPage />} />}
                 />
                 <Route
                   path="transparansi"
-                  element={<IdOnly><TransparansiPage /></IdOnly>}
+                  element={<LangRoute id={<TransparansiPage />} en={<TransparansiPage />} />}
                 />
                 <Route
                   path="market"
-                  element={<IdOnly><MarketPage /></IdOnly>}
+                  element={<LangRoute id={<MarketPage />} en={<MarketPage />} />}
                 />
                 <Route
                   path="invoice/success"
-                  element={<IdOnly><InvoiceSuccessPage /></IdOnly>}
+                  element={<LangRoute id={<InvoiceSuccessPage />} en={<InvoiceSuccessPage />} />}
+                />
+                <Route
+                  path="syarat-ketentuan"
+                  element={<LangRoute id={<TermsConditionsPage />} en={<TermsConditionsPage />} />}
+                />
+                <Route
+                  path="terms"
+                  element={<LangRoute id={<TermsConditionsPage />} en={<TermsConditionsPage />} />}
+                />
+                <Route
+                  path="kebijakan-privasi"
+                  element={<LangRoute id={<PrivacyPolicyPage />} en={<PrivacyPolicyPage />} />}
+                />
+                <Route
+                  path="privacy"
+                  element={<LangRoute id={<PrivacyPolicyPage />} en={<PrivacyPolicyPage />} />}
+                />
+                <Route
+                  path="verified-coordinators"
+                  element={<LangRoute id={<VerifiedCoordinatorsPage />} en={<VerifiedCoordinatorsPage />} />}
+                />
+                <Route
+                  path="chapters"
+                  element={<LangRoute id={<ChaptersSopPage />} en={<ChaptersSopPage />} />}
+                />
+                <Route
+                  path="chapters/sop"
+                  element={<LangRoute id={<ChaptersSopPage />} en={<ChaptersSopPage />} />}
                 />
                 
                 {/* SHARED PUBLIC ROUTES */}

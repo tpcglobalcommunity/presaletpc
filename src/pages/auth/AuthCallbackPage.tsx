@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ensureProfile } from "@/lib/ensureProfile";
 import { loadBuyDraft, clearBuyDraft } from "@/lib/buyDraft";
+import { sanitizeReturnTo, getFallbackReturnTo } from "@/lib/authReturnTo";
 
 // AUTH CALLBACK STRICT SCOPE
 // RULES: Create profile only, assign sponsor only after login, never run on public buy
@@ -18,6 +19,7 @@ interface AuthCallbackPageProps {
 export default function AuthCallbackPage({ forcedLang }: AuthCallbackPageProps = {}) {
   const navigate = useNavigate();
   const { lang = "id" } = useParams<{ lang: string }>();
+  const [searchParams] = useSearchParams();
   const { user, isAdmin } = useAuth();
   
   // Determine final lang: forcedLang takes priority, then URL param, then fallback
@@ -122,6 +124,16 @@ export default function AuthCallbackPage({ forcedLang }: AuthCallbackPageProps =
             return;
           }
           
+          // Handle returnTo from URL params
+          const returnToRaw = searchParams.get('returnTo');
+          const sanitizedReturnTo = sanitizeReturnTo(returnToRaw);
+          
+          if (sanitizedReturnTo) {
+            console.log("[AUTH CALLBACK] Valid returnTo found, redirecting to:", sanitizedReturnTo);
+            navigate(sanitizedReturnTo, { replace: true });
+            return;
+          }
+          
           console.log("[AUTH CALLBACK] Session found, redirecting to dashboard");
           const target = isAdmin ? `/${finalLang}/admin` : `/${finalLang}/member`;
           navigate(target, { replace: true });
@@ -150,7 +162,7 @@ export default function AuthCallbackPage({ forcedLang }: AuthCallbackPageProps =
     return () => {
       isMounted = false;
     };
-  }, [navigate, finalLang]);
+  }, [navigate, finalLang, searchParams]);
 
   const handleBackToLogin = () => {
     navigate(`/${finalLang}/login`, { replace: true });

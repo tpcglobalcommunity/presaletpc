@@ -10,6 +10,68 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { formatIdr, formatUsdc } from '@/lib/formatters';
 import TokenMintInfoCard from '@/components/trust/TokenMintInfoCard';
 
+// i18n translations
+const translations = {
+  id: {
+    invalidInvoice: 'Invoice Tidak Valid',
+    invalidInvoiceDesc: 'ID invoice tidak valid atau tidak ditemukan.',
+    backToHome: 'Kembali ke Home',
+    loading: 'Loading invoice...',
+    invoiceNotFound: 'Invoice Tidak Ditemukan',
+    invoiceNotFoundDesc: 'Invoice tidak ditemukan',
+    backToHome2: 'Kembali ke Home',
+    invoiceDetails: 'Detail Invoice',
+    invoiceNumber: 'Nomor Invoice',
+    paymentAmount: 'Jumlah Pembayaran',
+    tpcAmount: 'Jumlah TPC',
+    tpcWalletAddress: 'Alamat Wallet TPC',
+    createdAt: 'Dibuat Pada',
+    approvedAt: 'Disetujui Pada',
+    transactionHash: 'Hash Transaksi',
+    tpcSent: 'TPC sudah dikirim ke wallet Anda',
+    tpcSentDesc: 'Token TPC telah berhasil dikirim ke alamat wallet yang tertera.',
+    tpcSentInfo: 'TPC dikirim menggunakan token resmi berikut:',
+    waitingPayment: 'Menunggu Pembayaran',
+    waitingPaymentDesc: 'Silakan upload bukti transfer untuk melanjutkan proses.',
+    uploadProof: 'Upload Bukti Transfer',
+    invoiceExpired: 'Invoice Kadaluarsa',
+    invoiceExpiredDesc: 'Invoice ini telah kadaluarsa. Silakan buat invoice baru.',
+    invoiceRejected: 'Invoice Ditolak',
+    invoiceRejectedDesc: 'Pembayaran Anda tidak dapat diproses. Silakan hubungi admin.',
+    viewDetailsInMember: 'Lihat detail lengkap di Member Area',
+    loginToMember: 'Login ke Member Area'
+  },
+  en: {
+    invalidInvoice: 'Invalid Invoice',
+    invalidInvoiceDesc: 'Invoice ID is invalid or not found.',
+    backToHome: 'Back to Home',
+    loading: 'Loading invoice...',
+    invoiceNotFound: 'Invoice Not Found',
+    invoiceNotFoundDesc: 'Invoice not found',
+    backToHome2: 'Back to Home',
+    invoiceDetails: 'Invoice Details',
+    invoiceNumber: 'Invoice Number',
+    paymentAmount: 'Payment Amount',
+    tpcAmount: 'TPC Amount',
+    tpcWalletAddress: 'TPC Wallet Address',
+    createdAt: 'Created At',
+    approvedAt: 'Approved At',
+    transactionHash: 'Transaction Hash',
+    tpcSent: 'TPC has been sent to your wallet',
+    tpcSentDesc: 'TPC tokens have been successfully sent to the specified wallet address.',
+    tpcSentInfo: 'TPC sent using the following official token:',
+    waitingPayment: 'Awaiting Payment',
+    waitingPaymentDesc: 'Please upload transfer proof to continue the process.',
+    uploadProof: 'Upload Transfer Proof',
+    invoiceExpired: 'Invoice Expired',
+    invoiceExpiredDesc: 'This invoice has expired. Please create a new invoice.',
+    invoiceRejected: 'Invoice Rejected',
+    invoiceRejectedDesc: 'Your payment cannot be processed. Please contact admin.',
+    viewDetailsInMember: 'View full details in Member Area',
+    loginToMember: 'Login to Member Area'
+  }
+};
+
 interface PublicInvoice {
   invoice_no: string;
   status: string;
@@ -30,6 +92,10 @@ export default function PublicInvoiceDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Get language from URL or default to 'id'
+  const lang = window.location.pathname.startsWith('/en/') ? 'en' : 'id';
+  const t = translations[lang];
+
   // SAFETY NET: Guard against invalid invoice_no
   if (!invoiceNo || invoiceNo === 'undefined' || invoiceNo === 'null' || invoiceNo.trim() === '') {
     return (
@@ -37,15 +103,15 @@ export default function PublicInvoiceDetailPage() {
         <Card className="w-full max-w-md bg-[#1E2329] border-[#2B3139]">
           <CardContent className="p-6 text-center">
             <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-white mb-2">Invoice Tidak Valid</h2>
+            <h2 className="text-xl font-semibold text-white mb-2">{t.invalidInvoice}</h2>
             <p className="text-[#848E9C] mb-6">
-              ID invoice tidak valid atau tidak ditemukan.
+              {t.invalidInvoiceDesc}
             </p>
             <Button 
               asChild
               className="w-full bg-[#F0B90B] hover:bg-[#F8D56B] text-black"
             >
-              <Link to="/id">Kembali ke Home</Link>
+              <Link to={`/${lang}`}>{t.backToHome}</Link>
             </Button>
           </CardContent>
         </Card>
@@ -127,7 +193,7 @@ export default function PublicInvoiceDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0A0B0F] flex items-center justify-center">
-        <div className="text-white">Loading invoice...</div>
+        <div className="text-white">{t.loading}</div>
       </div>
     );
   }
@@ -138,11 +204,11 @@ export default function PublicInvoiceDetailPage() {
         <Card className="bg-[#11161C]/50 backdrop-blur-xl border border-[#1F2A33] rounded-2xl max-w-md w-full">
           <CardContent className="p-6 text-center">
             <XCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
-            <h1 className="text-white text-xl font-semibold mb-2">Invoice Not Found</h1>
-            <p className="text-[#848E9C] mb-4">{error || 'Invoice not found'}</p>
-            <Link to="/id">
+            <h1 className="text-white text-xl font-semibold mb-2">{t.invoiceNotFound}</h1>
+            <p className="text-[#848E9C] mb-4">{error || t.invoiceNotFoundDesc}</p>
+            <Link to={`/${lang}`}>
               <Button className="bg-[#F0B90B] hover:bg-[#E0A800] text-[#1A1B22] font-medium">
-                Back to Home
+                {t.backToHome2}
               </Button>
             </Link>
           </CardContent>
@@ -163,9 +229,9 @@ export default function PublicInvoiceDetailPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-6">
-          <Link to="/id" className="inline-flex items-center text-[#848E9C] hover:text-white transition-colors">
+          <Link to={`/${lang}`} className="inline-flex items-center text-[#848E9C] hover:text-white transition-colors">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
+            {t.backToHome2}
           </Link>
         </div>
 
@@ -174,7 +240,7 @@ export default function PublicInvoiceDetailPage() {
           <Card className="bg-[#11161C]/50 backdrop-blur-xl border border-[#1F2A33] rounded-2xl overflow-hidden">
             <CardHeader className="bg-[#1A1B22]/50 border-b border-[#1F2A33]">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-white text-xl">Invoice Details</CardTitle>
+                <CardTitle className="text-white text-xl">{t.invoiceDetails}</CardTitle>
                 <Badge className={getStatusColor(displayStatus)}>
                   {getStatusIcon(displayStatus)}
                   <span className="ml-2">{displayStatus}</span>
@@ -186,7 +252,7 @@ export default function PublicInvoiceDetailPage() {
               {/* Invoice Number */}
               <div className="bg-[#1E2329] rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-[#848E9C] text-sm">Invoice Number</span>
+                  <span className="text-[#848E9C] text-sm">{t.invoiceNumber}</span>
                   <span className="text-white font-mono font-semibold">{invoice.invoice_no}</span>
                 </div>
               </div>
@@ -195,7 +261,7 @@ export default function PublicInvoiceDetailPage() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="bg-[#1E2329] rounded-xl p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[#848E9C] text-sm">Payment Amount</span>
+                    <span className="text-[#848E9C] text-sm">{t.paymentAmount}</span>
                   </div>
                   <div className="text-white font-semibold">
                     {invoice.base_currency === 'IDR' 
@@ -207,7 +273,7 @@ export default function PublicInvoiceDetailPage() {
 
                 <div className="bg-[#1E2329] rounded-xl p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[#848E9C] text-sm">TPC Amount</span>
+                    <span className="text-[#848E9C] text-sm">{t.tpcAmount}</span>
                   </div>
                   <div className="text-white font-semibold">
                     {invoice.tpc_amount?.toLocaleString() || 0} TPC
@@ -220,7 +286,7 @@ export default function PublicInvoiceDetailPage() {
                 <div className="bg-[#1E2329] rounded-xl p-4">
                   <div className="flex items-center mb-2">
                     <Wallet className="h-4 w-4 text-[#F0B90B] mr-2" />
-                    <span className="text-[#848E9C] text-sm">TPC Wallet Address</span>
+                    <span className="text-[#848E9C] text-sm">{t.tpcWalletAddress}</span>
                   </div>
                   <div className="text-white font-mono text-sm break-all">
                     {invoice.wallet_tpc}
@@ -231,17 +297,17 @@ export default function PublicInvoiceDetailPage() {
               {/* Dates */}
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="bg-[#1E2329] rounded-xl p-4">
-                  <span className="text-[#848E9C] text-sm">Created At</span>
+                  <span className="text-[#848E9C] text-sm">{t.createdAt}</span>
                   <div className="text-white font-medium">
-                    {new Date(invoice.created_at).toLocaleString('id-ID')}
+                    {new Date(invoice.created_at).toLocaleString(lang === 'en' ? 'en-US' : 'id-ID')}
                   </div>
                 </div>
 
                 {invoice.approved_at && (
                   <div className="bg-[#1E2329] rounded-xl p-4">
-                    <span className="text-[#848E9C] text-sm">Approved At</span>
+                    <span className="text-[#848E9C] text-sm">{t.approvedAt}</span>
                     <div className="text-white font-medium">
-                      {new Date(invoice.approved_at).toLocaleString('id-ID')}
+                      {new Date(invoice.approved_at).toLocaleString(lang === 'en' ? 'en-US' : 'id-ID')}
                     </div>
                   </div>
                 )}
@@ -251,7 +317,7 @@ export default function PublicInvoiceDetailPage() {
               {invoice.tpc_tx_hash && (
                 <div className="bg-[#1E2329] rounded-xl p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[#848E9C] text-sm">Transaction Hash</span>
+                    <span className="text-[#848E9C] text-sm">{t.transactionHash}</span>
                     <a
                       href={`https://solscan.io/tx/${invoice.tpc_tx_hash}`}
                       target="_blank"
@@ -273,15 +339,15 @@ export default function PublicInvoiceDetailPage() {
                   <Alert className="bg-green-500/10 border-green-500/50">
                     <CheckCircle className="h-4 w-4 text-green-400" />
                     <AlertDescription className="text-green-400">
-                      <strong>TPC sudah dikirim ke wallet Anda</strong>
+                      <strong>{t.tpcSent}</strong>
                       <br />
-                      Token TPC telah berhasil dikirim ke alamat wallet yang tertera.
+                      {t.tpcSentDesc}
                     </AlertDescription>
                   </Alert>
                   
                   <div className="space-y-4">
                     <div className="text-center">
-                      <p className="text-[#848E9C] text-sm mb-3">TPC dikirim menggunakan token resmi berikut:</p>
+                      <p className="text-[#848E9C] text-sm mb-3">{t.tpcSentInfo}</p>
                       <TokenMintInfoCard compact={true} showDisclaimer={false} />
                     </div>
                   </div>
@@ -293,17 +359,17 @@ export default function PublicInvoiceDetailPage() {
                   <Alert className="bg-yellow-500/10 border-yellow-500/50">
                     <Clock className="h-4 w-4 text-yellow-400" />
                     <AlertDescription className="text-yellow-400">
-                      <strong>Menunggu Pembayaran</strong>
+                      <strong>{t.waitingPayment}</strong>
                       <br />
-                      Silakan upload bukti transfer untuk melanjutkan proses.
+                      {t.waitingPaymentDesc}
                     </AlertDescription>
                   </Alert>
 
                   <div className="text-center">
-                    <Link to={`/id/login?redirect=/member/invoices/${invoice.invoice_no}`}>
+                    <Link to={`/${lang}/login?redirect=/member/invoices/${invoice.invoice_no}`}>
                       <Button className="bg-[#F0B90B] hover:bg-[#E0A800] text-[#1A1B22] font-medium">
                         <Upload className="h-4 w-4 mr-2" />
-                        Upload Bukti Transfer
+                        {t.uploadProof}
                       </Button>
                     </Link>
                   </div>
@@ -314,9 +380,9 @@ export default function PublicInvoiceDetailPage() {
                 <Alert className="bg-gray-500/10 border-gray-500/50">
                   <AlertCircle className="h-4 w-4 text-gray-400" />
                   <AlertDescription className="text-gray-400">
-                    <strong>Invoice Kadaluarsa</strong>
+                    <strong>{t.invoiceExpired}</strong>
                     <br />
-                    Invoice ini telah kadaluarsa. Silakan buat invoice baru.
+                    {t.invoiceExpiredDesc}
                   </AlertDescription>
                 </Alert>
               )}
@@ -325,19 +391,19 @@ export default function PublicInvoiceDetailPage() {
                 <Alert className="bg-red-500/10 border-red-500/50">
                   <XCircle className="h-4 w-4 text-red-400" />
                   <AlertDescription className="text-red-400">
-                    <strong>Invoice Ditolak</strong>
+                    <strong>{t.invoiceRejected}</strong>
                     <br />
-                    Pembayaran Anda tidak dapat diproses. Silakan hubungi admin.
+                    {t.invoiceRejectedDesc}
                   </AlertDescription>
                 </Alert>
               )}
 
               {/* CTA to Member Area */}
               <div className="text-center pt-4 border-t border-[#1F2A33]">
-                <p className="text-[#848E9C] mb-4">Lihat detail lengkap di Member Area</p>
-                <Link to="/id/login">
+                <p className="text-[#848E9C] mb-4">{t.viewDetailsInMember}</p>
+                <Link to={`/${lang}/login`}>
                   <Button variant="outline" className="border-[#F0B90B] text-[#F0B90B] hover:bg-[#F0B90B] hover:text-[#1A1B22]">
-                    Login ke Member Area
+                    {t.loginToMember}
                   </Button>
                 </Link>
               </div>
