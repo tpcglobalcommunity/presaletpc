@@ -119,7 +119,7 @@ export default function PresalePage() {
           <div className="mb-20">
             <div className="text-center mb-8">
               <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{c.stages}</p>
-              <h2 className="text-3xl font-bold text-white">Tahapan Akses Dini</h2>
+              <h2 className="text-3xl font-bold text-white">{safeLang === 'id' ? 'Tahapan Akses Dini' : 'Early Access Stages'}</h2>
             </div>
             
             {/* LISTING DISCLAIMER */}
@@ -187,7 +187,7 @@ export default function PresalePage() {
           <div className="mb-20">
             <div className="text-center mb-8">
               <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{c.utility}</p>
-              <h2 className="text-3xl font-bold text-white">Utilitas TPC</h2>
+              <h2 className="text-3xl font-bold text-white">{safeLang === 'id' ? 'Utilitas TPC' : 'TPC Utility'}</h2>
             </div>
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-6">
@@ -265,7 +265,7 @@ export default function PresalePage() {
           <div className="mb-20">
             <div className="text-center mb-8">
               <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{c.howItWorks}</p>
-              <h2 className="text-3xl font-bold text-white">Cara Kerja</h2>
+              <h2 className="text-3xl font-bold text-white">{safeLang === 'id' ? 'Cara Kerja' : 'How It Works'}</h2>
             </div>
             <div className="space-y-6">
               {steps.map((step, index) => {
@@ -289,7 +289,7 @@ export default function PresalePage() {
           <div className="mb-20">
             <div className="text-center mb-8">
               <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{c.riskAntiScam}</p>
-              <h2 className="text-3xl font-bold text-white">Risiko & Anti-Scam</h2>
+              <h2 className="text-3xl font-bold text-white">{safeLang === 'id' ? 'Risiko & Anti-Scam' : 'Risk & Anti-Scam'}</h2>
             </div>
             <div className="bg-gradient-to-br from-red-500/10 to-red-600/10 border border-red-500/30 rounded-2xl p-10 shadow-xl">
               <div className="space-y-6">
@@ -297,7 +297,7 @@ export default function PresalePage() {
                 <div className="flex items-start gap-4">
                   <AlertTriangle className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-white mb-2">Bukan Nasihat Keuangan</h3>
+                    <h3 className="text-lg font-bold text-white mb-2">{safeLang === 'id' ? 'Bukan Nasihat Keuangan' : 'Not Financial Advice'}</h3>
                     <p className="text-red-200 leading-relaxed">{c.riskDisclaimer}</p>
                   </div>
                 </div>
@@ -306,7 +306,7 @@ export default function PresalePage() {
                 <div className="flex items-start gap-4">
                   <AlertTriangle className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-white mb-2">Risiko Cryptocurrency</h3>
+                    <h3 className="text-lg font-bold text-white mb-2">{safeLang === 'id' ? 'Risiko Cryptocurrency' : 'Cryptocurrency Risk'}</h3>
                     <p className="text-red-200 leading-relaxed">{c.cryptoRisk}</p>
                   </div>
                 </div>
@@ -315,7 +315,7 @@ export default function PresalePage() {
                 <div className="flex items-start gap-4">
                   <Shield className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-white mb-2">Peringatan Anti-Scam</h3>
+                    <h3 className="text-lg font-bold text-white mb-2">{safeLang === 'id' ? 'Peringatan Anti-Scam' : 'Anti-Scam Warning'}</h3>
                     <p className="text-red-200 leading-relaxed">{c.antiScamWarning}</p>
                   </div>
                 </div>
@@ -324,7 +324,7 @@ export default function PresalePage() {
                 <div className="flex items-start gap-4">
                   <CheckCircle className="h-6 w-6 text-emerald-500 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-white mb-2">Saluran Resmi</h3>
+                    <h3 className="text-lg font-bold text-white mb-2">{safeLang === 'id' ? 'Saluran Resmi' : 'Official Channels'}</h3>
                     <p className="text-emerald-200 leading-relaxed">{c.officialChannels}</p>
                   </div>
                 </div>
@@ -335,7 +335,7 @@ export default function PresalePage() {
           {/* ACCESS CTA */}
           <div className="mb-20">
             <div className="text-center mb-8">
-              <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">Akses Partisipasi</p>
+              <p className="text-sm font-semibold text-[#F0B90B] uppercase tracking-wider mb-2">{safeLang === 'id' ? 'Akses Partisipasi' : 'Access Participation'}</p>
             </div>
             <div className="text-center">
               <button
