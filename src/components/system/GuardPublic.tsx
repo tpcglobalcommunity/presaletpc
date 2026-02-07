@@ -1,4 +1,4 @@
-import { Navigate, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, Navigate } from 'react-router-dom';
 import { normalizePublicPath } from '@/lib/publicPath';
 
 interface GuardPublicProps {
@@ -13,9 +13,10 @@ export default function GuardPublic({ children }: GuardPublicProps) {
   
   // If path needs normalization, redirect
   if (normalizedPath !== location.pathname) {
-    return <Navigate to={normalizedPath} replace />;
+    const to = normalizedPath + location.search + location.hash;
+    return <Navigate to={to} replace />;
   }
   
-  // Otherwise render children
-  return <>{children}</>;
+  // Always render children (PublicLayout) after normalization
+  return <Outlet />;
 }
