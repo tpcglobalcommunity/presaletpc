@@ -41,7 +41,7 @@ export default function PublicBottomNav() {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-[#0B0E11]/95 backdrop-blur-sm border-t border-gray-800 z-40">
+    <div className="bg-[#0B0E11]/95 backdrop-blur-sm border-t border-gray-800">
       <div className="flex items-center justify-around py-2">
         {navItems.map((item) => {
           const Icon = iconMap[item.icon];
