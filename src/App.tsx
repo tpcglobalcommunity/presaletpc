@@ -44,7 +44,7 @@ export default function App() {
             <Route path="en/risk" element={<RiskDisclosurePage />} />
             
             {/* ID routes (will be created in Phase 3) */}
-            <Route path="id" element={<Navigate to="/id" replace />} />
+            <Route path="id" element={<HomePage />} />
             <Route path="id/login" element={<LoginPage />} />
             <Route path="id/anti-scam" element={<AntiScamPage />} />
             <Route path="id/market" element={<MarketPage />} />
