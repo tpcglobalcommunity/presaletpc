@@ -1,51 +1,62 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 
-// PUBLIC
-import HomePage from "@/pages/public/HomePage";
-import LoginPage from "@/pages/public/LoginPage";
-import AntiScamPage from "@/pages/public/AntiScamPage";
-import MarketPage from "@/pages/public/MarketPage";
-import PresalePage from "@/pages/public/PresalePage";
-import PublicMenuPage from "@/pages/public/PublicMenuPage";
-import TpcAkademiPage from "@/pages/public/products/TpcAkademiPage";
-import AcademyPage from "@/pages/public/AcademyPage";
-import { PublicNotFoundPage } from "@/pages/public/PublicNotFoundPage";
-
-// MEMBER
-import MemberWithdrawalPage from "@/pages/member/MemberWithdrawalPage";
-
 // GUARDS
 import { RequireAuth } from "@/components/guards/RequireAuth";
-import RequirePublicLang from "@/components/system/RequirePublicLang";
+import GuardPublic from "@/components/system/GuardPublic";
+
+// LAYOUTS
 import PublicLayout from "@/layouts/PublicLayout";
+
+// PUBLIC PAGES (will be created in Phase 3)
+import HomePage from "@/pages/public/en/HomePage";
+import LoginPage from "@/pages/public/en/LoginPage";
+import AntiScamPage from "@/pages/public/en/AntiScamPage";
+import MarketPage from "@/pages/public/en/MarketPage";
+import PresalePage from "@/pages/public/en/PresalePage";
+import AcademyPage from "@/pages/public/en/AcademyPage";
+import TermsPage from "@/pages/public/en/TermsPage";
+import PrivacyPage from "@/pages/public/en/PrivacyPage";
+import RiskDisclosurePage from "@/pages/public/en/RiskDisclosurePage";
+
+// MEMBER (keep existing)
+import MemberWithdrawalPage from "@/pages/member/MemberWithdrawalPage";
 
 export default function App() {
   return (
     <AuthProvider>
       <Routes>
         {/* ROOT REDIRECT */}
-        <Route path="/" element={<Navigate to="/id" replace />} />
+        <Route path="/" element={<Navigate to="/en" replace />} />
         
-        {/* CANONICAL REDIRECTS */}
-        <Route path="/academy" element={<Navigate to="/en/academy" replace />} />
-        <Route path="/en/education" element={<Navigate to="/en/academy" replace />} />
-
-        {/* PUBLIC (LANG BASED) */}
-        <Route path="/:lang" element={<RequirePublicLang />}>
+        {/* PUBLIC ROUTES WITH GUARD */}
+        <Route path="/:lang(en|id)/*" element={<GuardPublic />}>
           <Route element={<PublicLayout />}>
-            <Route index element={<HomePage />} />
-            <Route path="login" element={<LoginPage />} />
-            <Route path="anti-scam" element={<AntiScamPage />} />
-            <Route path="market" element={<MarketPage />} />
-            <Route path="market/tpc-akademi" element={<TpcAkademiPage />} />
-            <Route path="presale" element={<PresalePage />} />
-            <Route path="academy" element={<AcademyPage />} />
-            <Route path="menu" element={<PublicMenuPage />} />
+            {/* EN routes */}
+            <Route path="en" element={<HomePage />} />
+            <Route path="en/login" element={<LoginPage />} />
+            <Route path="en/anti-scam" element={<AntiScamPage />} />
+            <Route path="en/market" element={<MarketPage />} />
+            <Route path="en/presale" element={<PresalePage />} />
+            <Route path="en/academy" element={<AcademyPage />} />
+            <Route path="en/terms" element={<TermsPage />} />
+            <Route path="en/privacy" element={<PrivacyPage />} />
+            <Route path="en/risk" element={<RiskDisclosurePage />} />
+            
+            {/* ID routes (will be created in Phase 3) */}
+            <Route path="id" element={<Navigate to="/id" replace />} />
+            <Route path="id/login" element={<LoginPage />} />
+            <Route path="id/anti-scam" element={<AntiScamPage />} />
+            <Route path="id/market" element={<MarketPage />} />
+            <Route path="id/presale" element={<PresalePage />} />
+            <Route path="id/academy" element={<AcademyPage />} />
+            <Route path="id/terms" element={<TermsPage />} />
+            <Route path="id/privacy" element={<PrivacyPage />} />
+            <Route path="id/risk" element={<RiskDisclosurePage />} />
           </Route>
         </Route>
 
-        {/* MEMBER */}
+        {/* MEMBER ROUTES (keep existing) */}
         <Route
           path="/member/withdrawal"
           element={
@@ -56,8 +67,7 @@ export default function App() {
         />
 
         {/* FALLBACK */}
-        <Route path="/404" element={<PublicNotFoundPage />} />
-        <Route path="*" element={<Navigate to="/404" replace />} />
+        <Route path="*" element={<Navigate to="/en" replace />} />
       </Routes>
     </AuthProvider>
   );

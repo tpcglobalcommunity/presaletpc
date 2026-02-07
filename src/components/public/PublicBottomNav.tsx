@@ -1,6 +1,6 @@
 import { NavLink, useLocation, useParams } from 'react-router-dom';
 import { Home, TrendingUp, Coins, LogIn, Menu, CircleHelp, LucideIcon } from 'lucide-react';
-import { publicBottomNavItems } from '@/config/publicBottomNav';
+import { publicPath } from '@/lib/publicPath';
 
 type NavItem = {
   key: string;
@@ -11,7 +11,7 @@ type NavItem = {
 
 export default function PublicBottomNav() {
   const location = useLocation();
-  const { lang = 'id' } = useParams<{ lang: string }>();
+  const { lang = 'en' } = useParams<{ lang: string }>();
 
   // Only show on public pages (not member/admin)
   const isPublicPage = location.pathname.startsWith(`/${lang}`) && 
@@ -22,9 +22,6 @@ export default function PublicBottomNav() {
     return null;
   }
 
-  // Derive lang ONLY to build URL
-  const safeLang = lang === 'en' ? 'en' : 'id';
-
   // Icon mapping with runtime safety
   const iconMap: Record<string, LucideIcon> = {
     Home,
@@ -34,21 +31,21 @@ export default function PublicBottomNav() {
     Menu
   };
 
-  // Hardcoded English labels
-  const labels = {
-    home: 'Home',
-    academy: 'Academy',
-    presale: 'Presale',
-    login: 'Login',
-    menu: 'Menu'
-  } as const;
+  // Navigation items - always EN labels
+  const navItems = [
+    { id: 'home', label: 'Home', icon: 'Home', hrefBase: '' },
+    { id: 'presale', label: 'Presale', icon: 'Coins', hrefBase: 'presale' },
+    { id: 'market', label: 'Market', icon: 'TrendingUp', hrefBase: 'market' },
+    { id: 'academy', label: 'Academy', icon: 'TrendingUp', hrefBase: 'academy' },
+    { id: 'login', label: 'Login', icon: 'LogIn', hrefBase: 'login' }
+  ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border z-40">
+    <div className="fixed bottom-0 left-0 right-0 bg-[#0B0E11]/95 backdrop-blur-sm border-t border-gray-800 z-40">
       <div className="flex items-center justify-around py-2">
-        {publicBottomNavItems.map((item) => {
+        {navItems.map((item) => {
           const Icon = iconMap[item.icon];
-          const href = item.hrefBase ? `/${safeLang}/${item.hrefBase}` : `/${safeLang}`;
+          const href = item.hrefBase ? publicPath(lang as 'en' | 'id', item.hrefBase) : publicPath(lang as 'en' | 'id', '/');
           
           // Runtime safety guard
           if (!Icon) {
@@ -60,13 +57,13 @@ export default function PublicBottomNav() {
                 className={({ isActive }) =>
                   `flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
                     isActive
-                      ? 'text-primary'
-                      : 'text-muted-foreground hover:text-foreground'
+                      ? 'text-yellow-400'
+                      : 'text-gray-400 hover:text-white'
                   }`
                 }
               >
                 <CircleHelp className="h-5 w-5" />
-                <span className="text-xs font-medium">{labels[item.id as keyof typeof labels]}</span>
+                <span className="text-xs font-medium">{item.label}</span>
               </NavLink>
             );
           }
@@ -78,13 +75,13 @@ export default function PublicBottomNav() {
               className={({ isActive }) =>
                 `flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
                   isActive
-                    ? 'text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'text-yellow-400'
+                    : 'text-gray-400 hover:text-white'
                 }`
               }
             >
               <Icon className="h-5 w-5" />
-              <span className="text-xs font-medium">{labels[item.id as keyof typeof labels]}</span>
+              <span className="text-xs font-medium">{item.label}</span>
             </NavLink>
           );
         })}
